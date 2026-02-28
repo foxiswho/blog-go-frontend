@@ -1,27 +1,29 @@
 # name: Dependabot post-update
-name: Build detection
+name: Build blogGo (手动打包)
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
-    branches:
-      - main
-  # 可选：手动触发
+  # 手动触发
   workflow_dispatch:
+    inputs:
+      branch:
+        description: '指定要打包的分支 main'
+        required: false
+        default: 'main'
+        type: string
 env:
   HUSKY: '0'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.inputs.branch }}
   cancel-in-progress: true
 
 permissions:
   contents: read
-  pull-requests: write
+  # 若不需要PR相关操作，可改为read
+  pull-requests: read
 
 jobs:
   post-update:
     if: github.repository == 'foxiswho/blog-go-frontend'
-    # if: ${{ github.actor == 'dependabot[bot]' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -35,12 +37,8 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - name: Checkout out pull request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr checkout ${{ github.event.pull_request.number }}
+          # 拉取手动指定的分支
+          ref: ${{ github.event.inputs.branch }}
 
       - name: Setup Node
         uses: ./.github/actions/setup-node
@@ -48,3 +46,10 @@ jobs:
       - name: Build
         run: |
           pnpm run build
+      # 可选：上传打包产物，方便手动下载
+      - name: 上传打包产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: blogGo-dist-${{ matrix.os }} # 区分不同系统的产物
+          path: ./dist # 替换为你项目的实际打包输出目录
+          retention-days: 7 # 产物保留7天，可按需调整
