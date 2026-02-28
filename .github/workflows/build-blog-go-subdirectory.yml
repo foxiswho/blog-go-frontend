@@ -1,0 +1,119 @@
+# name: Dependabot post-update
+name: Build blogGo SubDirectory (手动打包)
+on:
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: '指定要打包的分支 main'
+        required: false
+        default: 'main'
+        type: string
+      release_tag:
+        description: 'Release版本号（必填，如v1.0.0）'
+        required: true
+        default: 'v0.0.1'
+        type: string
+env:
+  HUSKY: '0'
+  # 压缩包名称
+  ZIP_MANAGE: blogGo-manage-dist-subdirectory--${{ github.run_id }}.zip
+  ZIP_SYS: blogGo-sys-dist-subdirectory-${{ github.run_id }}.zip
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.branch }}
+  cancel-in-progress: true
+
+permissions:
+  # 可选，仅用于读取工作流状态
+  actions: read
+  # 创建/修改Release必须的权限
+  contents: write
+  # 若不需要PR相关操作，可改为read
+  pull-requests: read
+
+jobs:
+  post-update:
+    if: github.repository == 'foxiswho/blog-go-frontend'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          # - macos-latest
+#          - windows-latest
+    steps:
+        # 拉取代码
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          # 拉取手动指定的分支
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Setup Node
+        uses: ./.github/actions/setup-node
+
+      - name: Build
+        run: |
+          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/sub\//' ./apps/blog-manage/.env.production
+          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/sub\//' ./apps/blog-sys/.env.production
+          cat ./apps/blog-manage/.env.production
+          pnpm run build --filter=blog-sys --filter=blog-manage
+
+      # 更改压缩包名称
+      - name: rename zip name
+        run: |
+          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE }}
+          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS }}
+      # 可选：上传打包产物，方便手动下载
+      - name: 上传打包产物-manage
+        uses: actions/upload-artifact@v4
+        with:
+          name: blogGo-manage-dist
+          path: ./apps/blog-manage/${{ env.ZIP_MANAGE }}
+          retention-days: 1 # 产物保留7天，可按需调整
+
+      - name: 上传打包产物-sys
+        uses: actions/upload-artifact@v4
+        with:
+          name: blogGo-sys-dist
+          path: ./apps/blog-sys/${{ env.ZIP_SYS }}
+          retention-days: 1 # 产物保留7天，可按需调整
+
+  # 5. 统一创建Release并上传所有产物
+  publish-release:
+    needs: post-update  # 等待多系统打包完成
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts  # 所有产物下载到artifacts目录
+
+      - name: List downloaded files (调试用)
+        run: ls -R ./artifacts
+
+      - name: Create GitHub Release & Upload Multiple Files
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          release_name: Release ${{ github.event.inputs.release_tag }}
+          # 方式1：通配符匹配所有ZIP文件（推荐，自动识别所有产物）
+          files: ./artifacts/**/*.zip
+          # 方式2：显式列出多个文件（适合固定文件名）
+          # files: |
+          #   ./artifacts/build-zips-ubuntu-latest/blogGo-dist-ubuntu-${{ github.event.inputs.release_tag }}.zip
+          #   ./artifacts/build-zips-windows-latest/blogGo-dist-windows-${{ github.event.inputs.release_tag }}.zip
+
+          # 非草稿，直接公开
+          draft: false
+          # 正式版本（非预发布）
+          prerelease: false
+          # 标记为最新版本
+          make_latest: true
+          # 附加于现有正文，而不是覆盖它
+          append_body: true
+        env:
+          # 自动生成的Token，无需手动配置
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
