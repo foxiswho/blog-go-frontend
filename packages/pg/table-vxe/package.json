@@ -1,0 +1,24 @@
+{
+  "name": "@pg/table-vxe",
+  "version": "0.0.1",
+  "homepage": "https://github.com/vbenjs/vue-vben-admin",
+  "bugs": "https://github.com/vbenjs/vue-vben-admin/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vbenjs/vue-vben-admin.git",
+    "directory": "packages/effects/permissions"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "vxe-pc-ui": "catalog:",
+    "vxe-table": "catalog:",
+    "xe-utils": "catalog:"
+  }
+}

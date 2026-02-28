@@ -1,0 +1,69 @@
+{
+  "name": "@pg/components-n",
+  "version": "5.5.5",
+  "homepage": "https://github.com/vbenjs/vue-vben-admin",
+  "bugs": "https://github.com/vbenjs/vue-vben-admin/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vbenjs/vue-vben-admin.git",
+    "directory": "packages/pg/components-naive"
+  },
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm unbuild",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@pg/form-ui-n": "workspace:*",
+    "@pg/icons": "workspace:*",
+    "@pg/request": "workspace:*",
+    "@pg/types": "workspace:*",
+    "@pg/utils": "workspace:*",
+    "@vben-core/composables": "workspace:*",
+    "@vben-core/shadcn-ui": "workspace:*",
+    "@vben-core/shared": "workspace:*",
+    "@vben-core/typings": "workspace:*",
+    "@vben/common-ui": "workspace:*",
+    "@vben/hooks": "workspace:*",
+    "@vben/preferences": "workspace:*",
+    "@vben/utils": "workspace:*",
+    "@vee-validate/zod": "catalog:",
+    "@vueuse/core": "catalog:",
+    "@vueuse/integrations": "catalog:",
+    "naive-ui": "catalog:",
+    "vditor": "catalog:",
+    "vee-validate": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "vuedraggable": "catalog:",
+    "vxe-pc-ui": "catalog:",
+    "vxe-table": "catalog:",
+    "xe-utils": "catalog:",
+    "zod": "catalog:",
+    "zod-defaults": "catalog:"
+  },
+  "devDependencies": {
+    "vue-sfc-transformer": "catalog:"
+  }
+}

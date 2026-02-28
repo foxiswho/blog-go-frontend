@@ -5,6 +5,26 @@
       "path": "apps/backend-mock",
     },
     {
+      "name": "blog-manage",
+      "path": "apps/blog-manage",
+    },
+    {
+      "name": "blog-sys",
+      "path": "apps/blog-sys",
+    },
+    {
+      "name": "dbt-manage",
+      "path": "apps/dbt-manage",
+    },
+    {
+      "name": "dbt-sys",
+      "path": "apps/dbt-sys",
+    },
+    {
+      "name": "ta-01",
+      "path": "apps/ta-01",
+    },
+    {
       "name": "@vben/web-antd",
       "path": "apps/web-antd",
     },
@@ -19,6 +39,22 @@
     {
       "name": "@vben/web-naive",
       "path": "apps/web-naive",
+    },
+    {
+      "name": "xj-customer",
+      "path": "apps/xj-customer",
+    },
+    {
+      "name": "xj-desktop",
+      "path": "apps/xj-desktop",
+    },
+    {
+      "name": "xj-manage",
+      "path": "apps/xj-manage",
+    },
+    {
+      "name": "xj-sys",
+      "path": "apps/xj-sys",
     },
     {
       "name": "@vben/web-tdesign",
@@ -143,6 +179,38 @@
     {
       "name": "@vben/locales",
       "path": "packages/locales",
+    },
+    {
+      "name": "@pg/components-n",
+      "path": "packages/pg/components-naive",
+    },
+    {
+      "name": "@pg/form-ui-el",
+      "path": "packages/pg/form-ui-el",
+    },
+    {
+      "name": "@pg/form-ui-n",
+      "path": "packages/pg/form-ui-naive",
+    },
+    {
+      "name": "@pg/icons",
+      "path": "packages/pg/icons",
+    },
+    {
+      "name": "@pg/request",
+      "path": "packages/pg/request",
+    },
+    {
+      "name": "@pg/table-vxe",
+      "path": "packages/pg/table-vxe",
+    },
+    {
+      "name": "@pg/types",
+      "path": "packages/pg/types",
+    },
+    {
+      "name": "@pg/utils",
+      "path": "packages/pg/utils",
     },
     {
       "name": "@vben/preferences",

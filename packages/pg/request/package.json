@@ -1,0 +1,35 @@
+{
+  "name": "@pg/request",
+  "version": "5.5.5",
+  "main": "index.ts",
+  "module": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "clean": "pnpm rimraf node_modules && pnpm rimraf dist && pnpm rimraf .turbo"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@vue/runtime-core": "catalog:",
+    "@vueuse/core": "catalog:",
+    "@vueuse/shared": "catalog:",
+    "@vben/constants": "workspace:*",
+    "@vben/hooks": "workspace:*",
+    "@vben/preferences": "workspace:*",
+    "@vben/stores": "workspace:*",
+    "@vben/request": "workspace:*",
+    "@vben/utils": "workspace:*",
+    "lodash-es": "catalog:",
+    "naive-ui": "catalog:",
+    "vue": "catalog:",
+    "vue-types": "catalog:"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "catalog:"
+  }
+}

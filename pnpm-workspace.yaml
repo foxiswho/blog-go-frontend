@@ -8,6 +8,7 @@ packages:
   - packages/@core/*
   - packages/effects/*
   - packages/business/*
+  - packages/pg/*
   - apps/*
   - scripts/*
   - docs
@@ -195,9 +196,20 @@ catalog:
   vue-router: ^5.0.3
   vue-tippy: ^6.7.1
   vue-tsc: ^3.2.4
-  vxe-pc-ui: ^4.12.16
-  vxe-table: ^4.17.46
+  vxe-pc-ui: ^4.12.36
+  vxe-table: ^4.17.48
+  vue-sfc-transformer: ^0.1.17
   watermark-js-plus: ^1.6.3
   yaml-eslint-parser: ^1.3.2
   zod: ^3.25.76
-  zod-defaults: 0.1.3
+  zod-defaults: ^0.1.3
+  '@types/lodash-es': ^4.17.12
+  '@vue/runtime-core': ^3.5.12
+  '@vueuse/shared': ^11.1.0
+  lodash-es: ^4.17.21
+  vditor: ^3.10.3
+  vue-types: ^5.1.3
+  vuedraggable: ^4.1.0
+  xe-utils: ^3.9.1
+  '@tauri-apps/cli': ^2.5.0
+  nanoid: ^5.1.5

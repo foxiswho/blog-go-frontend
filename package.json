@@ -1,6 +1,6 @@
 {
   "name": "vben-admin-monorepo",
-  "version": "5.5.9",
+  "version": "5.6.0",
   "private": true,
   "keywords": [
     "monorepo",
@@ -34,6 +34,8 @@
     "build:naive": "pnpm run build --filter=@vben/web-naive",
     "build:tdesign": "pnpm run build --filter=@vben/web-tdesign",
     "build:play": "pnpm run build --filter=@vben/playground",
+    "build:blog:sys": "pnpm run build --filter=blog-sys",
+    "build:blog:manage": "pnpm run build --filter=blog-manage",
     "changeset": "pnpm exec changeset",
     "check": "pnpm run check:circular && pnpm run check:dep && pnpm run check:type && pnpm check:cspell",
     "check:circular": "vsh check-circular",
@@ -50,6 +52,8 @@
     "dev:naive": "pnpm -F @vben/web-naive run dev",
     "dev:tdesign": "pnpm -F @vben/web-tdesign run dev",
     "dev:play": "pnpm -F @vben/playground run dev",
+    "dev:blog:manage": "pnpm -F blog-manage run dev",
+    "dev:blog:sys": "pnpm -F blog-sys run dev",
     "format": "vsh lint --format",
     "lint": "vsh lint",
     "postinstall": "pnpm -r run stub --if-present",
@@ -101,5 +105,27 @@
     "node": ">=20.19.0",
     "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.28.2"
+  "packageManager": "pnpm@10.28.2",
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "eslint": "*"
+      }
+    },
+    "overrides": {
+      "@ast-grep/napi": "catalog:",
+      "@ctrl/tinycolor": "catalog:",
+      "clsx": "catalog:",
+      "esbuild": "0.25.3",
+      "pinia": "catalog:",
+      "vue": "catalog:"
+    },
+    "neverBuiltDependencies": [
+      "canvas",
+      "node-gyp"
+    ]
+  },
+  "volta": {
+    "node": "20.19.1"
+  }
 }
