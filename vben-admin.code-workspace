@@ -13,18 +13,6 @@
       "path": "apps/blog-sys",
     },
     {
-      "name": "dbt-manage",
-      "path": "apps/dbt-manage",
-    },
-    {
-      "name": "dbt-sys",
-      "path": "apps/dbt-sys",
-    },
-    {
-      "name": "ta-01",
-      "path": "apps/ta-01",
-    },
-    {
       "name": "@vben/web-antd",
       "path": "apps/web-antd",
     },
@@ -39,22 +27,6 @@
     {
       "name": "@vben/web-naive",
       "path": "apps/web-naive",
-    },
-    {
-      "name": "xj-customer",
-      "path": "apps/xj-customer",
-    },
-    {
-      "name": "xj-desktop",
-      "path": "apps/xj-desktop",
-    },
-    {
-      "name": "xj-manage",
-      "path": "apps/xj-manage",
-    },
-    {
-      "name": "xj-sys",
-      "path": "apps/xj-sys",
     },
     {
       "name": "@vben/web-tdesign",
