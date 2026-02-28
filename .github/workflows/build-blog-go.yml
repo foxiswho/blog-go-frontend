@@ -30,7 +30,7 @@ jobs:
         os:
           - ubuntu-latest
           # - macos-latest
-          - windows-latest
+#          - windows-latest
     steps:
         # 拉取代码
       - name: Checkout code
@@ -45,11 +45,18 @@ jobs:
 
       - name: Build
         run: |
-          pnpm run build
+          pnpm run build --filter=blog-sys --filter=blog-manage
       # 可选：上传打包产物，方便手动下载
-      - name: 上传打包产物
+      - name: 上传打包产物-manage
         uses: actions/upload-artifact@v4
         with:
-          name: blogGo-dist-${{ matrix.os }} # 区分不同系统的产物
-          path: ./dist # 替换为你项目的实际打包输出目录
+          name: blogGo-dist  # 区分不同系统的产物
+          path: ./apps/blog-manage/dist # 替换为你项目的实际打包输出目录
+          retention-days: 7 # 产物保留7天，可按需调整
+
+      - name: 上传打包产物-sys
+        uses: actions/upload-artifact@v4
+        with:
+          name: blogGo-dist  # 区分不同系统的产物
+          path: ./apps/blog-sys/dist # 替换为你项目的实际打包输出目录
           retention-days: 7 # 产物保留7天，可按需调整
