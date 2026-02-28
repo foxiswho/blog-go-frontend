@@ -25,7 +25,10 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # 可选，仅用于读取工作流状态
+  actions: read
+  # 创建/修改Release必须的权限
+  contents: write
   # 若不需要PR相关操作，可改为read
   pull-requests: read
 
