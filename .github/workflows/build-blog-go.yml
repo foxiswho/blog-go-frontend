@@ -51,12 +51,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: blogGo-dist  # 区分不同系统的产物
-          path: ./apps/blog-manage/dist # 替换为你项目的实际打包输出目录
+          path: ./apps/blog-manage/dist.zip # 替换为你项目的实际打包输出目录
           retention-days: 7 # 产物保留7天，可按需调整
 
       - name: 上传打包产物-sys
         uses: actions/upload-artifact@v4
         with:
           name: blogGo-dist  # 区分不同系统的产物
-          path: ./apps/blog-sys/dist # 替换为你项目的实际打包输出目录
+          path: ./apps/blog-sys/dist.zip # 替换为你项目的实际打包输出目录
           retention-days: 7 # 产物保留7天，可按需调整
