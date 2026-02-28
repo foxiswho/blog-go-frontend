@@ -77,7 +77,7 @@ jobs:
 
   # 5. 统一创建Release并上传所有产物
   publish-release:
-    #needs: build-multi-platform  # 等待多系统打包完成
+    needs: build-multi-platform  # 等待多系统打包完成
     runs-on: ubuntu-latest
     steps:
       - name: Download all build artifacts
