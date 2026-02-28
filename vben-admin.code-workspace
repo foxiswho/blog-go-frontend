@@ -157,10 +157,6 @@
       "path": "packages/pg/components-naive",
     },
     {
-      "name": "@pg/form-ui-el",
-      "path": "packages/pg/form-ui-el",
-    },
-    {
       "name": "@pg/form-ui-n",
       "path": "packages/pg/form-ui-naive",
     },
