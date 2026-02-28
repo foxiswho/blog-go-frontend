@@ -94,14 +94,11 @@ jobs:
           tag_name: ${{ github.event.inputs.release_tag }}
           release_name: Release ${{ github.event.inputs.release_tag }}
           # 方式1：通配符匹配所有ZIP文件（推荐，自动识别所有产物）
-          #files: ./artifacts/**/*.zip
+          files: ./artifacts/**/*.zip
           # 方式2：显式列出多个文件（适合固定文件名）
           # files: |
           #   ./artifacts/build-zips-ubuntu-latest/blogGo-dist-ubuntu-${{ github.event.inputs.release_tag }}.zip
           #   ./artifacts/build-zips-windows-latest/blogGo-dist-windows-${{ github.event.inputs.release_tag }}.zip
-          files: |
-            ./apps/blog-manage/${{ env.ZIP_MANAGE }}
-            ./apps/blog-sys/${{ env.ZIP_SYS }}
 
           # 非草稿，直接公开
           draft: false
