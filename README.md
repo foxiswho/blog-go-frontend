@@ -41,6 +41,10 @@ pnpm build:blog:sys
 
 带 `subdirectory` 为打包二级目录 默认为 `xf`
 
+如果 要看更多部署配置 请看 https://doc.vben.pro/guide/essentials/build.html
+
+
+
 <div align="center">
   <a href="https://github.com/anncwb/vue-vben-admin">
     <img alt="VbenAdmin Logo" width="215" src="https://unpkg.com/@vbenjs/static-source@0.1.7/source/logo-v1.webp">
