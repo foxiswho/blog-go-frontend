@@ -108,15 +108,6 @@ jobs:
 #          path: ./tmp-build/${{ env.ZIP_SYS_SUB }}
 #          retention-days: 1 # 产物保留7天，可按需调整
 
-  # 5. 统一创建Release并上传所有产物
-  publish-release:
-    needs: post-update  # 等待多系统打包完成
-    runs-on: ubuntu-latest
-    steps:
-#      - name: Download all build artifacts
-#        uses: actions/download-artifact@v8
-#        with:
-#          path: ./artifacts  # 所有产物下载到artifacts目录
 
       - name: List downloaded files (调试用)
         run: |
@@ -126,7 +117,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.release_tag }}
-          release_name: Release ${{ github.event.inputs.release_tag }}
+          release_name: ${{ github.event.inputs.release_tag }}
           # 方式1：通配符匹配所有ZIP文件（推荐，自动识别所有产物）
           files: ./tmp-build/*.zip
           # 方式2：显式列出多个文件（适合固定文件名）
