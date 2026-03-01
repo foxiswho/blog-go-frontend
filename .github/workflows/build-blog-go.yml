@@ -19,6 +19,8 @@ env:
   # 压缩包名称
   ZIP_MANAGE: blogGo-manage-dist-${{ github.run_id }}.zip
   ZIP_SYS: blogGo-sys-dist-${{ github.run_id }}.zip
+  ZIP_MANAGE_SUB: blogGo-manage-dist-subdirectory--${{ github.run_id }}.zip
+  ZIP_SYS_SUB: blogGo-sys-dist-subdirectory-${{ github.run_id }}.zip
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.branch }}
@@ -80,8 +82,8 @@ jobs:
           sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-sys/.env.production
           cat ./apps/blog-manage/.env.production
           pnpm run build --filter=blog-sys --filter=blog-manage
-          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE }}
-          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS }}
+          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE_SUB }}
+          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS_SUB }}
           rm -rf ./apps/blog-manage/dist.zip
           rm -rf ./apps/blog-sys/dist.zip
 
@@ -90,14 +92,27 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: blogGo-manage-dist
-          path: ./apps/blog-manage/*zip
+          path: ./apps/blog-manage/${{ env.ZIP_MANAGE }}
+          retention-days: 1 # 产物保留7天，可按需调整
+      - name: 上传打包产物-manage-subdirectory
+        uses: actions/upload-artifact@v7
+        with:
+          name: blogGo-manage-dist-subdirectory
+          path: ./apps/blog-manage/${{ env.ZIP_MANAGE_SUB }}
           retention-days: 1 # 产物保留7天，可按需调整
 
       - name: 上传打包产物-sys
         uses: actions/upload-artifact@v7
         with:
           name: blogGo-sys-dist
-          path: ./apps/blog-sys/*zip
+          path: ./apps/blog-sys/${{ env.ZIP_SYS }}
+          retention-days: 1 # 产物保留7天，可按需调整
+
+      - name: 上传打包产物-sys-subdirectory
+        uses: actions/upload-artifact@v7
+        with:
+          name: blogGo-sys-dist-subdirectory
+          path: ./apps/blog-sys/${{ env.ZIP_SYS_SUB }}
           retention-days: 1 # 产物保留7天，可按需调整
 
   # 5. 统一创建Release并上传所有产物
