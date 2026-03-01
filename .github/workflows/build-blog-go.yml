@@ -59,8 +59,8 @@ jobs:
       - name: Build
         run: |
           pnpm run build --filter=blog-sys --filter=blog-manage
-          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE }}
-          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS }}
+          cp -rf ./apps/blog-manage/dist.zip ./tmp-build/${{ env.ZIP_MANAGE }}
+          cp -rf ./apps/blog-sys/dist.zip ./tmp-build/${{ env.ZIP_SYS }}
           rm -rf ./apps/blog-manage/dist
           rm -rf ./apps/blog-manage/dist.zip
           rm -rf ./apps/blog-sys/dist.zip
@@ -72,8 +72,8 @@ jobs:
           sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\/sys\//' ./apps/blog-sys/.env.production
           cat ./apps/blog-manage/.env.production
           pnpm run build --filter=blog-sys --filter=blog-manage
-          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE_SUB }}
-          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS_SUB }}
+          cp -rf ./apps/blog-manage/dist.zip ./tmp-build/${{ env.ZIP_MANAGE_SUB }}
+          cp -rf ./apps/blog-sys/dist.zip ./tmp-build/${{ env.ZIP_SYS_SUB }}
           rm -rf ./apps/blog-manage/dist.zip
           rm -rf ./apps/blog-sys/dist.zip
 
@@ -82,27 +82,27 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: blogGo-manage-dist
-          path: ./apps/blog-manage/${{ env.ZIP_MANAGE }}
+          path: ./tmp-build/${{ env.ZIP_MANAGE }}
           retention-days: 1 # 产物保留7天，可按需调整
       - name: 上传打包产物-manage-subdirectory
         uses: actions/upload-artifact@v7
         with:
           name: blogGo-manage-dist-subdirectory
-          path: ./apps/blog-manage/${{ env.ZIP_MANAGE_SUB }}
+          path: ./tmp-build/${{ env.ZIP_MANAGE_SUB }}
           retention-days: 1 # 产物保留7天，可按需调整
 
       - name: 上传打包产物-sys
         uses: actions/upload-artifact@v7
         with:
           name: blogGo-sys-dist
-          path: ./apps/blog-sys/${{ env.ZIP_SYS }}
+          path: ./tmp-build/${{ env.ZIP_SYS }}
           retention-days: 1 # 产物保留7天，可按需调整
 
       - name: 上传打包产物-sys-subdirectory
         uses: actions/upload-artifact@v7
         with:
           name: blogGo-sys-dist-subdirectory
-          path: ./apps/blog-sys/${{ env.ZIP_SYS_SUB }}
+          path: ./tmp-build/${{ env.ZIP_SYS_SUB }}
           retention-days: 1 # 产物保留7天，可按需调整
 
   # 5. 统一创建Release并上传所有产物
@@ -116,7 +116,9 @@ jobs:
           path: ./artifacts  # 所有产物下载到artifacts目录
 
       - name: List downloaded files (调试用)
-        run: ls -R ./artifacts
+        run: |
+          ls -R ./artifacts
+          ls -R ./tmp-build
 
       - name: Create GitHub Release & Upload Multiple Files
         uses: softprops/action-gh-release@v2
@@ -124,7 +126,7 @@ jobs:
           tag_name: ${{ github.event.inputs.release_tag }}
           release_name: Release ${{ github.event.inputs.release_tag }}
           # 方式1：通配符匹配所有ZIP文件（推荐，自动识别所有产物）
-          files: ./artifacts/**/*.zip
+          files: ./tmp-build/*.zip
           # 方式2：显式列出多个文件（适合固定文件名）
           # files: |
           #   ./artifacts/build-zips-ubuntu-latest/blogGo-dist-ubuntu-${{ github.event.inputs.release_tag }}.zip
