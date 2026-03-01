@@ -66,20 +66,10 @@ jobs:
           rm -rf ./apps/blog-sys/dist.zip
           rm -rf ./apps/blog-sys/dist
 
-      # 更改压缩包名称
-#      - name: rename zip name
-#        run: |
-#          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE }}
-#          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS }}
-#          rm -rf ./apps/blog-manage/dist.zip
-#          rm -rf ./apps/blog-sys/dist.zip
-#          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-manage/.env.production
-#          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-sys/.env.production
-#          cat ./apps/blog-manage/.env.production
       - name: Build
         run: |
-          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-manage/.env.production
-          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-sys/.env.production
+          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\/manage\//' ./apps/blog-manage/.env.production
+          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\/sys\//' ./apps/blog-sys/.env.production
           cat ./apps/blog-manage/.env.production
           pnpm run build --filter=blog-sys --filter=blog-manage
           cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE_SUB }}
