@@ -57,25 +57,47 @@ jobs:
       - name: Build
         run: |
           pnpm run build --filter=blog-sys --filter=blog-manage
-
-      # 更改压缩包名称
-      - name: rename zip name
-        run: |
           cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE }}
           cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS }}
+          rm -rf ./apps/blog-manage/dist
+          rm -rf ./apps/blog-manage/dist.zip
+          rm -rf ./apps/blog-sys/dist.zip
+          rm -rf ./apps/blog-sys/dist
+
+      # 更改压缩包名称
+#      - name: rename zip name
+#        run: |
+#          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE }}
+#          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS }}
+#          rm -rf ./apps/blog-manage/dist.zip
+#          rm -rf ./apps/blog-sys/dist.zip
+#          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-manage/.env.production
+#          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-sys/.env.production
+#          cat ./apps/blog-manage/.env.production
+      - name: Build
+        run: |
+          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-manage/.env.production
+          sed -i 's/VITE_BASE=\/$/VITE_BASE=\/xf\//' ./apps/blog-sys/.env.production
+          cat ./apps/blog-manage/.env.production
+          pnpm run build --filter=blog-sys --filter=blog-manage
+          cp -rf ./apps/blog-manage/dist.zip ./apps/blog-manage/${{ env.ZIP_MANAGE }}
+          cp -rf ./apps/blog-sys/dist.zip ./apps/blog-sys/${{ env.ZIP_SYS }}
+          rm -rf ./apps/blog-manage/dist.zip
+          rm -rf ./apps/blog-sys/dist.zip
+
       # 可选：上传打包产物，方便手动下载
       - name: 上传打包产物-manage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: blogGo-manage-dist
-          path: ./apps/blog-manage/${{ env.ZIP_MANAGE }}
+          path: ./apps/blog-manage/*zip
           retention-days: 1 # 产物保留7天，可按需调整
 
       - name: 上传打包产物-sys
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: blogGo-sys-dist
-          path: ./apps/blog-sys/${{ env.ZIP_SYS }}
+          path: ./apps/blog-sys/*zip
           retention-days: 1 # 产物保留7天，可按需调整
 
   # 5. 统一创建Release并上传所有产物
@@ -84,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ./artifacts  # 所有产物下载到artifacts目录
 

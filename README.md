@@ -1,35 +1,45 @@
 # GO语言博客 后台的前端代码
+
 ## 安装依赖
-项目下载克隆到本地后
-进入目录(项目根目录)
+
+项目下载克隆到本地后进入目录(项目根目录)
+
 ```bash
 pnpm install
 ```
+
 ## 运行项目
+
 ### 管理后台
+
 ```bash
 pnpm dev:blog:manage
 ```
 
 ### 系统后台
+
 ```bash
 pnpm dev:blog:sys
 ```
-> 更改后端地址和端口
-> [manage]模块 `apps/blog-manage/vite.config.mts` 文件中 的 `http://localhost:9981` 改为你本地的后端地址
-> [sys]模块 `apps/blog-sys/vite.config.mts` 文件中 的 `http://localhost:9981` 改为你本地的后端地址
+
+> 更改后端地址和端口 [manage]模块 `apps/blog-manage/vite.config.mts` 文件中 的 `http://localhost:9981` 改为你本地的后端地址 [sys]模块 `apps/blog-sys/vite.config.mts` 文件中 的 `http://localhost:9981` 改为你本地的后端地址
 
 ## 编译项目
+
 ```bash
 # manage 模块
 pnpm build:blog:manage
 # sys 模块
 pnpm build:blog:sys
 ```
->[manage]模块 编译后的文件在 `apps/blog-manage/dist` 目录下
->[sys]模块 编译后的文件在 `apps/blog-sys/dist` 目录下
 
+> [manage]模块 编译后的文件在 `apps/blog-manage/dist` 目录下 [sys]模块 编译后的文件在 `apps/blog-sys/dist` 目录下
 
+> 默认编译项目是不带二级目录的如果要把 `manage` 和 `sys` 模块放在一个二级目录下，请修改对应项目 `.env.production` 文件中的 `VITE_BASE=/'` 例如：二级目录为 `/xf` ，则修改对应项目 `.env.production` 文件中的 `VITE_BASE=/xf/`
+
+# github releases 打包说明
+
+带 `subdirectory` 为打包二级目录 默认为 `xf`
 
 <div align="center">
   <a href="https://github.com/anncwb/vue-vben-admin">
