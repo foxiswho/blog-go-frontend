@@ -1,4 +1,5 @@
 export * from './cssColor';
+export * from './eventBus';
 export * from './image';
 export * from './log';
 export * from './naive-ui-admin';

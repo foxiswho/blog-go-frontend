@@ -43,3 +43,4 @@ export const MdiFavorite = createIconifyIcon('mdi:favorite');
 export const MdiArrowLeft = createIconifyIcon('mdi:arrow-left');
 export const MdiArrowRight = createIconifyIcon('mdi:arrow-right');
 export const MdiImageOffOutline = createIconifyIcon('mdi:image-off-outline');
+export const MdiLock = createIconifyIcon('mdi:lock');

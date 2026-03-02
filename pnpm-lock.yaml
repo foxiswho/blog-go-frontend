@@ -333,6 +333,9 @@ catalogs:
     medium-zoom:
       specifier: ^1.1.0
       version: 1.1.0
+    mitt:
+      specifier: ^3.0.1
+      version: 3.0.1
     naive-ui:
       specifier: ^2.43.2
       version: 2.43.2
@@ -692,6 +695,9 @@ importers:
       '@pg/components-n':
         specifier: workspace:*
         version: link:../../packages/pg/components-naive
+      '@pg/constants':
+        specifier: workspace:*
+        version: link:../../packages/pg/constants
       '@pg/form-ui-n':
         specifier: workspace:*
         version: link:../../packages/pg/form-ui-naive
@@ -800,6 +806,9 @@ importers:
       '@pg/components-n':
         specifier: workspace:*
         version: link:../../packages/pg/components-naive
+      '@pg/constants':
+        specifier: workspace:*
+        version: link:../../packages/pg/constants
       '@pg/form-ui-n':
         specifier: workspace:*
         version: link:../../packages/pg/form-ui-naive
@@ -2215,6 +2224,15 @@ importers:
         specifier: 'catalog:'
         version: 0.1.17(@vue/compiler-core@3.5.29)(esbuild@0.25.3)(vue@3.5.29(typescript@5.9.3))
 
+  packages/pg/constants:
+    dependencies:
+      '@vben-core/shared':
+        specifier: workspace:*
+        version: link:../../@core/base/shared
+      '@vben/constants':
+        specifier: workspace:*
+        version: link:../../constants
+
   packages/pg/form-ui-naive:
     dependencies:
       '@vben-core/composables':
@@ -2351,6 +2369,9 @@ importers:
       lodash-es:
         specifier: 'catalog:'
         version: 4.17.23
+      mitt:
+        specifier: 'catalog:'
+        version: 3.0.1
       nanoid:
         specifier: 'catalog:'
         version: 5.1.6

@@ -8,6 +8,8 @@ import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
 import { VBEN_DOC_URL, VBEN_GITHUB_URL } from '@vben/constants';
 import { useWatermark } from '@vben/hooks';
 import { BookOpenText, CircleHelp, SvgGithubIcon } from '@vben/icons';
+import { MdiLock } from '@pg/icons';
+import WrapPassword from '#/viewsPub/pub/WrapPassword.vue';
 import {
   BasicLayout,
   LockScreen,
@@ -83,41 +85,48 @@ const { destroyWatermark, updateWatermark } = useWatermark();
 const showDot = computed(() =>
   notifications.value.some((item) => !item.isRead),
 );
-
+const wrapPasswordAction = ref('');
 const menus = computed(() => [
+  // {
+  //   handler: () => {
+  //     router.push({ name: 'Profile' });
+  //   },
+  //   icon: 'lucide:user',
+  //   text: $t('page.auth.profile'),
+  // },
+  // {
+  //   handler: () => {
+  //     openWindow(VBEN_DOC_URL, {
+  //       target: '_blank',
+  //     });
+  //   },
+  //   icon: BookOpenText,
+  //   text: $t('ui.widgets.document'),
+  // },
+  // {
+  //   handler: () => {
+  //     openWindow(VBEN_GITHUB_URL, {
+  //       target: '_blank',
+  //     });
+  //   },
+  //   icon: SvgGithubIcon,
+  //   text: 'GitHub',
+  // },
+  // {
+  //   handler: () => {
+  //     openWindow(`${VBEN_GITHUB_URL}/issues`, {
+  //       target: '_blank',
+  //     });
+  //   },
+  //   icon: CircleHelp,
+  //   text: $t('ui.widgets.qa'),
+  // },
   {
     handler: () => {
-      router.push({ name: 'Profile' });
+      wrapPasswordAction.value = 'pwd';
     },
-    icon: 'lucide:user',
-    text: $t('page.auth.profile'),
-  },
-  {
-    handler: () => {
-      openWindow(VBEN_DOC_URL, {
-        target: '_blank',
-      });
-    },
-    icon: BookOpenText,
-    text: $t('ui.widgets.document'),
-  },
-  {
-    handler: () => {
-      openWindow(VBEN_GITHUB_URL, {
-        target: '_blank',
-      });
-    },
-    icon: SvgGithubIcon,
-    text: 'GitHub',
-  },
-  {
-    handler: () => {
-      openWindow(`${VBEN_GITHUB_URL}/issues`, {
-        target: '_blank',
-      });
-    },
-    icon: CircleHelp,
-    text: $t('ui.widgets.qa'),
+    icon: MdiLock,
+    text: '修改密码',
   },
 ]);
 
@@ -171,37 +180,40 @@ watch(
 </script>
 
 <template>
-  <BasicLayout @clear-preferences-and-logout="handleLogout">
-    <template #user-dropdown>
-      <UserDropdown
-        :avatar
-        :menus
-        :text="userStore.userInfo?.realName"
-        :description="userStore.userInfo?.mail"
-        tag-text="Pro"
-        @logout="handleLogout"
-      />
-    </template>
-    <template #notification>
-      <Notification
-        :dot="showDot"
-        :notifications="notifications"
-        @clear="handleNoticeClear"
-        @read="(item) => item.id && markRead(item.id)"
-        @remove="(item) => item.id && remove(item.id)"
-        @make-all="handleMakeAll"
-      />
-    </template>
-    <template #extra>
-      <AuthenticationLoginExpiredModal
-        v-model:open="accessStore.loginExpired"
-        :avatar
-      >
-        <LoginForm />
-      </AuthenticationLoginExpiredModal>
-    </template>
-    <template #lock-screen>
-      <LockScreen :avatar @to-login="handleLogout" />
-    </template>
-  </BasicLayout>
+  <div>
+    <BasicLayout @clear-preferences-and-logout="handleLogout">
+      <template #user-dropdown>
+        <UserDropdown
+          :avatar
+          :menus
+          :text="userStore.userInfo?.realName"
+          :description="userStore.userInfo?.mail"
+          tag-text="Pro"
+          @logout="handleLogout"
+        />
+      </template>
+      <template #notification>
+        <Notification
+          :dot="showDot"
+          :notifications="notifications"
+          @clear="handleNoticeClear"
+          @read="(item) => item.id && markRead(item.id)"
+          @remove="(item) => item.id && remove(item.id)"
+          @make-all="handleMakeAll"
+        />
+      </template>
+      <template #extra>
+        <AuthenticationLoginExpiredModal
+          v-model:open="accessStore.loginExpired"
+          :avatar
+        >
+          <LoginForm />
+        </AuthenticationLoginExpiredModal>
+      </template>
+      <template #lock-screen>
+        <LockScreen :avatar @to-login="handleLogout" />
+      </template>
+    </BasicLayout>
+    <WrapPassword :action="wrapPasswordAction" />
+  </div>
 </template>

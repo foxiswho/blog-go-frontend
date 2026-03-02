@@ -22,6 +22,7 @@
     "lodash-es": "catalog:",
     "vue": "catalog:",
     "vue-types": "catalog:",
+    "mitt": "catalog:",
     "nanoid": "catalog:"
   },
   "devDependencies": {
