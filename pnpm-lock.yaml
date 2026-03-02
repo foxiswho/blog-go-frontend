@@ -812,6 +812,9 @@ importers:
       '@pg/form-ui-n':
         specifier: workspace:*
         version: link:../../packages/pg/form-ui-naive
+      '@pg/icons':
+        specifier: workspace:*
+        version: link:../../packages/pg/icons
       '@pg/request':
         specifier: workspace:*
         version: link:../../packages/pg/request
@@ -827,6 +830,9 @@ importers:
       '@vben-core/popup-ui':
         specifier: workspace:*
         version: link:../../packages/@core/ui-kit/popup-ui
+      '@vben-core/shadcn-ui':
+        specifier: workspace:*
+        version: link:../../packages/@core/ui-kit/shadcn-ui
       '@vben-core/typings':
         specifier: workspace:*
         version: link:../../packages/@core/base/typings

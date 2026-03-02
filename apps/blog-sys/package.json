@@ -1,6 +1,6 @@
 {
   "name": "blog-sys",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "homepage": "https://www.foxwho.com",
   "bugs": "https://github.com/foxiswho/blog-go-frontend/issues",
   "repository": {
@@ -29,6 +29,7 @@
     "@form-create/naive-ui": "^3",
     "@vben/access": "workspace:*",
     "@vben/common-ui": "workspace:*",
+    "@vben-core/shadcn-ui": "workspace:*",
     "@vben-core/popup-ui": "workspace:*",
     "@vben-core/typings": "workspace:*",
     "@vben/constants": "workspace:*",
@@ -43,6 +44,7 @@
     "@vben/styles": "workspace:*",
     "@vben/types": "workspace:*",
     "@vben/utils": "workspace:*",
+    "@pg/icons": "workspace:*",
     "@pg/types": "workspace:*",
     "@pg/table-vxe": "workspace:*",
     "@pg/form-ui-n": "workspace:*",
