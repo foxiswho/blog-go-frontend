@@ -43,7 +43,7 @@ export const formSchema = [
   {
     tabGroup: 'home',
     fieldName: 'model',
-    label: '模型',
+    label: '模型英文名称',
     component: 'Input',
     rules: 'required',
     componentProps: {
@@ -112,87 +112,78 @@ export const formSchema = [
 
 export const fieldColumns: any[] = [
   { type: 'checkbox', width: 60 },
-  { field: 'name', title: '字段名称', minWidth: 150, editRender: { name: 'input' } },
-  { field: 'field', title: '字段标识', minWidth: 150, editRender: { name: 'input' } },
+  { field: 'name', title: '字段名称', minWidth: 150, editRender: { autoFocus: 'input' } },
+  { field: 'field', title: '字段标识', minWidth: 150, editRender: { autoFocus: 'input' } },
   {
     field: 'show',
     title: '显示',
     width: 100,
-    editRender: {
-      name: 'PgSelect',
-      props: {
-        options: [
-          { label: '显示', value: 1 },
-          { label: '隐藏', value: 2 },
-        ],
-      },
-    },
+    editRender: {},
   },
   {
     field: 'binary',
     title: '二进制',
     width: 100,
-    editRender: {
-      name: 'PgSelect',
-      props: {
-        options: [
-          { label: '是', value: 1 },
-          { label: '否', value: 2 },
-        ],
-      },
-    },
+    editRender: {},
   },
-  { field: 'defaultValue', title: '默认值', width: 150, editRender: { name: 'input' } },
+  { field: 'defaultValue', title: '默认值', width: 150, editRender: { autoFocus: 'input' } },
   {
     field: 'valueType',
     title: '值类型',
     width: 120,
-    editRender: {
-      name: 'PgSelect',
-      props: {
-        options: [
-          { label: '字符串', value: 'string' },
-          { label: '整数', value: 'int' },
-          { label: '布尔', value: 'bool' },
-          { label: '浮点数', value: 'float' },
-          { label: 'JSON', value: 'json' },
-          { label: '文本', value: 'text' },
-        ],
-      },
+    editRender: {},
+    params: {
+      options: [
+        { label: '字符串', value: 'string' },
+        { label: '整数', value: 'int' },
+        { label: '布尔', value: 'bool' },
+        { label: '浮点数', value: 'float' },
+        { label: 'JSON', value: 'json' },
+        { label: '文本', value: 'text' },
+      ],
     },
   },
   {
     field: 'formCode',
     title: '表单类型',
     width: 150,
-    editRender: {
-      name: 'PgSelect',
-      props: {
-        options: [
-          { label: '文本输入', value: 'input_text' },
-          { label: '数字输入', value: 'input_number' },
-          { label: '开关', value: 'switch' },
-          { label: '下拉选择', value: 'select' },
-          { label: '多行文本', value: 'textarea' },
-        ],
-      },
+    editRender: {},
+    params: {
+      options: [
+        { label: '文本输入', value: 'input_text' },
+        { label: '数字输入', value: 'input_number' },
+        { label: '开关', value: 'switch' },
+        { label: '下拉选择', value: 'select' },
+        { label: '多行文本', value: 'textarea' },
+      ],
     },
   },
   {
     field: 'parameterSource',
     title: '参数源',
     width: 120,
-    editRender: {
-      name: 'PgSelect',
-      props: {
-        options: [
-          { label: '手动', value: 'manual' },
-          { label: '系统', value: 'system' },
-          { label: '外部接口', value: 'api' },
-        ],
-      },
+    editRender: {},
+    params: {
+      options: [
+        { label: '手动', value: 'manual' },
+        { label: '系统', value: 'system' },
+        { label: '外部接口', value: 'api' },
+      ],
     },
   },
-  { field: 'rules', title: '验证规则', minWidth: 200, editRender: { name: 'input' } },
+  {
+    field: 'rules',
+    title: '验证规则',
+    minWidth: 200,
+    editRender: {},
+    params: {
+      options: [
+        { label: '必填', value: 'required' },
+        { label: '数字', value: 'number' },
+        { label: '邮箱', value: 'email' },
+        { label: '手机号', value: 'phone' },
+      ],
+    },
+  },
   { title: '操作', width: 100, slots: { default: 'operate' }, fixed: 'right' },
 ];

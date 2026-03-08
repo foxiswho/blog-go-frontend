@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, h } from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { usePgForm } from '#/adapter';
 import {
@@ -17,6 +17,28 @@ const emit = defineEmits(['ok']);
 const xTable = ref<VxeTableInstance>();
 const bodyDelIds = ref<string[]>([]);
 const tableData = ref<any[]>([]);
+
+/**
+ * 格式化下拉框显示文字
+ */
+function formatLabel(row: any, col: any) {
+  const value = row[col.field];
+  const options = col.params?.options || [];
+  if (col.field === 'rules') {
+    if (Array.isArray(value)) {
+      return value.map(v => options.find((o: any) => o.value === v)?.label || v).join(',');
+    }
+    return value;
+  }
+  if (col.field === 'show') {
+    return value === 1 ? '显示' : '隐藏';
+  }
+  if (col.field === 'binary') {
+    return value === 1 ? '是' : '否';
+  }
+  const item = options.find((o: any) => o.value === value);
+  return item ? item.label : value;
+}
 
 const [Form, formApi] = usePgForm({
   schema: formSchema,
@@ -41,13 +63,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
           .then((res: any) => {
             if (res) {
               formApi.setValues(res.header || {});
-              // 处理 body 中的 rules 数组转为逗号分隔字符串以便编辑
-              tableData.value = (res.body || []).map((item: any) => {
-                if (Array.isArray(item.rules)) {
-                  return { ...item, rules: item.rules.join(',') };
-                }
-                return item;
-              });
+              tableData.value = res.body || [];
             }
           })
           .finally(() => {
@@ -75,6 +91,7 @@ async function insertEvent() {
       valueType: 'string',
       formCode: 'input_text',
       parameterSource: 'manual',
+      rules: [],
     });
     await $table.setEditRow(row);
   }
@@ -114,16 +131,7 @@ async function onSubmit(values: Record<string, any>) {
 
     const postData = {
       header: values,
-      body: fullData.map(item => {
-        const newItem = { ...item };
-        // 如果 rules 是字符串，尝试转为数组（按照 post.json 格式）
-        if (typeof newItem.rules === 'string') {
-          newItem.rules = newItem.rules.split(',').map((s: string) => s.trim()).filter(Boolean);
-        } else if (!Array.isArray(newItem.rules)) {
-          newItem.rules = [];
-        }
-        return newItem;
-      }),
+      body: fullData,
       bodyDelIds: bodyDelIds.value,
     };
 
@@ -144,7 +152,7 @@ async function onSubmit(values: Record<string, any>) {
 </script>
 
 <template>
-  <Drawer class="w-[1200px]">
+  <Drawer class="w-auto">
     <div class="p-4">
       <div class="mb-4 font-bold border-l-4 border-primary pl-2">基本信息</div>
       <Form />
@@ -161,15 +169,53 @@ async function onSubmit(values: Record<string, any>) {
         keep-source
         max-height="500"
         :data="tableData"
-        :edit-config="{ trigger: 'click', mode: 'row', showStatus: true }"
+        :edit-config="{ trigger: 'click', mode: 'cell', showStatus: true }"
         :edit-rules="{
           name: [{ required: true, message: '请输入字段名称' }],
           field: [{ required: true, message: '请输入字段标识' }]
         }"
       >
         <vxe-column v-for="col in fieldColumns" :key="col.field || col.type" v-bind="col">
-          <template v-if="col.slots?.default === 'operate'" #default="{ row }">
-            <vxe-button status="danger" mode="text" @click="removeEvent(row)">删除</vxe-button>
+          <!-- 编辑插槽 -->
+          <template #edit="{ row }">
+            <!-- 显示/二进制 开关 -->
+            <template v-if="['show', 'binary'].includes(col.field)">
+              <vxe-switch
+                v-model="row[col.field]"
+                :open-value="1"
+                :close-value="2"
+                :open-label="col.field === 'show' ? '显示' : '是'"
+                :close-label="col.field === 'show' ? '隐藏' : '否'"
+              />
+            </template>
+
+            <!-- 下拉选择 -->
+            <template v-else-if="['valueType', 'formCode', 'parameterSource'].includes(col.field)">
+              <vxe-select v-model="row[col.field]" :options="col.params?.options" transfer></vxe-select>
+            </template>
+
+            <!-- 下拉多选 (验证规则) -->
+            <template v-else-if="col.field === 'rules'">
+              <vxe-select v-model="row.rules" :options="col.params?.options" multiple transfer></vxe-select>
+            </template>
+
+            <!-- 文本输入 (名称, 标识, 默认值) -->
+            <template v-else-if="['name', 'field', 'defaultValue'].includes(col.field)">
+              <vxe-input v-model="row[col.field]"></vxe-input>
+            </template>
+          </template>
+
+          <!-- 默认展示插槽 -->
+          <template #default="{ row }">
+            <template v-if="col.slots?.default === 'operate'">
+              <vxe-button status="danger" mode="text" @click="removeEvent(row)">删除</vxe-button>
+            </template>
+            <template v-else-if="['show', 'binary', 'valueType', 'formCode', 'parameterSource', 'rules'].includes(col.field)">
+              <span>{{ formatLabel(row, col) }}</span>
+            </template>
+            <template v-else>
+              <span>{{ row[col.field] }}</span>
+            </template>
           </template>
         </vxe-column>
       </vxe-table>
@@ -180,5 +226,12 @@ async function onSubmit(values: Record<string, any>) {
 <style scoped>
 :deep(.vxe-table) {
   margin-top: 10px;
+}
+</style>
+
+<style>
+/* 覆盖 vxe-select 下拉面板的层级，确保在抽屉之上 */
+.vxe-select--panel {
+  z-index: 2307 !important;
 }
 </style>
