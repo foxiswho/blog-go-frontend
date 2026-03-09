@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { h } from 'vue';
+import {h, ref} from 'vue';
 
 import { useVbenDrawer, VbenButton } from '@vben/common-ui';
 
@@ -8,6 +8,7 @@ import { usePgForm } from '#/adapter';
 import { existCode, existName, saveOrUpdate } from '../api';
 
 const emit = defineEmits(['ok']);
+const recordData = ref({});
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
@@ -19,26 +20,14 @@ const [Form, formApi] = usePgForm({
   schema: [
     {
       tabGroup: 'home',
-      fieldName: 'ownerId',
-      label: '所属',
-      rules: 'required',
-      defaultValue: '-1',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        filterOption: true,
-        options: [
-          {
-            label: '基础数据类型',
-            value: '-1',
-          },
-          {
-            label: '基础数据类型',
-            value: '0',
-          },
-        ],
-        placeholder: '请选择',
-        showSearch: true,
+      fieldName: 'div1-amount',
+      label: '',
+      component: 'Divider',
+      labelWidth: 0,
+      renderComponentContent: () => {
+        return {
+          default: () => ['码值父级'],
+        };
       },
     },
     {
@@ -81,7 +70,7 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编码',
+      label: '码值',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',
@@ -123,6 +112,7 @@ const [Form, formApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '0',
       component: 'Input',
       componentProps: {},
       dependencies: {
@@ -144,12 +134,30 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
+      const { values, isUpdate, parent } =
+        drawerApi.getData<Record<string, any>>();
       if (values) {
-        formApi.setValues(values);
+        recordData.value = values;
       }
-
-      drawerApi.setState({ title: `数据字典：${isUpdate ? '编辑' : '新增'}` });
+      if (isUpdate) {
+        formApi.setValues({
+          ...values,
+        });
+      } else {
+        // if (parent) {
+        //   formApi.setValues({ parentNo: parent.no });
+        // }
+      }
+      drawerApi.setState({
+        title: `数据字典：${isUpdate ? '编辑' : '新增'}`,
+        loading: false,
+      });
     }
   },
   title: '',
@@ -160,18 +168,29 @@ const [Drawer, drawerApi] = useVbenDrawer({
  */
 function onSubmit(values: Record<string, any>) {
   try {
-    drawerApi.setState({ loading: true });
-    const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate).then((d) => {
-      setTimeout(() => {
-        drawerApi.setState({ loading: false });
-        emit('ok', values);
-        drawerApi.close();
-      }, 500);
+    drawerApi.setState({
+      loading: true,
+      confirmLoading: true,
     });
+    const { isUpdate } = drawerApi.getData<Record<string, any>>();
+    let data = {
+      ...values,
+    };
+    if (isUpdate) {
+      data.id = recordData.value.id;
+    }
+    saveOrUpdate(data, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          drawerApi.setState({ loading: false });
+          drawerApi.close();
+        }, 500);
+      });
   } catch (error) {
-    drawerApi.setState({ loading: false });
     console.error(error);
+  } finally {
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

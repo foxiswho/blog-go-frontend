@@ -1,6 +1,11 @@
 import type { VxeTableDefines } from 'vxe-table';
 import _XEUtils_ from 'xe-utils';
 import { basicOptionsType } from "@pg/types";
+import { z } from '#/adapter/form';
+import {selectNodeAllPublic as selectNodeAllPublicModule} from "#/viewsBasic/module/api";
+import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
+import {h} from "vue";
+import {NTag} from "naive-ui";
 
 export const columns: any[] = [
   { type: 'checkbox', width: 60 },
@@ -45,10 +50,18 @@ export const formSchema = [
     fieldName: 'model',
     label: '模型英文名称',
     component: 'Input',
-    rules: 'required',
     componentProps: {
       placeholder: '请输入模型标识',
     },
+    rules: z.string().min(1, { message: '模型英文名称必填' }).regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, {
+      message: '模型英文名称字符格式错误' // 自定义错误提示
+    }),
+    descriptionPg: () =>
+      h(
+        NTag,
+        { class: '', type: 'info', size: 'small', bordered: false },
+        '仅包含大小写字母、下划线、数字，首字符必须是英文字母',
+      ),
   },
   {
     tabGroup: 'home',
@@ -58,6 +71,15 @@ export const formSchema = [
     componentProps: {
       placeholder: '请输入对应数据库表名',
     },
+    rules: z.string().min(1, { message: '表名必填' }).regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, {
+      message: '表名字符格式错误' // 自定义错误提示
+    }),
+    descriptionPg: () =>
+      h(
+        NTag,
+        { class: '', type: 'info', size: 'small', bordered: false },
+        '仅包含大小写字母、下划线、数字，首字符必须是英文字母',
+      ),
   },
   {
     tabGroup: 'home',
@@ -71,24 +93,39 @@ export const formSchema = [
         { label: '系统', value: 'system' },
       ],
     },
+    rules: 'required',
   },
   {
     tabGroup: 'home',
     fieldName: 'modelCategory',
     label: '模型种类',
-    component: 'Input',
+    defaultValue: 'table',
+    component: 'PgTreeSelect',
     componentProps: {
-      placeholder: '请输入模型种类',
+      api: codeValueAllPublic,
+      params: { by: 'no', typeCode:'basic:modelCategory' },
+      props: {
+        filterable: true,
+        placeholder: '请选择码值',
+      },
     },
+    rules: 'required',
   },
   {
     tabGroup: 'home',
     fieldName: 'moduleSub',
     label: '子模块',
-    component: 'Input',
+    defaultValue: '',
+    component: 'PgTreeSelect',
     componentProps: {
-      placeholder: '请输入所属子模块',
+      api: selectNodeAllPublicModule,
+      params: { by: 'no' },
+      props: {
+        filterable: true,
+        placeholder: '请选择所属子模块',
+      },
     },
+    rules: 'required',
   },
   {
     tabGroup: 'home',
@@ -96,12 +133,14 @@ export const formSchema = [
     label: '描述',
     component: 'Textarea',
     componentProps: {
+      type: 'textarea',
       placeholder: '请输入描述',
     },
   },
   {
     fieldName: 'id',
     label: 'ID',
+    defaultValue:  '0',
     component: 'Input',
     dependencies: {
       show: false,
@@ -112,6 +151,7 @@ export const formSchema = [
 
 export const fieldColumns: any[] = [
   { type: 'checkbox', width: 60 },
+  { field: 'id', title: 'id', visible: false},
   { field: 'name', title: '字段名称', minWidth: 150, editRender: { autoFocus: 'input' } },
   { field: 'field', title: '字段标识', minWidth: 150, editRender: { autoFocus: 'input' } },
   {
@@ -132,16 +172,6 @@ export const fieldColumns: any[] = [
     title: '值类型',
     width: 120,
     editRender: {},
-    params: {
-      options: [
-        { label: '字符串', value: 'string' },
-        { label: '整数', value: 'int' },
-        { label: '布尔', value: 'bool' },
-        { label: '浮点数', value: 'float' },
-        { label: 'JSON', value: 'json' },
-        { label: '文本', value: 'text' },
-      ],
-    },
   },
   {
     field: 'formCode',

@@ -8,6 +8,7 @@ import { usePgForm } from '#/adapter';
 import { existCode, existName, existValue, saveOrUpdate } from '../api';
 
 const emit = defineEmits(['ok']);
+const recordData = ref({});
 const parentData = ref<Recordable<any>>({});
 const [FormEdit, formInApi] = usePgForm({
   tabs: {
@@ -18,6 +19,28 @@ const [FormEdit, formInApi] = usePgForm({
     ],
   },
   schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'div1-amount',
+      label: '',
+      component: 'Divider',
+      labelWidth: 0,
+      renderComponentContent: () => {
+        return {
+          default: () => [`父级码值: ${parentData.value.name} ( ${parentData.value.code} )`],
+        };
+      },
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'sort',
+      label: '排序',
+      component: 'InputNumber',
+      defaultValue: 0,
+      componentProps: {
+        placeholder: '请输入',
+      },
+    },
     {
       tabGroup: 'home',
       fieldName: 'name',
@@ -58,7 +81,7 @@ const [FormEdit, formInApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编码',
+      label: '码值',
       rules: 'required',
       component: 'Input',
       componentProps: {
@@ -85,8 +108,7 @@ const [FormEdit, formInApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'value',
-      label: '值',
-      rules: 'required',
+      label: '其他值',
       component: 'Textarea',
       componentProps: {
         type: 'textarea',
@@ -95,23 +117,33 @@ const [FormEdit, formInApi] = usePgForm({
 
         },
       },
-      suffix: () =>
-        h(
-          VbenButton,
-          {
-            onClick: async (e) => {
-              const values = await formInApi.getValues();
-              existValue(values.value, values.id);
-            },
-          },
-          () => h('span', { class: 'font-normal' }, '查重'),
-        ),
+      // suffix: () =>
+      //   h(
+      //     VbenButton,
+      //     {
+      //       onClick: async (e) => {
+      //         const values = await formInApi.getValues();
+      //         existValue(values.value, values.id);
+      //       },
+      //     },
+      //     () => h('span', { class: 'font-normal' }, '查重'),
+      //   ),
     },
     {
       tabGroup: 'other',
       fieldName: 'nameFull',
       label: '全称',
       component: 'Input',
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'extend',
+      label: '扩展参数',
+      component: 'Textarea',
+      componentProps: {
+        type: 'textarea',
+        placeholder: '扩展参数',
+      },
     },
     {
       tabGroup: 'home',
@@ -126,6 +158,7 @@ const [FormEdit, formInApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '',
       component: 'Input',
       componentProps: {},
       dependencies: {
@@ -135,12 +168,15 @@ const [FormEdit, formInApi] = usePgForm({
       },
     },
     {
-      fieldName: 'ownerId',
-      label: 'ownerId',
+      fieldName: 'typeCode',
+      label: 'typeCode',
+      defaultValue: '',
       component: 'Input',
       componentProps: {},
       dependencies: {
         show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['description'],
       },
     },
   ],
@@ -156,21 +192,39 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
   onOpenChange(isOpen: boolean) {
     parentData.value = {};
+    recordData.value = {};
     if (isOpen) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
       const { values, isUpdate, parent } =
         drawerApi.getData<Record<string, any>>();
-      if (values) {
-        let data = { ...values, ownerId: '0'};
-        if (parent) {
-          data.ownerId = parent.id;
-        }
-        formInApi.setValues(data);
-      }
+      let data = { typeCode: '' };
       if (parent) {
         parentData.value = parent;
+        data.typeCode = parent.code;
+      }
+      if (values) {
+        data = { ...values, typeCode: '' };
+        data.typeCode = parent.code;
+        recordData.value = values;
+        if (values.sort) {
+          data.sort = Number(data.sort);
+        }
+      }
+      if (isUpdate) {
+        formInApi.setValues(data);
+      } else {
+        formInApi.setValues({ ...data });
       }
 
-      drawerApi.setState({ title: `数据字典：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({
+        title: `数据字典：${isUpdate ? '编辑' : '新增'}`,
+        loading: false,
+      });
     }
   },
   title: '',
@@ -181,18 +235,26 @@ const [Drawer, drawerApi] = useVbenDrawer({
  */
 function onSubmit(values: Record<string, any>) {
   try {
-    drawerApi.setState({ loading: true });
+    drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate).then((d) => {
-      setTimeout(() => {
-        drawerApi.setState({ loading: false });
-        emit('ok', values);
-        drawerApi.close();
-      }, 500);
-    });
+    let data = {
+      ...values,
+    };
+    if (isUpdate) {
+      data.id = recordData.value.id;
+      data.typeCode = parentData.value.code;
+    }
+    saveOrUpdate(values, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          drawerApi.close();
+        }, 500);
+      });
   } catch (error) {
-    drawerApi.setState({ loading: false });
     console.error(error);
+  } finally {
+    drawerApi.setState({ loading: false,confirmLoading: false });
   }
 }
 </script>

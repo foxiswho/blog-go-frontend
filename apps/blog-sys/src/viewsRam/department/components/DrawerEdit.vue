@@ -23,8 +23,18 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'parentNo',
       label: '上级',
-      component: 'TreeSelect',
       defaultValue: '',
+      component: 'PgTreeSelect',
+      componentProps: {
+        api: selectNodeAllPublic,
+        params: { by: 'no' },
+        filterQueryAsync: true,
+        props: {
+          filterable: true,
+          placeholder: '如果为空,则是一级',
+        },
+      },
+      // rules: 'required',
     },
     {
       tabGroup: 'home',
@@ -66,7 +76,7 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编码',
+      label: '码值',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',
@@ -155,27 +165,17 @@ function onSubmit(values: Record<string, any>) {
           drawerApi.setState({ loading: false });
           drawerApi.close();
         }, 500);
-      })
-      .catch(() => {
-        drawerApi.setState({ loading: false, confirmLoading: false });
       });
   } catch (error) {
-    drawerApi.setState({ loading: false, confirmLoading: false });
     console.error(error);
+  } finally {
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>
 <template>
   <Drawer>
     <Form>
-      <template #parentNo="slotProps">
-        <PgTreeSelect
-          :api="selectNodeAllPublic"
-          :params="{ by: 'no' }"
-          v-bind="slotProps"
-        >
-        </PgTreeSelect>
-      </template>
     </Form>
   </Drawer>
 </template>

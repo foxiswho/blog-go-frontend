@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/basic/module/create',
-  delete = '/pg2lq/sys/basic/module/delete',
-  detail = '/pg2lq/sys/basic/module/detail/',
-  disable = '/pg2lq/sys/basic/module/disable',
-  enable = '/pg2lq/sys/basic/module/enable',
-  existName = '/pg2lq/sys/basic/module/existName',
-  existCode = '/pg2lq/sys/basic/module/existCode',
-  exportExcel = '/pg2lq/sys/basic/module/exportExcel',
-  list = '/pg2lq/sys/basic/module/query',
-  physicalDeletion = '/pg2lq/sys/basic/module/physicalDeletion',
-  recovery = '/pg2lq/sys/basic/module/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/basic/module/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/module/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/module/selectPublic',
-  state = '/pg2lq/sys/basic/module/state',
-  update = '/pg2lq/sys/basic/module/update',
+  create = '/pg2lq/manage/basic/module/create',
+  delete = '/pg2lq/manage/basic/module/delete',
+  detail = '/pg2lq/manage/basic/module/detail/',
+  disable = '/pg2lq/manage/basic/module/disable',
+  enable = '/pg2lq/manage/basic/module/enable',
+  existName = '/pg2lq/manage/basic/module/existName',
+  existCode = '/pg2lq/manage/basic/module/existCode',
+  exportExcel = '/pg2lq/manage/basic/module/exportExcel',
+  list = '/pg2lq/manage/basic/module/query',
+  physicalDeletion = '/pg2lq/manage/basic/module/physicalDeletion',
+  recovery = '/pg2lq/manage/basic/module/recovery',
+  selectNodeAllPublic = '/pg2lq/manage/basic/module/selectNodeAllPublic',
+  selectNodePublic = '/pg2lq/manage/basic/module/selectNodePublic',
+  selectPublic = '/pg2lq/manage/basic/module/selectPublic',
+  state = '/pg2lq/manage/basic/module/state',
+  update = '/pg2lq/manage/basic/module/update',
 }
 
 /**

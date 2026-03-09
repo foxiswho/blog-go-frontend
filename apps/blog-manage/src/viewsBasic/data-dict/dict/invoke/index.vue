@@ -21,7 +21,7 @@ import {
   batchSelectRecovery,
   deleteIds,
   List,
-} from '../api';
+} from './api';
 import Edit from './components/edit.vue';
 import { columns } from './data';
 
@@ -29,7 +29,7 @@ const emit = defineEmits(['ok']);
 
 const xGrid = ref<VxeGridInstance<RowVO>>();
 const currenData = ref<Recordable<any>>({});
-const formParam = { ownerId: '0' };
+const formParam = { typeCode: '' };
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Edit,
@@ -41,7 +41,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   showHeaderOverflow: true,
   showOverflow: true,
   keepSource: true,
-  id: 'full_role',
+  id: 'full_dict_sub',
   // height: '99%',
   minHeight: 800,
   rowConfig: {
@@ -50,15 +50,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   },
   columnConfig: {
     resizable: true,
-  },
-  printConfig: {
-    columns: [
-      { field: 'name' },
-      { field: 'nameFl' },
-      { field: 'code' },
-      { field: 'state' },
-      { field: 'createAt' },
-    ],
   },
   sortConfig: {
     trigger: 'cell',
@@ -69,7 +60,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   },
   pagerConfig: {
     enabled: true,
-    pageSize: 20,
+    pageSize: 100,
     pageSizes: [10, 20, 50, 100, 500, 1000],
   },
   formConfig: {
@@ -91,14 +82,17 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
         span: 6,
         folding: false,
         itemRender: {
-          name: '$select',
+          name: 'VxeSelect',
           options: [
             { label: '停用', value: '2' },
             { label: '有效', value: '1' },
             { label: '弃置', value: '12' },
             { label: '取消', value: '11' },
           ],
-          props: { clearable: true },
+          props: {
+            clearable: true,
+            zIndex: 3000,
+          },
         },
       },
       {
@@ -130,6 +124,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
           { code: 'recovery', name: '删除恢复' },
           { code: 'mark_cancel', name: '标记[删除/取消]' },
           // {code: 'save', name: '保存', status: 'success'}
+          { code: 'physicalDeletion', name: '物理删除' },
         ],
       },
     ],
@@ -137,30 +132,10 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
       // buttons: 'toolbar_buttons',
       // tools: 'toolbar_tools'
     },
-    tools: [
-      {
-        name: '更多',
-        status: 'primary',
-        size: 'small',
-        toolRender: {
-          props: { className: 'mr-2', class: 'mr-2', popupClassName: 'mr-2' },
-          attrs: { className: 'mr-2', class: 'mr-2' },
-          name: '$buttons',
-        },
-        dropdowns: [
-          // {code: 'delete', name: '直接删除'},
-          // {code: 'mark_cancel', name: '标记[删除/取消]'},
-          // {code: 'myInsert', name: '插入'},
-          // {code: 'mySave', name: '保存'},
-          { code: 'myPrint', name: '打印' },
-          { code: 'physicalDeletion', name: '物理删除' },
-        ],
-      },
-    ],
     refresh: true, // 显示刷新按钮
-    import: true, // 显示导入按钮
-    export: true, // 显示导出按钮
-    print: true, // 显示打印按钮
+    import: false, // 显示导入按钮
+    export: false, // 显示导出按钮
+    print: false, // 显示打印按钮
     zoom: true, // 显示全屏按钮
     custom: true, // 显示自定义列按钮
   },
@@ -220,44 +195,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     },
   },
   columns,
-  importConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['insert'],
-    // 自定义服务端导入
-    importMethod({ file }) {
-      const $grid = xGrid.value;
-      const formBody = new FormData();
-      formBody.append('file', file);
-      return fetch(`/api/pub/import`, { method: 'POST', body: formBody })
-        .then((response) => response.json())
-        .then((data) => {
-          VXETable.modal.message({
-            content: `成功导入 ${data.result.insertRows} 条记录！`,
-            status: 'success',
-          });
-          // 导入完成，刷新表格
-          if ($grid) {
-            $grid.commitProxy('query');
-          }
-        })
-        .catch(() => {
-          VXETable.modal.message({
-            content: '导入失败，请检查数据是否正确！',
-            status: 'error',
-          });
-        });
-    },
-  },
-  exportConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['current', 'selected', 'all'],
-    // 自定义服务端导出
-    exportMethod({ options }) {
-      return Promise.resolve();
-    },
-  },
   checkboxConfig: {
     labelField: 'id',
     reserve: true,
@@ -364,6 +301,32 @@ const gridEvent: VxeGridListeners<RowVO> = {
           });
           break;
         }
+        // 物理删除
+        case 'physicalDeletion': {
+          const checkboxRecords = $grid.getCheckboxRecords();
+          if (checkboxRecords.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          const ids = [];
+          checkboxRecords.forEach((item) => {
+            console.log('$grid.item', item);
+            if (item.state > 10) {
+              ids.push(item.id);
+            } else {
+              $grid.setCheckboxRow(item, false);
+            }
+          });
+          if (ids.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          batchSelectPhysicalDeletion(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
+          });
+          break;
+        }
         // 删除恢复
         case 'recovery': {
           const checkboxRecords = $grid.getCheckboxRecords();
@@ -413,32 +376,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
           VXETable.modal.message({
             content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
             status: 'success',
-          });
-          break;
-        }
-        // 物理删除
-        case 'physicalDeletion': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state > 10) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectPhysicalDeletion(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
           });
           break;
         }
@@ -516,16 +453,24 @@ const [DrawerList, drawerApiList] = useVbenDrawer({
   },
   onConfirm: async () => {},
   onOpenChange(isOpen: boolean) {
-    drawerApiList.setState({ loading: true });
+    drawerApiList.setState({
+      loading: true,
+      confirmLoading: false,
+      closeOnClickModal: false, // 点击遮罩关闭弹窗
+      destroyOnClose: true, // 关闭时销毁
+    });
     currenData.value = {};
     if (isOpen) {
       const { values } = drawerApiList.getData<Record<string, any>>();
       if (values) {
         currenData.value = values;
-        formParam.ownerId = values.id;
+        formParam.typeCode = values.code;
         drawerApiList.setState({ loading: false });
       }
-      drawerApiList.setState({ title: `数据字典：${currenData.value.name} ( ${currenData.value.code} )` });
+      drawerApiList.setState({
+        title: `数据字典：${currenData.value.name} ( 码值：${currenData.value.code} )`,
+        loading: false,
+      });
 
       if (!currenData.value) {
         message.warning('你没有选择任何数据');

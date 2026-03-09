@@ -5,10 +5,9 @@ import { useVbenDrawer } from '@vben-core/popup-ui';
 
 import { PgTree } from '@pg/components-n';
 
-import { selectPublic } from './api';
-import Edit from './components/edit.vue';
+import { selectNodeAllPublic } from './api';
+import Edit from './components/DrawerEdit.vue';
 import TabForm from './components/TabForm.vue';
-import TabRule from './components/TabRule.vue';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
@@ -48,7 +47,7 @@ const rightClickMenuOptions = (opt) => {
           formDrawerApi.setData({
             // 表单值
             values: {},
-            parent: opt?.data,
+            parent: opt?.option?.data,
             isUpdate: false,
           });
           formDrawerApi.open();
@@ -82,7 +81,8 @@ const menuDropdownOptions = [
   <NLayout class="h-full p-2" has-sider>
     <NLayoutSider class="min-w-[200px]">
       <PgTree
-        :api="selectPublic"
+        :api="selectNodeAllPublic"
+        :is-node-all="true"
         :menu-dropdown-options="menuDropdownOptions"
         :reload="reloadTreeComputed"
         :right-click-menu="true"
@@ -95,10 +95,7 @@ const menuDropdownOptions = [
       <NLayoutContent>
         <n-tabs v-if="currenRecord" animated type="line">
           <n-tab-pane name="基本信息" tab="基本信息">
-            <TabForm :data="currenData" @ok="reloadTable" />
-          </n-tab-pane>
-          <n-tab-pane name="部门权限" tab="部门权限">
-            <TabRule />
+            <TabForm :data="currenData" @ok="reloadTable" :is-update="true" />
           </n-tab-pane>
         </n-tabs>
         <div v-else style="padding-top: 40px">
@@ -106,7 +103,7 @@ const menuDropdownOptions = [
         </div>
       </NLayoutContent>
     </NLayout>
-    <FormDrawer />
+    <FormDrawer @ok="reloadTable" />
   </NLayout>
 </template>
 

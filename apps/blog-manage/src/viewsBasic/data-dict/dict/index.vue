@@ -22,7 +22,7 @@ import {
   deleteIds,
   List,
 } from './api';
-import Edit from './components/edit.vue';
+import Edit from './components/drawerEdit.vue';
 import DataList from './invoke/index.vue';
 import { columns } from './data';
 
@@ -78,22 +78,22 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
           props: { placeholder: '请输入', clearable: true },
         },
       },
-      {
-        field: 'state',
-        title: '状态',
-        span: 6,
-        folding: false,
-        itemRender: {
-          name: '$select',
-          options: [
-            { label: '停用', value: '2' },
-            { label: '有效', value: '1' },
-            { label: '弃置', value: '12' },
-            { label: '取消', value: '11' },
-          ],
-          props: { clearable: true },
-        },
-      },
+      // {
+      //   field: 'state',
+      //   title: '状态',
+      //   span: 6,
+      //   folding: false,
+      //   itemRender: {
+      //     name: '$select',
+      //     options: [
+      //       { label: '停用', value: '2' },
+      //       { label: '有效', value: '1' },
+      //       { label: '弃置', value: '12' },
+      //       { label: '取消', value: '11' },
+      //     ],
+      //     props: { clearable: true },
+      //   },
+      // },
       {
         span: 24,
         align: 'center',

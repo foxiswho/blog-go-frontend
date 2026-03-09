@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {computed, h, onMounted, watch} from 'vue';
+import { computed, h, onMounted, watch } from 'vue';
 
 import { VbenButton } from '@vben/common-ui';
 
@@ -7,7 +7,13 @@ import { PgTreeSelect } from '@pg/components-n';
 
 import { usePgForm } from '#/adapter';
 
-import {existName, saveOrUpdate, selectPublic, selectNodeAllPublic, existCode} from '../api';
+import {
+  existName,
+  saveOrUpdate,
+  selectPublic,
+  selectNodeAllPublic,
+  existCode,
+} from '../api';
 
 const props = defineProps({
   data: {
@@ -23,6 +29,7 @@ const props = defineProps({
 const emit = defineEmits(['ok']);
 
 const getValue = computed(() => {
+  // console.log('getValue', props.data)
   return props.data.data;
 });
 
@@ -130,10 +137,10 @@ const [Form, formApi] = usePgForm({
       },
     },
     {
+      tabGroup: 'home',
       fieldName: 'id',
       label: 'id',
       component: 'Input',
-      componentProps: {},
       dependencies: {
         show: false,
         // 随意一个字段改变时，都会触发
@@ -166,11 +173,11 @@ watch(
  */
 function onSubmit(values: Record<string, any>) {
   try {
-    // console.log('values', values);
+    console.log('values', values);
     saveOrUpdate(values, props.isUpdate).then((d) => {
       setTimeout(() => {
         emit('ok', values);
-      }, 500);
+      }, 1500);
     });
   } catch (error) {
     console.error(error);
@@ -178,7 +185,9 @@ function onSubmit(values: Record<string, any>) {
 }
 
 onMounted(() => {
-  formApi.setValues(getValue.value);
+  formApi.setValues({
+    ...getValue.value,
+  });
   //formApi.setValues({name:"sssss"});
   // console.log('getValues',formApi.getValues())
   // console.log('ddd',getValue.value)
@@ -187,7 +196,12 @@ onMounted(() => {
 <template>
   <Form>
     <template #parentId="slotProps">
-      <PgTreeSelect :api="selectNodeAllPublic" :convertNode="true" v-bind="slotProps" class="w-full"/>
+      <PgTreeSelect
+        :api="selectNodeAllPublic"
+        :convertNode="true"
+        v-bind="slotProps"
+        class="w-full"
+      />
     </template>
   </Form>
 </template>

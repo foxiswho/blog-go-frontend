@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, reactive, h } from 'vue';
+import {ref, reactive, h, onMounted} from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { usePgForm } from '#/adapter';
 import {
@@ -11,13 +11,17 @@ import {
 import { saveOrUpdate, detail as getDetail } from '../api';
 import { formSchema, fieldColumns } from '../data';
 import { message } from '#/adapter';
+import {PgTreeSelect} from "@pg/components-n";
+import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
 
 const emit = defineEmits(['ok']);
 
 const xTable = ref<VxeTableInstance>();
 const bodyDelIds = ref<string[]>([]);
 const tableData = ref<any[]>([]);
-
+const optionsValueType = ref([]);
+const optionsFormCode = ref([]);
+const optionsParameterSource = ref([]);
 /**
  * 格式化下拉框显示文字
  */
@@ -35,6 +39,18 @@ function formatLabel(row: any, col: any) {
   }
   if (col.field === 'binary') {
     return value === 1 ? '是' : '否';
+  }
+  if (col.field === 'valueType') {
+    const item = optionsValueType.value.find((o: any) => o.value === value);
+    return item ? item.label : value;
+  }
+  if (col.field === 'formCode') {
+    const item = optionsFormCode.value.find((o: any) => o.value === value);
+    return item ? item.label : value;
+  }
+  if (col.field === 'parameterSource') {
+    const item = optionsParameterSource.value.find((o: any) => o.value === value);
+    return item ? item.label : value;
   }
   const item = options.find((o: any) => o.value === value);
   return item ? item.label : value;
@@ -55,10 +71,15 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
       const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
       bodyDelIds.value = [];
       if (isUpdate && values?.id) {
-        drawerApi.setState({ loading: true });
         getDetail(values.id)
           .then((res: any) => {
             if (res) {
@@ -73,7 +94,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         formApi.resetForm();
         tableData.value = [];
       }
-      drawerApi.setState({ title: `模型配置：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `模型配置：${isUpdate ? '编辑' : '新增'}`,loading: false });
     }
   },
   title: '模型配置',
@@ -88,8 +109,8 @@ async function insertEvent() {
     const { row } = await $table.insert({
       show: 1,
       binary: 2,
-      valueType: 'string',
-      formCode: 'input_text',
+      valueType: 'varchar',
+      formCode: 'Input',
       parameterSource: 'manual',
       rules: [],
     });
@@ -115,6 +136,7 @@ async function removeEvent(row: any) {
  */
 async function onSubmit(values: Record<string, any>) {
   try {
+    drawerApi.setState({ loading: true, confirmLoading: true });
     const $table = xTable.value;
     if (!$table) return;
 
@@ -135,20 +157,49 @@ async function onSubmit(values: Record<string, any>) {
       bodyDelIds: bodyDelIds.value,
     };
 
-    drawerApi.setState({ loading: true });
     saveOrUpdate(postData, isUpdate)
       .then(() => {
         message.success('保存成功');
         emit('ok');
         drawerApi.close();
-      })
-      .finally(() => {
-        drawerApi.setState({ loading: false });
       });
   } catch (error) {
     console.error(error);
+  } finally {
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
+
+const loadCodeValueAllPublic = ()=>{
+  codeValueAllPublic({ typeCodeArr:['basicModel:valueType','basicModel:formCode','basicModel:ParameterSource'] }).then(( res) => {
+    if(res) {
+      console.log('codeValueAllPublic',res)
+      for (const resKey in res) {
+        if ('basicModel:valueType' === resKey) {
+          for (const i in res[resKey]) {
+            const item = res[resKey][i];
+            optionsValueType.value.push({value: item.key, label: item.label});
+          }
+        }
+        if ('basicModel:formCode' === resKey) {
+          for (const i in res[resKey]) {
+            const item = res[resKey][i];
+            optionsFormCode.value.push({value: item.key, label: item.label});
+          }
+        }
+        if ('basicModel:ParameterSource' === resKey) {
+          for (const i in res[resKey]) {
+            const item = res[resKey][i];
+            optionsParameterSource.value.push({value: item.key, label: item.label});
+          }
+        }
+      }
+    }
+  });
+};
+onMounted(() => {
+  loadCodeValueAllPublic();
+});
 </script>
 
 <template>
@@ -171,8 +222,8 @@ async function onSubmit(values: Record<string, any>) {
         :data="tableData"
         :edit-config="{ trigger: 'click', mode: 'cell', showStatus: true }"
         :edit-rules="{
-          name: [{ required: true, message: '请输入字段名称' }],
-          field: [{ required: true, message: '请输入字段标识' }]
+          name: [{ required: true, content: '请输入字段名称' }],
+          field: [{ required: true, content: '请输入字段标识' },{ pattern: /^[a-zA-Z][a-zA-Z0-9_]*$/, content: '字段标识格式错误' }]
         }"
       >
         <vxe-column v-for="col in fieldColumns" :key="col.field || col.type" v-bind="col">
@@ -190,8 +241,16 @@ async function onSubmit(values: Record<string, any>) {
             </template>
 
             <!-- 下拉选择 -->
-            <template v-else-if="['valueType', 'formCode', 'parameterSource'].includes(col.field)">
-              <vxe-select v-model="row[col.field]" :options="col.params?.options" transfer></vxe-select>
+            <template v-else-if="['parameterSource'].includes(col.field)">
+              <vxe-select v-model="row[col.field]" :options="optionsParameterSource" transfer></vxe-select>
+            </template>
+            <template v-else-if="['valueType'].includes(col.field)">
+              <vxe-select v-model="row[col.field]"
+                          :options="optionsValueType" transfer ></vxe-select>
+            </template>
+            <template v-else-if="['formCode'].includes(col.field)">
+              <vxe-select v-model="row[col.field]"
+                          :options="optionsFormCode" transfer ></vxe-select>
             </template>
 
             <!-- 下拉多选 (验证规则) -->

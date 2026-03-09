@@ -1,15 +1,20 @@
 <script lang="ts" setup>
-import {h, watch, ref} from 'vue';
+import { h } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenDrawer, VbenButton } from '@vben/common-ui';
 
 import { PgTreeSelect } from '@pg/components-n';
-import { VbenButton } from '@vben/common-ui';
 
 import { usePgForm } from '#/adapter';
 
-import { existCode, existName, saveOrUpdate, selectPublic, selectNodeAllPublic } from '../api';
+import {
+  existCode,
+  existName,
+  saveOrUpdate,
+  selectNodeAllPublic,
+} from '../api';
 
+const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
@@ -21,17 +26,19 @@ const [Form, formApi] = usePgForm({
   schema: [
     {
       tabGroup: 'home',
-      fieldName: 'parentId',
+      fieldName: 'parentNo',
       label: '上级',
-      component: 'TreeSelect',
+      defaultValue: '',
+      component: 'PgTreeSelect',
       componentProps: {
         api: selectNodeAllPublic,
-        params: {},
+        params: { by: 'no' },
         props: {
-          placeholder: '如果为空,则是一级',
           filterable: true,
+          placeholder: '如果为空,则是一级',
         },
       },
+      // rules: 'required',
     },
     {
       tabGroup: 'home',
@@ -73,7 +80,7 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编码',
+      label: '码值',
       rules: 'required',
       component: 'Input',
       componentProps: {
@@ -84,7 +91,6 @@ const [Form, formApi] = usePgForm({
             formApi.setFieldValue('nameFl', e.target.value);
           }
         },
-
       },
       suffix: () =>
         h(
@@ -117,6 +123,7 @@ const [Form, formApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '0',
       component: 'Input',
       componentProps: {},
       dependencies: {
@@ -138,18 +145,30 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      const { values, isUpdate,parent } = drawerApi.getData<Record<string, any>>();
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
+      const { values, isUpdate, parent } =
+        drawerApi.getData<Record<string, any>>();
       if (values) {
-        formApi.setValues(values);
+        formApi.setValues({
+          ...values,
+        });
       }
       if (parent) {
-        formApi.setValues({parentId:parent.id});
+        formApi.setFieldValue('parentNo', parent.no);
       }
 
-      drawerApi.setState({ title: `角色：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({
+        title: `模块：${isUpdate ? '编辑' : '新增'}`,
+        loading: false,
+      });
     }
   },
-  title: '角色：',
+  title: '：',
 });
 
 /**
@@ -157,15 +176,27 @@ const [Drawer, drawerApi] = useVbenDrawer({
  */
 function onSubmit(values: Record<string, any>) {
   try {
+    drawerApi.setState({
+      loading: true,
+      confirmLoading: true,
+    });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    console.log('values',values)
-    // saveOrUpdate(values, isUpdate).then((d) => {
-    //   setTimeout(() => {
-    //     drawerApi.close();
-    //   }, 500);
-    // });
+    // console.log('values',values)
+    saveOrUpdate(values, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          drawerApi.setState({
+            loading: false,
+            confirmLoading: false,
+          });
+          drawerApi.close();
+        }, 2500);
+      });
   } catch (error) {
     console.error(error);
+  } finally {
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>
@@ -173,8 +204,7 @@ function onSubmit(values: Record<string, any>) {
   <Drawer>
     <Form>
       <template #parentId="slotProps">
-        <PgTreeSelect :api="selectPublic" v-bind="slotProps">
-        </PgTreeSelect>
+        <PgTreeSelect :api="selectNodeAllPublic" v-bind="slotProps" />
       </template>
     </Form>
   </Drawer>

@@ -23,7 +23,6 @@ import {
   pgTreeSelectProps,
   pgTreeSelectPropsDefault,
 } from './props';
-
 const props = defineProps({
   ...pgTreeSelectProps,
 });
@@ -38,27 +37,28 @@ const loading = ref(false);
 const treeSelect = ref(null);
 
 const getAttrs = computed(() => {
-  Object.keys(pgTreeSelectPropsDefault).forEach((key) => {
-    if (!Object.prototype.hasOwnProperty.call(props.props, key)) {
-      // eslint-disable-next-line vue/no-mutating-props
-      props.props[key] = pgTreeSelectPropsDefault[key];
-    }
-  });
+  const mergedProps = {
+    ...pgTreeSelectPropsDefault, // 先取默认值
+    ...(props.props || {}), // 再用传入的 props 覆盖默认值（优先级更高）
+  };
+  let baseAttrs = {
+    ...attrs,
+    ...mergedProps, // 使用合并后的新对象，而非原 props.props
+  };
   // 异步查询
   if (props.filterQueryAsync) {
     return {
-      ...attrs,
+      ...baseAttrs,
       options: unref(treeData),
-      ...props.props,
       filter,
     };
   }
   return {
-    ...attrs,
+    ...baseAttrs,
     ...(props.api ? { options: unref(treeData) } : {}),
-    ...props.props,
   };
 });
+
 // 上一次触发时间
 const filterTime = ref(0);
 const intervalTime = 2;
@@ -69,7 +69,9 @@ const filterResult = ref(0);
 window.setInterval(() => {
   // console.log('filterWd.value',filterWd.value)
   filterWd.value = {};
-  delete props.params.wd;
+  if ( props.params && props.params?.hasOwnProperty('wd')) {
+    delete props.params.wd;
+  }
   // isFirstLoaded.value = false
 }, 5000);
 // 异步查询

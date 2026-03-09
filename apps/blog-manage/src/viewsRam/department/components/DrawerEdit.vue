@@ -31,7 +31,7 @@ const [Form, formApi] = usePgForm({
         filterQueryAsync: true,
         props: {
           filterable: true,
-          placeholder: '请选择',
+          placeholder: '如果为空,则是一级',
         },
       },
       // rules: 'required',
@@ -76,7 +76,7 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编码',
+      label: '码值',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',
@@ -129,12 +129,20 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      const { values, isUpdate,parent } = drawerApi.getData<Record<string, any>>();
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
+      const { values, isUpdate, parent } = drawerApi.getData<Record<string, any>>();
       if (values) {
-        formApi.setValues(values);
+        formApi.setValues({
+          ...values,
+        });
       }
       if (parent) {
-        formApi.setValues({parentId:parent.id});
+        formApi.setFieldValue('parentNo', parent.no);
       }
 
       drawerApi.setState({ title: `部门：${isUpdate ? '编辑' : '新增'}` ,loading: false});
@@ -157,23 +165,17 @@ function onSubmit(values: Record<string, any>) {
           drawerApi.setState({ loading: false });
           drawerApi.close();
         }, 500);
-      })
-      .catch(() => {
-        drawerApi.setState({ loading: false, confirmLoading: false });
       });
   } catch (error) {
-    drawerApi.setState({ loading: false, confirmLoading: false });
     console.error(error);
+  } finally {
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>
 <template>
   <Drawer>
     <Form>
-      <template #parentId="slotProps">
-        <PgTreeSelect :api="selectPublic" v-bind="slotProps">
-        </PgTreeSelect>
-      </template>
     </Form>
   </Drawer>
 </template>

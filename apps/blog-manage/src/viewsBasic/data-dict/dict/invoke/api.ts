@@ -2,23 +2,24 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/basic/data-dictionary-sub/create',
-  delete = '/pg2lq/sys/basic/data-dictionary-sub/delete',
-  detail = '/pg2lq/sys/basic/data-dictionary-sub/detail/',
-  disable = '/pg2lq/sys/basic/data-dictionary-sub/disable',
-  enable = '/pg2lq/sys/basic/data-dictionary-sub/enable',
-  existName = '/pg2lq/sys/basic/data-dictionary-sub/existName',
-  existCode = '/pg2lq/sys/basic/data-dictionary-sub/existCode',
-  existValue = '/pg2lq/sys/basic/data-dictionary-sub/existValue',
-  exportExcel = '/pg2lq/sys/basic/data-dictionary-sub/exportExcel',
-  list = '/pg2lq/sys/basic/data-dictionary-sub/query',
-  physicalDeletion = '/pg2lq/sys/basic/data-dictionary-sub/physicalDeletion',
-  recovery = '/pg2lq/sys/basic/data-dictionary-sub/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/basic/data-dictionary-sub/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/data-dictionary-sub/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/data-dictionary-sub/selectPublic',
-  state = '/pg2lq/sys/basic/data-dictionary-sub/state',
-  update = '/pg2lq/sys/basic/data-dictionary-sub/update',
+  create = '/pg2lq/manage/basic/dataDictionarySub/create',
+  createUpdate = '/pg2lq/manage/basic/dataDictionarySub/createUpdate',
+  delete = '/pg2lq/manage/basic/dataDictionarySub/delete',
+  detail = '/pg2lq/manage/basic/dataDictionarySub/detail/',
+  disable = '/pg2lq/manage/basic/dataDictionarySub/disable',
+  enable = '/pg2lq/manage/basic/dataDictionarySub/enable',
+  existName = '/pg2lq/manage/basic/dataDictionarySub/existName',
+  existCode = '/pg2lq/manage/basic/dataDictionarySub/existCode',
+  existValue = '/pg2lq/manage/basic/dataDictionarySub/existValue',
+  exportExcel = '/pg2lq/manage/basic/dataDictionarySub/exportExcel',
+  list = '/pg2lq/manage/basic/dataDictionarySub/query',
+  physicalDeletion = '/pg2lq/manage/basic/dataDictionarySub/physicalDeletion',
+  recovery = '/pg2lq/manage/basic/dataDictionarySub/recovery',
+  selectNodeAllPublic = '/pg2lq/manage/basic/dataDictionarySub/selectNodeAllPublic',
+  selectNodePublic = '/pg2lq/manage/basic/dataDictionarySub/selectNodePublic',
+  selectPublic = '/pg2lq/manage/basic/dataDictionarySub/selectPublic',
+  state = '/pg2lq/manage/basic/dataDictionarySub/state',
+  update = '/pg2lq/manage/basic/dataDictionarySub/update',
 }
 
 /**
@@ -67,7 +68,7 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });

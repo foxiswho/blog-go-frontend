@@ -48,7 +48,7 @@ const rightClickMenuOptions = (opt) => {
           drawerApi.setData({
             // 表单值
             values: {},
-            parent: opt?.data,
+            parent: opt?.option?.data,
             isUpdate: false,
           });
           drawerApi.open();
@@ -96,7 +96,7 @@ const menuDropdownOptions = [
       <NLayoutContent>
         <n-tabs v-if="currenRecord" animated type="line">
           <n-tab-pane name="基本信息" tab="基本信息">
-            <TabForm :data="currenData" @ok="reloadTable" />
+            <TabForm :data="currenData" :is-update="true" @ok="reloadTable" />
           </n-tab-pane>
           <n-tab-pane name="部门权限" tab="部门权限">
             <TabRule />
