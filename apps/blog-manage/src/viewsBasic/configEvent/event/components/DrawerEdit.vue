@@ -9,6 +9,7 @@ import {
   VXETable, type VxeTableInstance,
 } from 'vxe-table';
 import { saveOrUpdate, detail as getDetail } from '../api';
+import { detail as detailModel } from '#/viewsBasic/configModel/api';
 import { formSchema, fieldColumns } from '../data';
 import { message } from '#/adapter';
 import {PgTreeSelect} from "@pg/components-n";
@@ -77,7 +78,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
+      const { values, isUpdate, model } = drawerApi.getData<Record<string, any>>();
       bodyDelIds.value = [];
       if (isUpdate && values?.id) {
         getDetail(values.id)
@@ -86,18 +87,38 @@ const [Drawer, drawerApi] = useVbenDrawer({
               formApi.setValues(res.header || {});
               tableData.value = res.body || [];
             }
-          })
-          .finally(() => {
-            drawerApi.setState({ loading: false });
           });
       } else {
         formApi.resetForm();
         tableData.value = [];
       }
-      drawerApi.setState({ title: `模型配置：${isUpdate ? '编辑' : '新增'}`,loading: false });
+      if (!isUpdate && model) {
+        detailModel(model.id)
+          .then((res: any) => {
+            if (res) {
+              formApi.setValues({
+                ...res.header,
+                id:'0',
+                field: res.header.model,
+                modelNo: model.no,
+              }|| {});
+              if (res.body) {
+                for (const resKey in res.body) {
+                  tableData.value.push({
+                    ...res.body[resKey],
+                    id: "0",
+                  });
+                }
+              }else {
+                tableData.value = [];
+              }
+            }
+          });
+      }
+      drawerApi.setState({ title: `模型事件配置：${isUpdate ? '编辑' : '新增'}`,loading: false });
     }
   },
-  title: '模型配置',
+  title: '',
 });
 
 /**

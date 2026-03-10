@@ -11,15 +11,7 @@ export const columns: any[] = [
   { type: 'checkbox', width: 60 },
   { field: 'name', title: '名称', minWidth: 160 },
   { field: 'model', title: '模型', width: 160 },
-  { field: 'table', title: '数据库表', width: 160 },
-  {
-    field: 'typeSys',
-    title: '系统类型',
-    width: 120,
-    formatter: ({ cellValue }: any) => {
-      return cellValue === 'system' ? '系统' : '普通';
-    },
-  },
+  { field: 'field', title: '事件名称', width: 160 },
   { field: 'modelCategory', title: '模型种类', width: 160 },
   { field: 'moduleSub', title: '子模块', width: 160 },
   { field: 'description', title: '描述', minWidth: 200 },
@@ -65,14 +57,14 @@ export const formSchema = [
   },
   {
     tabGroup: 'home',
-    fieldName: 'table',
-    label: '数据库表',
+    fieldName: 'field',
+    label: '事件名称',
     component: 'Input',
     componentProps: {
-      placeholder: '请输入对应数据库表名',
+      placeholder: '请输入对应事件名称',
     },
-    rules: z.string().min(1, { message: '表名必填' }).regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, {
-      message: '表名字符格式错误' // 自定义错误提示
+    rules: z.string().min(1, { message: '事件名称必填' }).regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, {
+      message: '事件名称字符格式错误' // 自定义错误提示
     }),
     descriptionPg: () =>
       h(
@@ -83,58 +75,22 @@ export const formSchema = [
   },
   {
     tabGroup: 'home',
-    fieldName: 'typeSys',
-    label: '系统类型',
-    component: 'Select',
-    defaultValue: 'general',
-    componentProps: {
-      options: [
-        { label: '普通', value: 'general' },
-        { label: '系统', value: 'system' },
-      ],
-    },
-    rules: 'required',
-  },
-  {
-    tabGroup: 'home',
-    fieldName: 'modelCategory',
-    label: '模型种类',
-    defaultValue: 'table',
-    component: 'PgTreeSelect',
-    componentProps: {
-      api: codeValueAllPublic,
-      params: { by: 'no', typeCode:'basic:modelCategory' },
-      props: {
-        filterable: true,
-        placeholder: '请选择码值',
-      },
-    },
-    rules: 'required',
-  },
-  {
-    tabGroup: 'home',
-    fieldName: 'moduleSub',
-    label: '子模块',
-    defaultValue: '',
-    component: 'PgTreeSelect',
-    componentProps: {
-      api: selectNodeAllPublicModule,
-      params: { by: 'no' },
-      props: {
-        filterable: true,
-        placeholder: '请选择所属子模块',
-      },
-    },
-    rules: 'required',
-  },
-  {
-    tabGroup: 'home',
     fieldName: 'description',
     label: '描述',
     component: 'Textarea',
     componentProps: {
       type: 'textarea',
       placeholder: '请输入描述',
+    },
+  },
+  {
+    fieldName: 'modelNo',
+    label: 'ID',
+    defaultValue:  '0',
+    component: 'Input',
+    dependencies: {
+      show: false,
+      triggerFields: ['name'],
     },
   },
   {

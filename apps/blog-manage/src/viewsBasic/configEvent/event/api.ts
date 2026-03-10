@@ -21,6 +21,7 @@ enum Api {
   selectPublic = '/pg2lq/manage/basic/configEvent/selectPublic',
   state = '/pg2lq/manage/basic/configEvent/state',
   update = '/pg2lq/manage/basic/configEvent/update',
+  copy = '/pg2lq/manage/basic/configEvent/copy',
 }
 
 /**
@@ -68,6 +69,16 @@ export const selectNodeAllPublic = (data?: any) => {
  */
 export const detail = (data?: any) => {
   return requestClient.get(Api.detail + data);
+};
+/**
+ * 复制
+ * @param data
+ */
+export const copy = (data?: any) => {
+  return requestClient.post(Api.copy, data, {
+    errorMessageMode: 'message',
+    successMessageMode: 'notification',
+  });
 };
 
 /**

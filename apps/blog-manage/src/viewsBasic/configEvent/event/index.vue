@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import {ref, onMounted, h} from 'vue';
 import { NSplit, NSpin, NDataTable, NCard, NEmpty } from 'naive-ui';
 import type { DataTableColumns } from 'naive-ui';
 // 假设 ListModel 用于类型定义，实际调用使用 List
 import { List as ListModel } from '#/viewsBasic/configModel/api';
 import { allByModel } from './api';
+import DrawerEditTpl from './components/DrawerEdit.vue';
+import { useVbenDrawer } from '@vben-core/popup-ui';
 
 // 状态管理
 const loading = ref(false);
@@ -29,11 +31,24 @@ const pagination= ref({
     fetchData();
   }
 });
+const [Drawer, drawerApi] = useVbenDrawer({
+  connectedComponent: DrawerEditTpl,
+});
 
 // 表格列定义
 const columns: DataTableColumns = [
   // { title: 'ID', key: 'id', width: 80 },
-  { title: '名称', key: 'name', ellipsis: { tooltip: true } },
+  { title: '名称', key: 'name', ellipsis: { tooltip: true },
+    render: (row) => {
+      return h(
+        'div',
+        {
+          onClick: () => handleRowClick(row)
+        },
+        { default: () => row.name }
+      )
+    }
+  },
   // { title: '类型', key: 'typeSys', width: 100 },
   // { title: '模型', key: 'model', width: 100 },
   // { title: '状态', key: 'state', width: 60 },
@@ -43,20 +58,51 @@ const columns: DataTableColumns = [
 
 // 事件列表表格列定义
 const eventColumns: DataTableColumns = [
-  { title: '名称', key: 'name', ellipsis: { tooltip: true }, width: 200 },
-  { title: '描述', key: 'description', ellipsis: { tooltip: true } },
-  { title: '类型', key: 'typeSys', width: 100 },
-  { title: '模块', key: 'module', width: 150 },
-  { title: '所有者', key: 'owner', width: 100 },
+  { title: '模型', key: 'name', ellipsis: { tooltip: true },
+  },
+  // { title: '描述', key: 'description', ellipsis: { tooltip: true } },
+  // { title: '类型', key: 'typeSys', width: 100 },
+  // { title: '模块', key: 'module', width: 150 },
+  // { title: '所有者', key: 'owner', width: 100 },
 ];
 
 // 处理行点击
 const handleRowClick = (row) => {
+  console.log('handleRowClick2', row);
   selectedRow.value = row;
   if (row.no) {
     loadEventData(row.no);
   }
 };
+const rowPropsMain = (row) => {
+  return {
+    style: 'cursor: pointer;',
+    onClick: () => {
+      console.log('handleRowClick2', row);
+      selectedRow.value = row;
+      if (row.no) {
+        loadEventData(row.no);
+      }
+    }
+  }
+}
+const rowPropsSplit = (row) => {
+  return {
+    style: 'cursor: pointer;',
+    onClick: () => {
+      console.log('handleRowClick2', row);
+      selectedRow.value = row;
+      if (row.no) {
+        loadEventData(row.no);
+      }
+    }
+  }
+}
+// 判断是否当前选中的行
+const isRowSelected = (row) => {
+  return selectedRow.value && selectedRow.value.no === row.no;
+};
+
 
 // 加载事件数据
 const loadEventData = async (modelNo: string) => {
@@ -96,10 +142,25 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
+function addEventClick(opt) {
+  console.log('addEventClick', opt)
+  drawerApi.setData({
+    // 表单值
+    values: {},
+    model: selectedRow.value,
+    isUpdate: false,
+  });
+  drawerApi.open();
+}
+function reloadModelClick(opt) {
+  console.log('reloadModelClick', opt)
+}
 
 onMounted(() => {
   fetchData();
 });
+
+
 </script>
 
 <template>
@@ -113,16 +174,16 @@ onMounted(() => {
     >
       <!-- 左侧：数据列表 -->
       <template #1>
-        <div style="height: 100%; overflow: auto; padding: 10px;" class="bg-white">
+        <div style="height: 100%; overflow: auto;" class="bg-white">
           <n-spin :show="loading">
             <n-data-table
               :columns="columns"
               :data="tableData"
               :pagination="pagination"
               :bordered="false"
+              :row-props="rowPropsMain"
               size="small"
-             striped
-              @click-row="handleRowClick"
+              :row-class-name="(row) => isRowSelected(row) ? 'selected-row' : ''"
             />
           </n-spin>
         </div>
@@ -141,8 +202,14 @@ onMounted(() => {
           >
             <!-- 嵌套左侧：显示 allByModel 列表 -->
             <template #1>
-              <div style="height: 100%; overflow: auto; padding: 10px;" class="bg-white">
-                <n-card :title="selectedRow ? `模型:${selectedRow.name}` : '事件列表'" style="height: 100%;">
+              <div style="height: 100%;">
+                <n-card style="height: 100%;" class="split-left">
+                  <template #header>
+                    <div v-if="selectedRow">
+                      <n-button type="quaternary" size="tiny" class="add" @click="addEventClick">添加</n-button>
+                      模型:{{selectedRow.name}}
+                    </div>
+                  </template>
                   <div v-if="eventData.length > 0">
                     <n-data-table
                       :columns="eventColumns"
@@ -150,6 +217,7 @@ onMounted(() => {
                       :bordered="false"
                       size="small"
                       :pagination="false"
+                      :row-props="rowPropsSplit"
                     />
                   </div>
                   <n-empty v-else description="暂无数据" />
@@ -168,6 +236,7 @@ onMounted(() => {
         </div>
       </template>
     </n-split>
+    <Drawer @ok="reloadModelClick"/>
   </div>
 </template>
 
@@ -188,5 +257,31 @@ onMounted(() => {
 
 :deep(.n-data-table .n-data-table-tbody tr) {
   cursor: pointer !important;
+}
+
+/* 选中行的背景变色 - 使用更精确的选择器 */
+:deep(.n-data-table .n-data-table-tbody tr.selected-row td) {
+  background-color: #dee9fc !important;
+}
+
+:deep(.n-data-table .n-data-table-tbody tr.selected-row:hover td) {
+  background-color: #dee9fc !important;
+}
+:deep(.split-left .n-card-header){
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e4e4e7;
+  margin-bottom: 10px;
+}
+
+:deep(.split-left .n-card-header .add){
+  float: right;
+}
+:deep(.split-left .n-card__content){
+  padding-left: 0;
+  padding-right: 0;
+}
+:deep(.split-left .n-card__content .n-data-table-thead){
+  display: none;
 }
 </style>
