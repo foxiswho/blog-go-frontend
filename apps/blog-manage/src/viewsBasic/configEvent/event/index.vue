@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import {ref, onMounted, h} from 'vue';
+import {ref, onMounted, h, computed} from 'vue';
 import { NSplit, NSpin, NDataTable, NCard, NEmpty } from 'naive-ui';
 import type { DataTableColumns } from 'naive-ui';
 // 假设 ListModel 用于类型定义，实际调用使用 List
 import { List as ListModel } from '#/viewsBasic/configModel/api';
-import { allByModel } from './api';
+import {allByModel } from './api';
 import DrawerEditTpl from './components/DrawerEdit.vue';
+import FieldsList from './components/FieldsList.vue';
 import { useVbenDrawer } from '@vben-core/popup-ui';
 
 // 状态管理
@@ -13,6 +14,7 @@ const loading = ref(false);
 const eventData = ref([]);
 const tableData = ref([]);
 const selectedRow = ref(null); // 当前选中的行
+const selectedRowEvent = ref(null); // 当前选中的行
 const pagination= ref({
   page: 1,
   pageSize: 1000, // 每页 1000 条
@@ -38,17 +40,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 // 表格列定义
 const columns: DataTableColumns = [
   // { title: 'ID', key: 'id', width: 80 },
-  { title: '名称', key: 'name', ellipsis: { tooltip: true },
-    render: (row) => {
-      return h(
-        'div',
-        {
-          onClick: () => handleRowClick(row)
-        },
-        { default: () => row.name }
-      )
-    }
-  },
+  { title: '名称', key: 'name', ellipsis: { tooltip: true },},
   // { title: '类型', key: 'typeSys', width: 100 },
   // { title: '模型', key: 'model', width: 100 },
   // { title: '状态', key: 'state', width: 60 },
@@ -66,20 +58,13 @@ const eventColumns: DataTableColumns = [
   // { title: '所有者', key: 'owner', width: 100 },
 ];
 
-// 处理行点击
-const handleRowClick = (row) => {
-  console.log('handleRowClick2', row);
-  selectedRow.value = row;
-  if (row.no) {
-    loadEventData(row.no);
-  }
-};
 const rowPropsMain = (row) => {
   return {
     style: 'cursor: pointer;',
     onClick: () => {
       console.log('handleRowClick2', row);
       selectedRow.value = row;
+      selectedRowEvent.value = null;
       if (row.no) {
         loadEventData(row.no);
       }
@@ -90,11 +75,8 @@ const rowPropsSplit = (row) => {
   return {
     style: 'cursor: pointer;',
     onClick: () => {
-      console.log('handleRowClick2', row);
-      selectedRow.value = row;
-      if (row.no) {
-        loadEventData(row.no);
-      }
+      console.log('rowPropsSplit', row);
+      selectedRowEvent.value = row;
     }
   }
 }
@@ -156,6 +138,8 @@ function reloadModelClick(opt) {
   console.log('reloadModelClick', opt)
 }
 
+const selectedRowEventComputed = computed(() => selectedRowEvent.value);
+
 onMounted(() => {
   fetchData();
 });
@@ -195,10 +179,10 @@ onMounted(() => {
 
           <!-- 内层 Split: 再次左右分割 -->
           <n-split
-           direction="horizontal"
+          direction="horizontal"
             :min="0.1"
-           default-size="200px"
-           style="height: 100%;"
+          default-size="200px"
+          style="height: 100%;"
           >
             <!-- 嵌套左侧：显示 allByModel 列表 -->
             <template #1>
@@ -225,11 +209,11 @@ onMounted(() => {
               </div>
             </template>
 
-            <!-- 嵌套右侧：预留区域 -->
+            <!-- 嵌套右侧：FieldsList 字段配置页面 -->
             <template #2>
-              <n-card title="操作/扩展区域" style="height: 100%;">
-                <p>右侧扩展内容区域</p>
-              </n-card>
+              <div style="height: 100%; overflow: hidden;">
+                <FieldsList :event-data="selectedRowEventComputed" />
+              </div>
             </template>
           </n-split>
 

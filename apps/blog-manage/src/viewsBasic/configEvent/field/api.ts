@@ -2,6 +2,7 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
+  allByEventNo = '/pg2lq/manage/basic/configEventFields/allByEventNo',
   create = '/pg2lq/manage/basic/configEventFields/create',
   createUpdate = '/pg2lq/manage/basic/configEventFields/createUpdate',
   delete = '/pg2lq/manage/basic/configEventFields/delete',
@@ -31,6 +32,13 @@ export async function List(data?: any) {
   return requestClient.post(Api.list, data);
 }
 
+/**
+ * 公共列表展示
+ * @param data
+ */
+export const allByEventNo = (data?: any) => {
+  return requestClient.post(Api.allByEventNo, data);
+};
 /**
  * 公共列表展示
  * @param data
