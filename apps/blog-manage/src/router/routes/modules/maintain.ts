@@ -80,6 +80,15 @@ const routes: RouteRecordRaw[] = [
       },
       {
         meta: {
+          title: '模型事件页面',
+          icon: 'mdi:account-key',
+        },
+        name: 'basic-event',
+        path: '/lq2/basic/event',
+        component: () => import('#/viewsBasic/configEvent/event/index.vue'),
+      },
+      {
+        meta: {
           title: '模块',
           icon: 'mdi:account-key',
         },
