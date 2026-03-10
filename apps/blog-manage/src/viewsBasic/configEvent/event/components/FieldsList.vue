@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, reactive, h, onMounted, watch } from 'vue';
+import {ref, reactive, h, onMounted, watch, nextTick } from 'vue';
 import {
   type VxeTableInstance,
   VXETable,
@@ -26,36 +26,38 @@ const optionsFormCode = ref([]);
 const optionsParameterSource = ref([]);
 const isFullscreen = ref(false);
 
+const ruleOptions = ref([
+  { label: '必填', value: 'required' },
+  { label: '数字', value: 'number' },
+  { label: '邮箱', value: 'email' },
+  { label: '手机号', value: 'phone' },
+]);
+
+const formRules = ref({
+  name: [{ required: true, message: '请输入名称' }],
+  field: [{ required: true, message: '请输入标识' }],
+});
+
+const submitEvent = () => {
+  console.log('submit');
+};
+
+const resetEvent = () => {
+  console.log('reset');
+};
+
 // 格式化下拉框显示文字
 function formatLabel(row: any, col: any) {
   const value = row[col.field];
   const options = col.params?.options || [];
-  if (col.field === 'rules') {
-    if (Array.isArray(value)) {
-    return value.map((v: any) => options.find((o: any) => o.value === v)?.label || v).join(',');
-    }
-  return value;
-  }
   if (col.field === 'show') {
-  return value === 1 ? '显示' : '隐藏';
+    return value === 1 ? '显示' : '隐藏';
   }
   if (col.field === 'binary') {
-  return value === 1 ? '是' : '否';
-  }
-  if (col.field === 'valueType') {
-   const item = optionsValueType.value.find((o: any) => o.value === value);
-  return item ? item.label : value;
-  }
-  if (col.field === 'formCode') {
-   const item = optionsFormCode.value.find((o: any) => o.value === value);
-  return item ? item.label : value;
-  }
-  if (col.field === 'parameterSource') {
-   const item = optionsParameterSource.value.find((o: any) => o.value === value);
-  return item ? item.label : value;
+    return value === 1 ? '是' : '否';
   }
   const item = options.find((o: any) => o.value === value);
- return item ? item.label : value;
+  return item ? item.label : value;
 }
 
 // 添加行
@@ -66,53 +68,55 @@ async function insertEvent() {
       show: 1,
       binary: 2,
       valueType: 'varchar',
-      formCode: 'input_text',
-      parameterSource: 'manual',
+      formCode: 'input',
+      parameterSource: null,
       rules: [],
     });
     await $table.setEditRow(row);
   }
 }
 
-// 删除行
-async function removeEvent(row: any) {
+// 批量删除
+async function removeSelectedEvent() {
   const $table = xTable.value;
   if ($table) {
-    await $table.remove(row);
-    if (row.id && row.id !== '0') {
-      await deleteId(row.id);
-    } else if (row.id) {
-      bodyDelIds.value.push(row.id);
+    const selectedRows = $table.getCheckboxRecords();
+    if (selectedRows.length === 0) {
+      message.warning('请选择要删除的行');
+      return;
     }
+    await $table.remove(selectedRows);
+    selectedRows.forEach(row => {
+      if (row.id && row.id !== '0') {
+        bodyDelIds.value.push(row.id);
+      }
+    });
     message.success('删除成功');
   }
 }
 
-// 保存行
-async function saveRowEvent(row: any) {
+// 保存
+async function saveTableEvent() {
   const $table = xTable.value;
   if (!$table) return;
 
   try {
-   const { fullData } = $table.getTableData();
-
-    // 构建保存数据
-   const postData = {
-      header: {
-        id: props.eventData?.id || '0',
+    const { fullData } = $table.getTableData();
+    const postData = {
       eventNo: props.eventData?.no,
-      },
       body: fullData,
       bodyDelIds: bodyDelIds.value,
     };
 
     await saveOrUpdate(postData, true);
     message.success('保存成功');
-
-    // 清除已删除行的 ID 记录
     bodyDelIds.value = [];
+    // 重新加载数据
+    if (props.eventData?.no) {
+      await loadData(props.eventData.no);
+    }
   } catch (error) {
-   console.error(error);
+    console.error(error);
     message.error('保存失败');
   }
 }
@@ -143,6 +147,9 @@ async function loadData(eventNo: string) {
         id: item.id || '0',
       }));
       bodyDelIds.value = [];
+      nextTick(() => {
+        xTable.value?.setAllRowExpand(true);
+      });
     }
   } catch (error) {
    console.error('Failed to load fields data:', error);
@@ -201,6 +208,8 @@ function toggleFullscreen() {
     <div class="mb-2 flex justify-between items-center">
       <span class="font-bold">字段配置</span>
       <div class="flex items-center gap-2">
+        <vxe-button size="small" status="primary" @click="saveTableEvent">保存</vxe-button>
+        <vxe-button size="small" status="danger" @click="removeSelectedEvent">批量删除</vxe-button>
         <vxe-button size="small" status="primary" @click="insertEvent">新增字段</vxe-button>
         <vxe-button
           size="small"
@@ -215,6 +224,7 @@ function toggleFullscreen() {
       border
       show-overflow
       keep-source
+      :expand-config="{ expandAll: true }"
       :max-height="isFullscreen ? 'calc(100vh - 120px)' : 500"
       :data="tableData"
       :edit-config="{ trigger: 'click', mode: 'cell', showStatus: true }"
@@ -223,7 +233,7 @@ function toggleFullscreen() {
         field: [{ required: true, content: '请输入字段标识' }, { pattern: /^[a-zA-Z][a-zA-Z0-9_]*$/, content: '字段标识格式错误' }]
       }"
     >
-      <vxe-column v-for="col in fieldColumns.filter(c => c.field !== undefined && c.type !== 'checkbox')" :key="col.field || col.type" v-bind="col">
+      <vxe-column v-for="col in fieldColumns" :key="col.field || col.type" v-bind="col">
         <!-- 编辑插槽 -->
         <template #edit="{ row }">
           <!-- 显示/二进制 开关 -->
@@ -232,51 +242,58 @@ function toggleFullscreen() {
               v-model="row[col.field]"
               :open-value="1"
               :close-value="2"
-              :open-label="col.field === 'show' ? '显示' : '是'"
-              :close-label="col.field === 'show' ? '隐藏' : '否'"
+              :open-label="'是'"
+              :close-label="'否'"
             />
           </template>
-
-          <!-- 下拉选择 -->
-          <template v-else-if="['parameterSource'].includes(col.field)">
-            <vxe-select v-model="row[col.field]" :options="optionsParameterSource" transfer></vxe-select>
-          </template>
-          <template v-else-if="['valueType'].includes(col.field)">
-            <vxe-select v-model="row[col.field]" :options="optionsValueType" transfer></vxe-select>
-          </template>
-          <template v-else-if="['formCode'].includes(col.field)">
-            <vxe-select v-model="row[col.field]" :options="optionsFormCode" transfer></vxe-select>
-          </template>
-
-          <!-- 下拉多选 (验证规则) -->
-          <template v-else-if="col.field === 'rules'">
-            <vxe-select v-model="row.rules" :options="col.params?.options" multiple transfer></vxe-select>
-          </template>
-
-          <!-- 文本输入 (名称，标识，默认值) -->
-          <template v-else-if="['name', 'field', 'defaultValue'].includes(col.field)">
+          <!-- 文本输入 (名称，标识) -->
+          <template v-else-if="['name', 'field'].includes(col.field)">
             <vxe-input v-model="row[col.field]"></vxe-input>
           </template>
         </template>
 
+        <template #content="{ row }">
+          <div class="p-4">
+            <vxe-form
+              title-align="left"
+              :data="row" :rules="formRules" @submit="submitEvent" @reset="resetEvent">
+              <vxe-form-item title="默认值" field="defaultValue" :item-render="{}" :span="8">
+                <template #default>
+                  <vxe-input v-model="row.defaultValue"></vxe-input>
+                </template>
+              </vxe-form-item>
+              <vxe-form-item title="值类型" field="valueType" :item-render="{}" :span="12">
+                <template #default>
+                  <vxe-select v-model="row.valueType" :options="optionsValueType"
+                              transfer></vxe-select>
+                </template>
+              </vxe-form-item>
+                <vxe-form-item title="表单类型" field="formCode" :item-render="{}" :span="8">
+                  <template #default>
+                    <vxe-select v-model="row.formCode" :options="optionsFormCode"
+                                transfer></vxe-select>
+                  </template>
+                </vxe-form-item>
+                <vxe-form-item title="参数源" field="parameterSource" :item-render="{}" :span="12">
+                  <template #default>
+                    <vxe-select v-model="row.parameterSource" :options="optionsParameterSource"
+                                transfer clearable></vxe-select>
+                  </template>
+                </vxe-form-item>
+                <vxe-form-item title="验证规则" field="rules" :item-render="{}" :span="8">
+                  <template #default>
+                    <vxe-select v-model="row.rules" :options="ruleOptions" multiple
+                                transfer></vxe-select>
+                  </template>
+                </vxe-form-item>
+
+            </vxe-form>
+          </div>
+        </template>
+
         <!-- 默认展示插槽 -->
         <template #default="{ row }">
-          <template v-if="col.slots?.default === 'operate'">
-            <vxe-button
-              icon="vxe-icon-edit"
-              mode="text"
-              title="保存"
-              @click="saveRowEvent(row)"
-            />
-            <vxe-button
-              icon="vxe-icon-delete"
-              mode="text"
-            status="danger"
-              title="删除"
-              @click="removeEvent(row)"
-            />
-          </template>
-          <template v-else-if="['show', 'binary', 'valueType', 'formCode', 'parameterSource', 'rules'].includes(col.field)">
+          <template v-if="['show', 'binary'].includes(col.field)">
             <span>{{ formatLabel(row, col) }}</span>
           </template>
           <template v-else>
@@ -300,7 +317,7 @@ function toggleFullscreen() {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999;
+  z-index: 2100;
   background-color: white;
   padding: 16px;
 }

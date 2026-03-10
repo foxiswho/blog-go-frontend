@@ -84,6 +84,9 @@ const rowPropsSplit = (row) => {
 const isRowSelected = (row) => {
   return selectedRow.value && selectedRow.value.no === row.no;
 };
+const isRowSelectedEvent = (row) => {
+  return selectedRowEvent.value && selectedRowEvent.value.no === row.no;
+};
 
 
 // 加载事件数据
@@ -202,6 +205,7 @@ onMounted(() => {
                       size="small"
                       :pagination="false"
                       :row-props="rowPropsSplit"
+                      :row-class-name="(row) => isRowSelectedEvent(row) ? 'selected-row' : ''"
                     />
                   </div>
                   <n-empty v-else description="暂无数据" />

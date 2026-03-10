@@ -132,7 +132,7 @@ async function insertEvent() {
       binary: 2,
       valueType: 'varchar',
       formCode: 'Input',
-      parameterSource: 'manual',
+      parameterSource: null,
       rules: [],
     });
     await $table.setEditRow(row);
