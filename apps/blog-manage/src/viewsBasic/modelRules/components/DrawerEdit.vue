@@ -8,6 +8,7 @@ import { VbenButton } from '@vben/common-ui';
 import { useVbenForm, usePgForm } from '#/adapter';
 
 import { existName, saveOrUpdate } from '../api';
+import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -47,8 +48,8 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'other',
-      fieldName: 'nameFl',
-      label: '名称英文',
+      fieldName: 'sharedRuleNo',
+      label: '共享规则编号',
       component: 'Input',
       defaultValue: '',
       componentProps: {
@@ -57,24 +58,36 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
-      fieldName: 'code',
-      label: '编码',
-      component: 'Input',
+      fieldName: 'ruleMode',
+      label: '验证模式类型',
+      component: 'PgTreeSelect',
       componentProps: {
-        placeholder: '请输入',
-        onBlur: async (e) => {
-          const values = await formApi.getValues();
-          if (!values.nameFl) {
-            formApi.setFieldValue('nameFl', e.target.value);
-          }
+        api: codeValueAllPublic,
+        params: { typeCode: 'basicModel:ruleMode' },
+        props: {
+          placeholder: '请选择',
         },
       },
     },
     {
-      tabGroup: 'other',
-      fieldName: 'nameFull',
-      label: '全称',
-      component: 'Input',
+      tabGroup: 'home',
+      fieldName: 'coding',
+      label: '代码',
+      component: 'Textarea',
+      componentProps: {
+        type: 'textarea',
+        placeholder: '代码',
+      },
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'condition',
+      label: '条件',
+      component: 'Textarea',
+      componentProps: {
+        type: 'textarea',
+        placeholder: '条件',
+      },
     },
     {
       tabGroup: 'home',
@@ -89,6 +102,7 @@ const [Form, formApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '0',
       component: 'Input',
       componentProps: {},
       dependencies: {

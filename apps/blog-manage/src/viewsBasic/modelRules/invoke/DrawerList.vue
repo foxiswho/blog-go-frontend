@@ -2,17 +2,14 @@
 import {ref, reactive, h, onMounted, watch, nextTick } from 'vue';
 import {
   type VxeTableInstance,
-  VXETable,
 } from 'vxe-table';
 import { message } from '#/adapter';
 import {
-  allByEventNo,
+  allByValueNo,
   saveOrUpdate,
-  deleteId,
-} from '#/viewsBasic/configEvent/field/api';
+} from '../api';
 import { fieldColumns } from './data';
 import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
-import { allByValueNo as getRuleFields } from '#/viewsBasic/modelRules/api';
 
 // 接收父组件传递的 event 对象
 const props = defineProps<{
@@ -25,6 +22,7 @@ const bodyDelIds = ref<string[]>([]);
 const optionsValueType = ref([]);
 const optionsFormCode = ref([]);
 const optionsParameterSource = ref([]);
+const optionsRuleMode = ref([]);
 const isFullscreen = ref(false);
 
 const ruleOptions = ref([
@@ -33,19 +31,6 @@ const ruleOptions = ref([
   { label: '邮箱', value: 'email' },
   { label: '手机号', value: 'phone' },
 ]);
-
-const optionsRuleMode = ref([]);
-const ruleFieldsData = ref<any[]>([]);
-const ruleFieldsLoading = ref(false);
-
-const ruleFieldsColumns = [
-  { type: 'seq', width: 60, title: '序号' },
-  { field: 'name', title: '名称', minWidth: 120 },
-  { field: 'ruleMode', title: '验证模式类型', minWidth: 120 },
-  { field: 'code', title: '代码', minWidth: 120 },
-  { field: 'errorMsg', title: '错误提示', minWidth: 150 },
-  { field: 'sort', title: '排序', width: 80 },
-];
 
 const formRules = ref({
   name: [{ required: true, message: '请输入名称' }],
@@ -74,16 +59,11 @@ function formatLabel(row: any, col: any) {
   return item ? item.label : value;
 }
 
-function formatRuleMode(value: string) {
-  const item = optionsRuleMode.value.find((o: any) => o.value === value);
-  return item ? item.label : value;
-}
-
 // 添加行
 async function insertEvent() {
   const $table = xTable.value;
   if ($table) {
-   const { row } = await $table.insert({
+    const { row } = await $table.insert({
       show: 1,
       binary: 2,
       valueType: 'varchar',
@@ -144,14 +124,12 @@ async function saveTableEvent() {
 watch(
   () => props.eventData,
   async (newVal) => {
-   console.log('newVal', newVal);
-   if (newVal && newVal.no) {
-     await loadData(newVal.no);
-     await loadRuleFieldsData(newVal.no);
+    console.log('newVal', newVal);
+    if (newVal && newVal.no) {
+      await loadData(newVal.no);
     } else {
       tableData.value = [];
       bodyDelIds.value = [];
-      ruleFieldsData.value = [];
     }
   },
   { immediate: true }
@@ -160,9 +138,9 @@ watch(
 // 加载数据
 async function loadData(eventNo: string) {
   try {
-   const res = await allByEventNo({ eventNo });
+    const res = await allByValueNo({ eventNo });
     if (res) {
-     console.log('allByEventNo', res);
+      console.log('allByValueNo', res);
       tableData.value = res.map((item: any) => ({
         ...item,
         id: item.id || '0',
@@ -173,38 +151,38 @@ async function loadData(eventNo: string) {
       });
     }
   } catch (error) {
-   console.error('Failed to load fields data:', error);
+    console.error('Failed to load fields data:', error);
     message.error('加载字段数据失败');
   }
 }
 
 // 加载码值数据
 const loadCodeValueAllPublic = () => {
-  codeValueAllPublic({ typeCodeArr: ['basicModel:valueType', 'basicModel:formCode', 'basicModel:ParameterSource', 'basicModel:ruleMode'] }).then((res) => {
+  codeValueAllPublic({ typeCodeArr: ['basicModel:valueType', 'basicModel:formCode', 'basicModel:ParameterSource','basicModel:ruleMode'] }).then((res) => {
     if (res) {
-     console.log('codeValueAllPublic', res);
+      console.log('codeValueAllPublic', res);
       for (const resKey in res) {
         if ('basicModel:valueType' === resKey) {
           for (const i in res[resKey]) {
-           const item = res[resKey][i];
+            const item = res[resKey][i];
             optionsValueType.value.push({ value: item.key, label: item.label });
           }
         }
         if ('basicModel:formCode' === resKey) {
           for (const i in res[resKey]) {
-           const item = res[resKey][i];
+            const item = res[resKey][i];
             optionsFormCode.value.push({ value: item.key, label: item.label });
           }
         }
         if ('basicModel:ParameterSource' === resKey) {
           for (const i in res[resKey]) {
-           const item = res[resKey][i];
+            const item = res[resKey][i];
             optionsParameterSource.value.push({ value: item.key, label: item.label });
           }
         }
         if ('basicModel:ruleMode' === resKey) {
           for (const i in res[resKey]) {
-           const item = res[resKey][i];
+            const item = res[resKey][i];
             optionsRuleMode.value.push({ value: item.key, label: item.label });
           }
         }
@@ -213,31 +191,15 @@ const loadCodeValueAllPublic = () => {
   });
 };
 
-// 加载验证模式字段数据
-async function loadRuleFieldsData(eventNo: string) {
-  try {
-    ruleFieldsLoading.value = true;
-    const res = await getRuleFields({ eventNo });
-    if (res) {
-      ruleFieldsData.value = res;
-    }
-  } catch (error) {
-    console.error('Failed to load rule fields data:', error);
-  } finally {
-    ruleFieldsLoading.value = false;
-  }
-}
-
 onMounted(() => {
   loadCodeValueAllPublic();
 });
 
 // 暴露刷新方法给父组件
 defineExpose({
- reloadTable: () => {
-   if (props.eventData?.no) {
+  reloadTable: () => {
+    if (props.eventData?.no) {
       loadData(props.eventData.no);
-      loadRuleFieldsData(props.eventData.no);
     }
   },
 });
@@ -263,7 +225,7 @@ function toggleFullscreen() {
       </div>
     </div>
     <vxe-table
-   ref="xTable"
+      ref="xTable"
       border
       show-overflow
       keep-source
@@ -311,24 +273,24 @@ function toggleFullscreen() {
                               transfer></vxe-select>
                 </template>
               </vxe-form-item>
-                <vxe-form-item title="表单类型" field="formCode" :item-render="{}" :span="8">
-                  <template #default>
-                    <vxe-select v-model="row.formCode" :options="optionsFormCode"
-                                transfer></vxe-select>
-                  </template>
-                </vxe-form-item>
-                <vxe-form-item title="参数源" field="parameterSource" :item-render="{}" :span="12">
-                  <template #default>
-                    <vxe-select v-model="row.parameterSource" :options="optionsParameterSource"
-                                transfer clearable></vxe-select>
-                  </template>
-                </vxe-form-item>
-                <vxe-form-item title="验证规则" field="rules" :item-render="{}" :span="8">
-                  <template #default>
-                    <vxe-select v-model="row.rules" :options="ruleOptions" multiple
-                                transfer></vxe-select>
-                  </template>
-                </vxe-form-item>
+              <vxe-form-item title="表单类型" field="formCode" :item-render="{}" :span="8">
+                <template #default>
+                  <vxe-select v-model="row.formCode" :options="optionsFormCode"
+                              transfer></vxe-select>
+                </template>
+              </vxe-form-item>
+              <vxe-form-item title="参数源" field="parameterSource" :item-render="{}" :span="12">
+                <template #default>
+                  <vxe-select v-model="row.parameterSource" :options="optionsParameterSource"
+                              transfer clearable></vxe-select>
+                </template>
+              </vxe-form-item>
+              <vxe-form-item title="验证规则" field="rules" :item-render="{}" :span="8">
+                <template #default>
+                  <vxe-select v-model="row.rules" :options="ruleOptions" multiple
+                              transfer></vxe-select>
+                </template>
+              </vxe-form-item>
 
             </vxe-form>
           </div>
@@ -345,26 +307,6 @@ function toggleFullscreen() {
         </template>
       </vxe-column>
     </vxe-table>
-    <div class="mt-4">
-      <div class="mb-2 font-bold">验证模式字段配置</div>
-      <vxe-table
-        border
-        show-overflow
-        :loading="ruleFieldsLoading"
-        :data="ruleFieldsData"
-      >
-        <vxe-column v-for="col in ruleFieldsColumns" :key="col.field || col.type" v-bind="col">
-          <template #default="{ row }">
-            <template v-if="col.field === 'ruleMode'">
-              <span>{{ formatRuleMode(row[col.field]) }}</span>
-            </template>
-            <template v-else>
-              <span>{{ row[col.field] }}</span>
-            </template>
-          </template>
-        </vxe-column>
-      </vxe-table>
-    </div>
   </div>
 </template>
 
