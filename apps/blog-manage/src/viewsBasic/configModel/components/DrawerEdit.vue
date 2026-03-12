@@ -94,10 +94,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
         formApi.resetForm();
         tableData.value = [];
       }
-      drawerApi.setState({ title: `模型配置：${isUpdate ? '编辑' : '新增'}`,loading: false });
+      let title = `字段规则：${isUpdate ? '编辑' : '新增'}`;
+      drawerApi.setState({ title: title,loading: false });
     }
   },
-  title: '模型配置',
+  title: '',
 });
 
 /**

@@ -5,6 +5,7 @@ import {
   VXETable,
 } from 'vxe-table';
 import { message } from '#/adapter';
+import { useVbenDrawer } from '@vben/common-ui';
 import {
   allByEventNo,
   saveOrUpdate,
@@ -13,6 +14,8 @@ import {
 import { fieldColumns } from './data';
 import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
 import { allByValueNo as getRuleFields } from '#/viewsBasic/modelRules/api';
+import DrawerEditTpl from '#/viewsBasic/modelRules/components/DrawerEdit.vue';
+import {NAlert} from 'naive-ui';
 
 // 接收父组件传递的 event 对象
 const props = defineProps<{
@@ -45,7 +48,26 @@ const ruleFieldsColumns = [
   { field: 'code', title: '代码', minWidth: 120 },
   { field: 'errorMsg', title: '错误提示', minWidth: 150 },
   { field: 'sort', title: '排序', width: 80 },
+  {
+    field: 'action',
+    title: '操作',
+    width: 100,
+    fixed: 'right',
+  },
 ];
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  connectedComponent: DrawerEditTpl,
+  onOk: () => {
+    if (selectedRuleFieldRow.value) {
+      loadRuleFieldsData(props.eventData?.no);
+    }
+    drawerApi.close();
+  },
+});
+
+const selectedRuleFieldRow = ref<any>(null);
+const isRuleFieldNewRow = ref(false);
 
 const formRules = ref({
   name: [{ required: true, message: '请输入名称' }],
@@ -147,17 +169,17 @@ watch(
    console.log('newVal', newVal);
    if (newVal && newVal.no) {
      await loadData(newVal.no);
-     await loadRuleFieldsData(newVal.no);
     } else {
       tableData.value = [];
       bodyDelIds.value = [];
       ruleFieldsData.value = [];
+      selectedRuleFieldRow.value = null;
     }
   },
   { immediate: true }
 );
 
-// 加载数据
+// 加载数据 模型
 async function loadData(eventNo: string) {
   try {
    const res = await allByEventNo({ eventNo });
@@ -168,6 +190,8 @@ async function loadData(eventNo: string) {
         id: item.id || '0',
       }));
       bodyDelIds.value = [];
+      ruleFieldsData.value = [];
+      selectedRuleFieldRow.value = null;
       nextTick(() => {
         xTable.value?.setAllRowExpand(true);
       });
@@ -217,7 +241,7 @@ const loadCodeValueAllPublic = () => {
 async function loadRuleFieldsData(eventNo: string) {
   try {
     ruleFieldsLoading.value = true;
-    const res = await getRuleFields({ eventNo });
+    const res = await getRuleFields({ valueNo:eventNo });
     if (res) {
       ruleFieldsData.value = res;
     }
@@ -243,6 +267,65 @@ defineExpose({
 });
 function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value;
+}
+
+function addRuleField() {
+  if (!selectedRuleFieldRow.value || !props.eventData?.no) {
+    message.warning('请先选择字段');
+    return;
+  }
+  if (isRuleFieldNewRow.value) {
+    message.warning('只有字段保存到数据库后，才能操作');
+    return;
+  }
+  drawerApi.setData({
+    values: {},
+    field: selectedRuleFieldRow.value,
+    isUpdate: false,
+  });
+  drawerApi.open();
+}
+
+function editRuleField(row: any) {
+  if (!selectedRuleFieldRow.value || !props.eventData?.no) {
+    message.warning('请先选择字段');
+    return;
+  }
+  if (isRuleFieldNewRow.value) {
+    message.warning('只有字段保存到数据库后，才能操作');
+    return;
+  }
+  drawerApi.setData({
+    values: row,
+    isUpdate: true,
+  });
+  drawerApi.open();
+}
+
+async function deleteRuleField(row: any) {
+  if (!selectedRuleFieldRow.value || !props.eventData?.no) {
+    message.warning('请先选择字段');
+    return;
+  }
+  if (isRuleFieldNewRow.value) {
+    message.warning('只有字段保存到数据库后，才能操作');
+    return;
+  }
+  try {
+    await deleteId(row.id);
+    message.success('删除成功');
+  } catch (error) {
+    message.error('删除失败');
+  }
+}
+
+function cellClickEvent({ row }: any) {
+  selectedRuleFieldRow.value = row;
+  isRuleFieldNewRow.value = !row.id || row.id === '0';
+  console.log('cellClickEvent', row)
+  if (row?.no) {
+    loadRuleFieldsData(row?.no);
+  }
 }
 </script>
 
@@ -275,6 +358,7 @@ function toggleFullscreen() {
         name: [{ required: true, content: '请输入字段名称' }],
         field: [{ required: true, content: '请输入字段标识' }, { pattern: /^[a-zA-Z][a-zA-Z0-9_]*$/, content: '字段标识格式错误' }]
       }"
+      @cell-click="cellClickEvent"
     >
       <vxe-column v-for="col in fieldColumns" :key="col.field || col.type" v-bind="col">
         <!-- 编辑插槽 -->
@@ -296,7 +380,7 @@ function toggleFullscreen() {
         </template>
 
         <template #content="{ row }">
-          <div class="p-4">
+          <div class="p-4" @click="cellClickEvent({ row })">
             <vxe-form
               title-align="left"
               :data="row" :rules="formRules" @submit="submitEvent" @reset="resetEvent">
@@ -346,25 +430,47 @@ function toggleFullscreen() {
       </vxe-column>
     </vxe-table>
     <div class="mt-4">
-      <div class="mb-2 font-bold">验证模式字段配置</div>
-      <vxe-table
-        border
-        show-overflow
-        :loading="ruleFieldsLoading"
-        :data="ruleFieldsData"
-      >
-        <vxe-column v-for="col in ruleFieldsColumns" :key="col.field || col.type" v-bind="col">
-          <template #default="{ row }">
-            <template v-if="col.field === 'ruleMode'">
-              <span>{{ formatRuleMode(row[col.field]) }}</span>
-            </template>
-            <template v-else>
-              <span>{{ row[col.field] }}</span>
-            </template>
-          </template>
-        </vxe-column>
-      </vxe-table>
+      <div class="mb-2 flex justify-between items-center">
+        <span class="font-bold">验证模式字段配置</span>
+        <vxe-button size="small" status="primary" @click="addRuleField">新增</vxe-button>
+      </div>
+      <template v-if="selectedRuleFieldRow">
+        <template v-if="!isRuleFieldNewRow">
+          <vxe-table
+            border
+            show-overflow
+            :loading="ruleFieldsLoading"
+            :data="ruleFieldsData"
+          >
+            <vxe-column v-for="col in ruleFieldsColumns" :key="col.field || col.type" v-bind="col">
+              <template #default="{ row }">
+                <template v-if="col.field === 'ruleMode'">
+                  <span>{{ formatRuleMode(row[col.field]) }}</span>
+                </template>
+                <template v-else-if="col.field === 'action'">
+                  <vxe-button type="text" status="primary" size="small" @click="editRuleField(row)">修改</vxe-button>
+                  <vxe-button type="text" status="danger" size="small" @click="deleteRuleField(row)">删除</vxe-button>
+                </template>
+                <template v-else>
+                  <span>{{ row[col.field] }}</span>
+                </template>
+              </template>
+            </vxe-column>
+          </vxe-table>
+        </template>
+        <template v-else>
+          <NAlert type="warning" show-icon >
+            只有字段保存到数据库后，才能操作
+          </NAlert>
+        </template>
+      </template>
+      <template v-else>
+        <NAlert type="info" show-icon >
+          请先点击上方表格中的某一行来显示验证模式字段配置
+        </NAlert>
+      </template>
     </div>
+    <Drawer />
   </div>
 </template>
 

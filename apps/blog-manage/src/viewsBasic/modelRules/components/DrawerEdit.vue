@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { h } from 'vue';
+import {h, ref} from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 
@@ -9,6 +9,7 @@ import { useVbenForm, usePgForm } from '#/adapter';
 
 import { existName, saveOrUpdate } from '../api';
 import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
+const fieldData = ref(null);
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -66,6 +67,11 @@ const [Form, formApi] = usePgForm({
         params: { typeCode: 'basicModel:ruleMode' },
         props: {
           placeholder: '请选择',
+        },
+        onChange: async (value) => {
+          if (value === 'required') {
+            formApi.setFieldValue('name', '不为空');
+          }
         },
       },
     },
@@ -130,13 +136,20 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
+      const { values, isUpdate,field } = drawerApi.getData<Record<string, any>>();
+      if (field) {
+        fieldData.value = field;
+        console.log('field',field)
+      }
       if (values) {
         formApi.setValues(values);
       }
-
+      let title = `字段规则：${isUpdate ? '编辑' : '新增'}`;
+      if (fieldData.value) {
+        title = title + ` [所属字段：${fieldData.value.name}(${fieldData.value.field})]`;
+      }
       drawerApi.setState({
-        title: `组：${isUpdate ? '编辑' : '新增'}`,
+        title: title,
         loading: false,
       });
     }
@@ -151,7 +164,13 @@ function onSubmit(values: Record<string, any>) {
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate)
+    let data = {
+      ...values,
+    };
+    if(fieldData.value) {
+      data['valueNo'] = fieldData.value.no;
+    }
+    saveOrUpdate(data, isUpdate)
       .then((d) => {
         setTimeout(() => {
           emit('ok', values);
