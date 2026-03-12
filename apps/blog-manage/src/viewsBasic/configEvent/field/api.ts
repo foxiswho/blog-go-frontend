@@ -86,16 +86,9 @@ export const saveOrUpdate = (data: any, isUpdate: boolean) => {
  * 删除
  * @param params
  */
-export const deleteId = (params: any) => {
-  return requestClient.post(Api.delete, { ids: [params] });
-};
-
-/**
- * 删除
- * @param params
- */
 export const deleteIds = (params: any) => {
-  return requestClient.post(Api.delete, { ids: params });
+  return requestClient.post(Api.delete, {
+    ids: params });
 };
 
 /**

@@ -9,11 +9,10 @@ import { useVbenDrawer } from '@vben/common-ui';
 import {
   allByEventNo,
   saveOrUpdate,
-  deleteId,
 } from '#/viewsBasic/configEvent/field/api';
 import { fieldColumns } from './data';
 import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
-import { allByValueNo as getRuleFields } from '#/viewsBasic/modelRules/api';
+import { allByValueNo as getRuleFields, deleteIds } from '#/viewsBasic/modelRules/api';
 import DrawerEditTpl from '#/viewsBasic/modelRules/components/DrawerEdit.vue';
 import {NAlert} from 'naive-ui';
 
@@ -42,7 +41,6 @@ const ruleFieldsData = ref<any[]>([]);
 const ruleFieldsLoading = ref(false);
 
 const ruleFieldsColumns = [
-  { type: 'seq', width: 60, title: '序号' },
   { field: 'name', title: '名称', minWidth: 120 },
   { field: 'ruleMode', title: '验证模式类型', minWidth: 120 },
   { field: 'code', title: '代码', minWidth: 120 },
@@ -182,7 +180,7 @@ watch(
 // 加载数据 模型
 async function loadData(eventNo: string) {
   try {
-   const res = await allByEventNo({ eventNo });
+   const res = await allByEventNo({ eventNo:eventNo });
     if (res) {
      console.log('allByEventNo', res);
       tableData.value = res.map((item: any) => ({
@@ -297,6 +295,7 @@ function editRuleField(row: any) {
   }
   drawerApi.setData({
     values: row,
+    field: selectedRuleFieldRow.value,
     isUpdate: true,
   });
   drawerApi.open();
@@ -312,7 +311,7 @@ async function deleteRuleField(row: any) {
     return;
   }
   try {
-    await deleteId(row.id);
+    await deleteIds([row.id],selectedRuleFieldRow.value.no);
     message.success('删除成功');
   } catch (error) {
     message.error('删除失败');
@@ -325,6 +324,11 @@ function cellClickEvent({ row }: any) {
   console.log('cellClickEvent', row)
   if (row?.no) {
     loadRuleFieldsData(row?.no);
+  }
+}
+function reloadFieldRule(opt) {
+  if (selectedRuleFieldRow.value?.no) {
+    loadRuleFieldsData(selectedRuleFieldRow.value?.no);
   }
 }
 </script>
@@ -470,7 +474,7 @@ function cellClickEvent({ row }: any) {
         </NAlert>
       </template>
     </div>
-    <Drawer />
+    <Drawer @ok="reloadFieldRule"/>
   </div>
 </template>
 

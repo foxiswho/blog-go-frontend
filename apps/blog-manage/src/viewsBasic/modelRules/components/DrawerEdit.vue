@@ -22,6 +22,26 @@ const [Form, formApi] = usePgForm({
   schema: [
     {
       tabGroup: 'home',
+      fieldName: 'ruleMode',
+      label: '验证模式类型',
+      component: 'PgTreeSelect',
+      componentProps: {
+        api: codeValueAllPublic,
+        params: { typeCode: 'basicModel:ruleMode' },
+        props: {
+          placeholder: '请选择',
+        },
+        onOk: async (e) => {
+          const values = await formApi.getValues();
+          if (values.ruleMode === 'required') {
+            formApi.setFieldValue('name', '不为空');
+          }
+        },
+      },
+      rules: 'required',
+    },
+    {
+      tabGroup: 'home',
       fieldName: 'name',
       label: '名称',
       component: 'Input',
@@ -57,24 +77,7 @@ const [Form, formApi] = usePgForm({
         placeholder: '请输入',
       },
     },
-    {
-      tabGroup: 'home',
-      fieldName: 'ruleMode',
-      label: '验证模式类型',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: codeValueAllPublic,
-        params: { typeCode: 'basicModel:ruleMode' },
-        props: {
-          placeholder: '请选择',
-        },
-        onChange: async (value) => {
-          if (value === 'required') {
-            formApi.setFieldValue('name', '不为空');
-          }
-        },
-      },
-    },
+
     {
       tabGroup: 'home',
       fieldName: 'coding',
@@ -168,7 +171,7 @@ function onSubmit(values: Record<string, any>) {
       ...values,
     };
     if(fieldData.value) {
-      data['valueNo'] = fieldData.value.no;
+      data['fieldNo'] = fieldData.value.no;
     }
     saveOrUpdate(data, isUpdate)
       .then((d) => {

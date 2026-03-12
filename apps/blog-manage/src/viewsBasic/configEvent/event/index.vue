@@ -92,10 +92,14 @@ const isRowSelectedEvent = (row) => {
 // 加载事件数据
 const loadEventData = async (modelNo: string) => {
   try {
-    const res = await allByModel({ modelNo:modelNo });
-    if (res) {
-      eventData.value = res;
-    }
+    await allByModel({ modelNo:modelNo }).then((res) => {
+      if (res) {
+        eventData.value = res;
+        if(res&& res.length > 0) {
+          selectedRowEvent.value = res[0];
+        }
+      }
+    });
   } catch (error) {
     console.error('Failed to load event data:', error);
   }
@@ -116,8 +120,8 @@ const fetchData = async () => {
       if (res.total > 0 && res.data.length > 0) {
         const firstItem = res.data[0];
        selectedRow.value = firstItem;
-        if (firstItem.model) {
-          loadEventData(firstItem.model);
+        if (firstItem.no) {
+          loadEventData(firstItem.no);
         }
       }
     });
