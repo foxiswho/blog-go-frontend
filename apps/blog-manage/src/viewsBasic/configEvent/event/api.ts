@@ -22,6 +22,7 @@ enum Api {
   state = '/pg2lq/manage/basic/configEvent/state',
   update = '/pg2lq/manage/basic/configEvent/update',
   copy = '/pg2lq/manage/basic/configEvent/copy',
+  modelForm = '/pg2lq/manage/basic/configEvent/modelForm',
 }
 
 /**
@@ -76,6 +77,16 @@ export const detail = (data?: any) => {
  */
 export const copy = (data?: any) => {
   return requestClient.post(Api.copy, data, {
+    errorMessageMode: 'message',
+    successMessageMode: 'notification',
+  });
+};
+/**
+ *
+ * @param data
+ */
+export const modelForm = (data?: any) => {
+  return requestClient.post(Api.modelForm, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });

@@ -89,6 +89,15 @@ const routes: RouteRecordRaw[] = [
       },
       {
         meta: {
+          title: '事件-demo',
+          icon: 'mdi:account-key',
+        },
+        name: 'basic-event-demo',
+        path: '/lq2/basic/event-demo',
+        component: () => import('#/viewsBasic/configEvent/demo/demo.vue'),
+      },
+      {
+        meta: {
           title: '模块',
           icon: 'mdi:account-key',
         },
