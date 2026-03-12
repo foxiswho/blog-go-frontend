@@ -180,7 +180,6 @@ watch(
 </script>
 
 <template>
-  <div>
     <BasicLayout @clear-preferences-and-logout="handleLogout">
       <template #user-dropdown>
         <UserDropdown
@@ -209,11 +208,10 @@ watch(
         >
           <LoginForm />
         </AuthenticationLoginExpiredModal>
+        <WrapPassword :action="wrapPasswordAction" />
       </template>
       <template #lock-screen>
         <LockScreen :avatar @to-login="handleLogout" />
       </template>
     </BasicLayout>
-    <WrapPassword :action="wrapPasswordAction" />
-  </div>
 </template>

@@ -219,9 +219,7 @@ onMounted(() => {
 
             <!-- 嵌套右侧：FieldsList 字段配置页面 -->
             <template #2>
-              <div style="height: 100%; overflow: hidden;">
-                <FieldsList :event-data="selectedRowEventComputed" />
-              </div>
+              <FieldsList :event-data="selectedRowEventComputed" />
             </template>
           </n-split>
 
