@@ -25,6 +25,15 @@ const routes: RouteRecordRaw[] = [
       // },
       {
         meta: {
+          title: '配置',
+          icon: 'mdi:account-multiple',
+        },
+        name: 'basic-config',
+        path: '/lq2/basic/config',
+        component: () => import('#/viewsBasic/config/list/index.vue'),
+      },
+      {
+        meta: {
           title: '省市区',
           icon: 'mdi:account-multiple',
         },

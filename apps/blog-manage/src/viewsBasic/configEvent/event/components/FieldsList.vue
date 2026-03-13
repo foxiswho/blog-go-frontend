@@ -11,10 +11,11 @@ import {
   saveOrUpdate,
 } from '#/viewsBasic/configEvent/field/api';
 import { fieldColumns } from './data';
-import {codeValueAllPublic} from "#/viewsBasic/data-dict/dict/api";
+import {codeValueAllPublic, selectNodeAllPublic as selectDictNodeAllPublic} from "#/viewsBasic/data-dict/dict/api";
 import { allByValueNo as getRuleFields, deleteIds } from '#/viewsBasic/modelRules/api';
 import DrawerEditTpl from '#/viewsBasic/modelRules/components/DrawerEdit.vue';
 import {NAlert} from 'naive-ui';
+import {PgTreeSelect} from "@pg/components-n";
 
 // 接收父组件传递的 event 对象
 const props = defineProps<{
@@ -39,6 +40,7 @@ const ruleOptions = ref([
 const optionsRuleMode = ref([]);
 const ruleFieldsData = ref<any[]>([]);
 const ruleFieldsLoading = ref(false);
+const optionsParameterConfigDataSource = ref<any[]>([]);
 
 const ruleFieldsColumns = [
   { field: 'name', title: '名称', minWidth: 120 },
@@ -250,8 +252,23 @@ async function loadRuleFieldsData(eventNo: string) {
   }
 }
 
+async function loadParameterConfigDataSource() {
+  try {
+    const res = await selectDictNodeAllPublic({});
+    if (res) {
+      optionsParameterConfigDataSource.value = res.map((item: any) => ({
+        value: item.code,
+        label: item.name,
+      }));
+    }
+  } catch (error) {
+    console.error('Failed to load data dictionary:', error);
+  }
+}
+
 onMounted(() => {
   loadCodeValueAllPublic();
+  loadParameterConfigDataSource();
 });
 
 // 暴露刷新方法给父组件
@@ -355,7 +372,7 @@ function reloadFieldRule(opt) {
       show-overflow
       keep-source
       :expand-config="{ expandAll: true }"
-      :max-height="isFullscreen ? 'calc(100vh - 120px)' : 500"
+      :min-height="isFullscreen ? 'calc(100% - 120px)' : 'calc(100% - 300px)'"
       :data="tableData"
       :edit-config="{ trigger: 'click', mode: 'cell', showStatus: true }"
       :edit-rules="{
@@ -384,7 +401,7 @@ function reloadFieldRule(opt) {
         </template>
 
         <template #content="{ row }">
-          <div class="p-4" @click="cellClickEvent({ row })">
+          <div style="min-height: 300px" class="p-4" @click="cellClickEvent({ row })">
             <vxe-form
               title-align="left"
               :data="row" :rules="formRules" @submit="submitEvent" @reset="resetEvent">
@@ -411,12 +428,22 @@ function reloadFieldRule(opt) {
                                 transfer clearable></vxe-select>
                   </template>
                 </vxe-form-item>
-                <vxe-form-item title="验证规则" field="rules" :item-render="{}" :span="8">
+                <vxe-form-item title="参数源配置" field="parameterConfigDataDictionary" :item-render="{}" :span="12" v-if="row.formCode === 'Select' && row.parameterSource === 'dataDictionary'">
                   <template #default>
-                    <vxe-select v-model="row.rules" :options="ruleOptions" multiple
-                                transfer></vxe-select>
+                    <PgTreeSelect
+                      :api="selectDictNodeAllPublic"
+                      :convertNode="true"
+                      v-model:value="row.parameterConfigDataDictionary"
+                    />
                   </template>
                 </vxe-form-item>
+
+<!--                <vxe-form-item title="验证规则" field="rules" :item-render="{}" :span="8">-->
+<!--                  <template #default>-->
+<!--                    <vxe-select v-model="row.rules" :options="ruleOptions" multiple-->
+<!--                                transfer></vxe-select>-->
+<!--                  </template>-->
+<!--                </vxe-form-item>-->
 
             </vxe-form>
           </div>

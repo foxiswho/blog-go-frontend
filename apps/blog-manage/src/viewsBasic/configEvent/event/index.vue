@@ -198,7 +198,10 @@ onMounted(() => {
                   <template #header>
                     <div v-if="selectedRow">
                       <n-button type="quaternary" size="tiny" class="add" @click="addEventClick">添加</n-button>
-                      模型:{{selectedRow.name}}
+                      模型:
+                      <div>
+                        {{selectedRow.name}}
+                      </div>
                     </div>
                   </template>
                   <div v-if="eventData.length > 0">
