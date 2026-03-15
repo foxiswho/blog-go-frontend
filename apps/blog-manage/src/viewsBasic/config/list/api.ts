@@ -17,6 +17,8 @@ enum Api {
   selectPublic = '/pg2lq/manage/basic/config-list/selectPublic',
   state = '/pg2lq/manage/basic/config-list/state',
   update = '/pg2lq/manage/basic/config-list/update',
+  detailForm = '/pg2lq/manage/basic/config-list/detailForm',
+  configUpdate = '/pg2lq/manage/basic/config-list/configUpdate',
 }
 
 /**
@@ -52,6 +54,13 @@ export const selectNodeAllPublic = (data?: any) => {
   return requestClient.post(Api.selectNodeAllPublic, data);
 };
 /**
+ * 公共树展示
+ * @param data
+ */
+export const detailForm = (data?: any) => {
+  return requestClient.post(Api.detailForm, data);
+};
+/**
  * 详情
  * @param data
  */
@@ -66,6 +75,17 @@ export const detail = (data?: any) => {
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
   return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+    errorMessageMode: 'message',
+    successMessageMode: 'notification',
+  });
+};
+/**
+ * 保存或者更新
+ * @param data
+ * @param isUpdate
+ */
+export const configUpdate = (data: any) => {
+  return requestClient.post(Api.configUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });

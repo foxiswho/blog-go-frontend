@@ -22,12 +22,16 @@ import {
   List,
 } from './api';
 import DrawerEditTpl from './components/DrawerEdit.vue';
+import DrawerDetailFormTpl from './components/DrawerDetailForm.vue';
 import { columns } from './data';
 
 const xGrid = ref<VxeGridInstance<RowVO>>();
 
 const [Drawer, drawerApi] = useVbenDrawer({
   connectedComponent: DrawerEditTpl,
+});
+const [DrawerDetail, drawerDetailApi] = useVbenDrawer({
+  connectedComponent: DrawerDetailFormTpl,
 });
 const gridOptions = reactive<VxeGridProps<RowVO>>({
   stripe: true, // 斑马纹
@@ -322,6 +326,14 @@ const editRowEvent = (row: RowVO) => {
   });
   drawerApi.open();
 };
+const detailRowEvent = (row: RowVO) => {
+  drawerDetailApi.setData({
+    // 表单值
+    row: row,
+    isUpdate: true,
+  });
+  drawerDetailApi.open();
+};
 
 const clearRowEvent = () => {
   const $grid = xGrid.value;
@@ -383,6 +395,12 @@ function reloadTable() {
           @click="editRowEvent(row)"
         />
         <vxe-button
+          icon="vxe-icon-edit"
+          mode="text"
+          title="配置"
+          @click="detailRowEvent(row)"
+        />
+        <vxe-button
           icon="vxe-icon-delete"
           mode="text"
           status="danger"
@@ -392,6 +410,7 @@ function reloadTable() {
       </template>
     </vxe-grid>
     <Drawer @ok="reloadTable" />
+    <DrawerDetail />
   </div>
 </template>
 

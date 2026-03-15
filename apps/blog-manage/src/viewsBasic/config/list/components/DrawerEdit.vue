@@ -1,13 +1,17 @@
 <script lang="ts" setup>
 import { h } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 
 import { VbenButton } from '@vben/common-ui';
 
 import { useVbenForm, usePgForm } from '#/adapter';
 
 import { existName, saveOrUpdate } from '../api';
+import DrawerEditTpl from '#/viewsBasic/configEvent/event/invoke/ModalList.vue';
+const [ModalList, modalListApi] = useVbenModal({
+  connectedComponent: DrawerEditTpl,
+});
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -18,6 +22,35 @@ const [Form, formApi] = usePgForm({
     ],
   },
   schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'eventNo',
+      label: '事件',
+      component: 'Input',
+      rules: 'required',
+      componentProps: {
+        placeholder: '请选择事件',
+        onBlur: async (e) => {
+
+        },
+      },
+      suffix: () =>
+        h(
+          VbenButton,
+          {
+            onClick: (e) => {
+              modalListApi.setData({
+                // 表单值
+                values: {},
+                isUpdate: false,
+                num: 1,
+              });
+              modalListApi.open();
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '选择'),
+        ),
+    },
     {
       tabGroup: 'home',
       fieldName: 'name',
@@ -46,35 +79,15 @@ const [Form, formApi] = usePgForm({
         ),
     },
     {
-      tabGroup: 'other',
-      fieldName: 'nameFl',
-      label: '名称英文',
+      tabGroup: 'home',
+      fieldName: 'field',
+      label: '字段名称英文',
       component: 'Input',
       defaultValue: '',
       componentProps: {
         placeholder: '请输入',
       },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'code',
-      label: '编码',
-      component: 'Input',
-      componentProps: {
-        placeholder: '请输入',
-        onBlur: async (e) => {
-          const values = await formApi.getValues();
-          if (!values.nameFl) {
-            formApi.setFieldValue('nameFl', e.target.value);
-          }
-        },
-      },
-    },
-    {
-      tabGroup: 'other',
-      fieldName: 'nameFull',
-      label: '全称',
-      component: 'Input',
+      rules: 'required',
     },
     {
       tabGroup: 'home',
@@ -87,9 +100,31 @@ const [Form, formApi] = usePgForm({
       },
     },
     {
+      tabGroup: 'home',
+      fieldName: 'content',
+      label: '内容',
+      component: 'Textarea',
+      componentProps: {
+        type: 'textarea',
+        placeholder: '内容',
+      },
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'show',
+      label: '显示',
+      component: 'Switch',
+      componentProps: {
+        checkedLabel: '是',
+        uncheckedLabel: '否',
+        placeholder: '内容',
+      },
+    },
+    {
       fieldName: 'id',
       label: 'id',
       component: 'Input',
+      defaultValue: '0',
       componentProps: {},
       dependencies: {
         show: false,
@@ -122,7 +157,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       }
 
       drawerApi.setState({
-        title: `组：${isUpdate ? '编辑' : '新增'}`,
+        title: `配置：${isUpdate ? '编辑' : '新增'}`,
         loading: false,
       });
     }
@@ -151,9 +186,33 @@ function onSubmit(values: Record<string, any>) {
     drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
+function selectEvent(opt) {
+  console.log('selectEvent',opt);
+  if (opt && opt.data) {
+    const row = opt.data[0];
+    const values = formApi.getValues()
+    let data = {
+      ...values ,
+    };
+    data.eventNo = row.no;
+    if (!data.name) {
+      data.name = row.name;
+    }
+    if (!data.field) {
+      data.field = row.field;
+    }
+    if (!data.description) {
+      data.description = row.description;
+    }
+    formApi.setValues({
+      ...data
+    });
+  }
+}
 </script>
 <template>
   <Drawer>
     <Form />
   </Drawer>
+  <ModalList @ok="selectEvent"/>
 </template>

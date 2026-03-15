@@ -160,7 +160,7 @@ const [Modal, modalApi] = useVbenModal({
         formApi.setValues(values);
       }
 
-      modalApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}`, oading: false });
+      modalApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}`, loading: false });
     }
   },
 });
@@ -169,9 +169,12 @@ const [Modal, modalApi] = useVbenModal({
  */
 function onSubmit(values: Record<string, any>) {
   try {
-    drawerApi.setState({ loading: true, confirmLoading: true });
+    modalApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = modalApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate)
+    let data = {
+      ...values,
+    }
+    saveOrUpdate(data, isUpdate)
       .then((d) => {
         setTimeout(() => {
           modalApi.setState({
