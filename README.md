@@ -47,6 +47,8 @@ pnpm build:blog:sys
 ## 利用 github 同步
 切换到 main-source 分支
 
+如果 存在按钮 Sync fork  ，点击同步
+
 ## 手动同步
 ```bash
 # 增加 远程分支
