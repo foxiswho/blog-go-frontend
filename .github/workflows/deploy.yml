@@ -31,7 +31,7 @@ jobs:
         run: pnpm build:play
 
       - name: Sync Playground files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.PRO_FTP_HOST }}
           username: ${{ secrets.WEB_PLAYGROUND_FTP_ACCOUNT }}
@@ -55,7 +55,7 @@ jobs:
         run: pnpm build:docs
 
       - name: Sync Docs files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.PRO_FTP_HOST }}
           username: ${{ secrets.WEBSITE_FTP_ACCOUNT }}
@@ -86,7 +86,7 @@ jobs:
         run: pnpm run build:antd
 
       - name: Sync files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.PRO_FTP_HOST }}
           username: ${{ secrets.WEB_ANTD_FTP_ACCOUNT }}
@@ -117,7 +117,7 @@ jobs:
         run: pnpm run build:ele
 
       - name: Sync files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.PRO_FTP_HOST }}
           username: ${{ secrets.WEB_ELE_FTP_ACCOUNT }}
@@ -148,7 +148,7 @@ jobs:
         run: pnpm run build:naive
 
       - name: Sync files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.PRO_FTP_HOST }}
           username: ${{ secrets.WEB_NAIVE_FTP_ACCOUNT }}
