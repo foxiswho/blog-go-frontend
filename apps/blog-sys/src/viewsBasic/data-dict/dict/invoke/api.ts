@@ -67,7 +67,7 @@ export const detail = (data?: any) => {
  * @param data
  * @param isUpdate
  */
-export const saveOrUpdate = (data: any, isUpdate: boolean) => {
+export const saveOrUpdate = (data: any) => {
   return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',

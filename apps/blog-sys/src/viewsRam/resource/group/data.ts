@@ -8,7 +8,7 @@ import {h} from "vue";
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', title: 'ID', width: 120 },
   { field: 'name', title: '名称', sortable: true },
-  { field: 'code', title: '代号', width: 160 },
+  { field: 'code', title: '码值', width: 160 },
   {
     field: 'state',
     title: '状态',

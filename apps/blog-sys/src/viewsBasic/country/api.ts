@@ -1,8 +1,9 @@
-import { dialog, message } from '#/adapter';
-import { requestClient } from '#/api/request';
+import {dialog, message} from '#/adapter';
+import {requestClient} from '#/api/request';
 
 enum Api {
   create = '/pg2lq/sys/basic/country/create',
+  createUpdate = '/pg2lq/sys/basic/country/createUpdate',
   delete = '/pg2lq/sys/basic/country/delete',
   detail = '/pg2lq/sys/basic/country/detail/',
   disable = '/pg2lq/sys/basic/country/disable',
@@ -14,11 +15,8 @@ enum Api {
   recovery = '/pg2lq/sys/basic/country/recovery',
   selectNodeAllPublic = '/pg2lq/sys/basic/country/selectNodeAllPublic',
   selectNodePublic = '/pg2lq/sys/basic/country/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/country/selectPublic',
   selectPublicCountryCode = '/pg2lq/sys/basic/country/selectPublicCountryCode',
   selectNodePublicCountryCode = '/pg2lq/sys/basic/country/selectNodePublicCountryCode',
-  state = '/pg2lq/sys/basic/country/state',
-  update = '/pg2lq/sys/basic/country/update',
 }
 
 /**
@@ -29,14 +27,6 @@ enum Api {
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
 }
-
-/**
- * 公共列表展示
- * @param data
- */
-export const selectPublic = (data?: any) => {
-  return requestClient.post(Api.selectPublic, data);
-};
 
 /**
  * 公共树展示
@@ -67,7 +57,7 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });
@@ -78,7 +68,7 @@ export const saveOrUpdate = (data: any, isUpdate: boolean) => {
  * @param params
  */
 export const deleteId = (params: any) => {
-  return requestClient.post(Api.delete, { ids: [params] });
+  return requestClient.post(Api.delete, {ids: [params]});
 };
 
 /**
@@ -86,7 +76,7 @@ export const deleteId = (params: any) => {
  * @param params
  */
 export const deleteIds = (params: any) => {
-  return requestClient.post(Api.delete, { ids: params });
+  return requestClient.post(Api.delete, {ids: params});
 };
 
 /**
@@ -103,8 +93,8 @@ export const batchSelectDelete = (params, handleSuccess) => {
       return requestClient
         .post(
           Api.delete,
-          { ids: params },
-          { errorMessageMode: 'message', successMessageMode: 'message' },
+          {ids: params},
+          {errorMessageMode: 'message', successMessageMode: 'message'},
         )
         .then((item) => {
           handleSuccess(item);
@@ -130,8 +120,8 @@ export const batchSelectEnable = (params, handleSuccess) => {
       return requestClient
         .post(
           Api.enable,
-          { ids: params },
-          { errorMessageMode: 'message', successMessageMode: 'message' },
+          {ids: params},
+          {errorMessageMode: 'message', successMessageMode: 'message'},
         )
         .then((item) => {
           handleSuccess(item);
@@ -157,8 +147,8 @@ export const batchSelectDisable = (params, handleSuccess) => {
       return requestClient
         .post(
           Api.disable,
-          { ids: params },
-          { errorMessageMode: 'message', successMessageMode: 'message' },
+          {ids: params},
+          {errorMessageMode: 'message', successMessageMode: 'message'},
         )
         .then((item) => {
           handleSuccess(item);
@@ -184,8 +174,8 @@ export const batchSelectRecovery = (params, handleSuccess) => {
       return requestClient
         .post(
           Api.recovery,
-          { ids: params },
-          { errorMessageMode: 'message', successMessageMode: 'message' },
+          {ids: params},
+          {errorMessageMode: 'message', successMessageMode: 'message'},
         )
         .then((item) => {
           handleSuccess(item);
@@ -211,8 +201,8 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
       return requestClient
         .post(
           Api.physicalDeletion,
-          { ids: params },
-          { errorMessageMode: 'message', successMessageMode: 'message' },
+          {ids: params},
+          {errorMessageMode: 'message', successMessageMode: 'message'},
         )
         .then((item) => {
           handleSuccess(item);
@@ -231,7 +221,7 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    1 === status ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );
@@ -249,8 +239,8 @@ export const existName = (wd, id?) => {
   id = id || '0';
   return requestClient.post(
     Api.existName,
-    { wd, id },
-    { errorMessageMode: 'message', successMessageMode: 'notification' },
+    {wd, id},
+    {errorMessageMode: 'message', successMessageMode: 'notification'},
   );
 };
 /**

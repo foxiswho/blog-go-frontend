@@ -5,8 +5,8 @@ import { useVbenDrawer } from '@vben-core/popup-ui';
 
 import { PgTree } from '@pg/components-n';
 
-import { selectPublic } from './api';
-import Edit from './components/edit.vue';
+import { selectNodeAll } from './api';
+import DrawerEditTpl from './components/DrawerEdit.vue';
 import TabForm from './components/TabForm.vue';
 import TabRule from './components/TabRule.vue';
 
@@ -31,8 +31,8 @@ function reloadTable() {
  * @param e
  */
 const treeOverload = (e) => {};
-const [FormDrawer, formDrawerApi] = useVbenDrawer({
-  connectedComponent: Edit,
+const [Drawer, drawerApi] = useVbenDrawer({
+  connectedComponent: DrawerEditTpl,
 });
 /**
  * 树右键菜单
@@ -45,13 +45,13 @@ const rightClickMenuOptions = (opt) => {
       key: '添加下级',
       props: {
         onClick: () => {
-          formDrawerApi.setData({
+          drawerApi.setData({
             // 表单值
             values: {},
-            parent: opt?.data,
+            parent: opt?.option?.data,
             isUpdate: false,
           });
-          formDrawerApi.open();
+          drawerApi.open();
         },
       },
     },
@@ -66,12 +66,12 @@ const menuDropdownOptions = [
     key: '添加',
     props: {
       onClick: () => {
-        formDrawerApi.setData({
+        drawerApi.setData({
           // 表单值
           values: {},
           isUpdate: false,
         });
-        formDrawerApi.open();
+        drawerApi.open();
       },
     },
   },
@@ -82,7 +82,8 @@ const menuDropdownOptions = [
   <NLayout class="h-full p-2" has-sider>
     <NLayoutSider class="min-w-[200px]">
       <PgTree
-        :api="selectPublic"
+        :api="selectNodeAll"
+        :is-node-all="true"
         :menu-dropdown-options="menuDropdownOptions"
         :reload="reloadTreeComputed"
         :right-click-menu="true"
@@ -103,7 +104,7 @@ const menuDropdownOptions = [
         </div>
       </NLayoutContent>
     </NLayout>
-    <FormDrawer @ok="reloadTable" />
+    <Drawer @ok="reloadTable"/>
   </NLayout>
 </template>
 

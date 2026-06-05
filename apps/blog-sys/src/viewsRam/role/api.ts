@@ -2,7 +2,7 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/ram/role/create',
+  createUpdate = '/pg2lq/sys/ram/role/createUpdate',
   delete = '/pg2lq/sys/ram/role/delete',
   detail = '/pg2lq/sys/ram/role/detail/',
   disable = '/pg2lq/sys/ram/role/disable',
@@ -14,9 +14,6 @@ enum Api {
   recovery = '/pg2lq/sys/ram/role/recovery',
   selectNodeAllPublic = '/pg2lq/sys/ram/role/selectNodeAllPublic',
   selectNodePublic = '/pg2lq/sys/ram/role/selectNodePublic',
-  selectPublic = '/pg2lq/sys/ram/role/selectPublic',
-  state = '/pg2lq/sys/ram/role/state',
-  update = '/pg2lq/sys/ram/role/update',
 }
 
 /**
@@ -27,14 +24,6 @@ enum Api {
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
 }
-
-/**
- * 公共列表展示
- * @param data
- */
-export const selectPublic = (data?: any) => {
-  return requestClient.post(Api.selectPublic, data);
-};
 
 /**
  * 公共树展示
@@ -65,7 +54,7 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });
@@ -229,7 +218,7 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess, dialog) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    1 === status ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );

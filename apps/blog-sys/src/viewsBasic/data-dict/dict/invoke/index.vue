@@ -22,7 +22,7 @@ import {
   deleteIds,
   List,
 } from './api';
-import Edit from './components/edit.vue';
+import DrawerEditTpl from './components/edit.vue';
 import { columns } from './data';
 
 const emit = defineEmits(['ok']);
@@ -31,8 +31,8 @@ const xGrid = ref<VxeGridInstance<RowVO>>();
 const currenData = ref<Recordable<any>>({});
 const formParam = { typeCode: '' };
 
-const [FormDrawer, formDrawerApi] = useVbenDrawer({
-  connectedComponent: Edit,
+const [Drawer, drawerApi] = useVbenDrawer({
+  connectedComponent: DrawerEditTpl,
 });
 
 const gridOptions = reactive<VxeGridProps<RowVO>>({
@@ -244,7 +244,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
         }
         // 批量 有效
         case 'batchEnable': {
-          console.log('$grid.getCheckboxRecords()', $grid.getCheckboxRecords());
           const checkboxRecords = $grid.getCheckboxRecords();
           if (checkboxRecords.length <= 0) {
             message.warning('你没有选择任何数据');
@@ -270,33 +269,38 @@ const gridEvent: VxeGridListeners<RowVO> = {
           break;
         }
         case 'create': {
-          formDrawerApi.setData({
+          drawerApi.setData({
             // 表单值
             values: {},
             parent: currenData.value,
             isUpdate: false,
           });
-          formDrawerApi.open();
+          drawerApi.open();
           break;
         }
-        case 'myExport': {
-          $grid.exportData({
-            type: 'csv',
+        // 删除恢复
+        case 'recovery': {
+          const checkboxRecords = $grid.getCheckboxRecords();
+          if (checkboxRecords.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          const ids = [];
+          checkboxRecords.forEach((item) => {
+            console.log('$grid.item', item);
+            if (item.state > 10) {
+              ids.push(item.id);
+            } else {
+              $grid.setCheckboxRow(item, false);
+            }
           });
-          break;
-        }
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增2 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
+          if (ids.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          batchSelectRecovery(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
           });
           break;
         }
@@ -326,58 +330,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
           });
           break;
         }
-        // 删除恢复
-        case 'recovery': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state > 10) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectRecovery(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-      }
-    }
-  },
-  toolbarToolClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'myPrint': {
-          $grid.print();
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
       }
     }
   },
@@ -391,13 +343,13 @@ const hasActiveEditRow = (row: RowVO) => {
   return false;
 };
 const editRowEvent = (row: RowVO) => {
-  formDrawerApi.setData({
+  drawerApi.setData({
     // 表单值
     values: row,
     parent: currenData.value,
     isUpdate: true,
   });
-  formDrawerApi.open();
+  drawerApi.open();
 };
 
 const clearRowEvent = () => {
@@ -452,16 +404,20 @@ const [DrawerList, drawerApiList] = useVbenDrawer({
   },
   onConfirm: async () => {},
   onOpenChange(isOpen: boolean) {
-    drawerApiList.setState({ loading: true , closeOnClickModal: false });
+    drawerApiList.setState({
+      loading: true,
+      confirmLoading: false,
+      closeOnClickModal: false, // 点击遮罩关闭弹窗
+      destroyOnClose: true, // 关闭时销毁
+    });
     currenData.value = {};
     if (isOpen) {
       const { values } = drawerApiList.getData<Record<string, any>>();
       if (values) {
         currenData.value = values;
         formParam.typeCode = values.code;
-        drawerApiList.setState({ loading: false });
       }
-      drawerApiList.setState({ title: `数据字典：${currenData.value.name} ( 码值：${currenData.value.code} )` });
+      drawerApiList.setState({ title: `数据字典：${currenData.value.name} ( 码值：${currenData.value.code} )`,loading: false });
 
       if (!currenData.value) {
         message.warning('你没有选择任何数据');
@@ -503,7 +459,7 @@ const [DrawerList, drawerApiList] = useVbenDrawer({
           <!--        </vxe-button>-->
         </template>
       </vxe-grid>
-      <FormDrawer @ok="reloadTable" />
+      <Drawer @ok="reloadTable" />
     </div>
   </DrawerList>
 </template>

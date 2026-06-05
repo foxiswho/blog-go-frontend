@@ -7,7 +7,7 @@ import { existName, setStateEnableDisable } from './api';
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', title: 'ID', width: 40 },
   { field: 'name', title: '名称' },
-  { field: 'no', title: '编码', width: 160 },
+  // { field: 'no', title: '编码', width: 160 },
   { field: 'code', title: '标志', width: 160 },
   { field: 'nameFl', title: '英文', width: 120, visible: false },
   { field: 'founder', title: '创始人Id', width: 120, visible: false },

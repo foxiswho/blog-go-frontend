@@ -3,6 +3,7 @@ import { requestClient } from '#/api/request';
 
 enum Api {
   create = '/pg2lq/sys/basic/area/create',
+  createUpdate = '/pg2lq/sys/basic/area/createUpdate',
   delete = '/pg2lq/sys/basic/area/delete',
   detail = '/pg2lq/sys/basic/area/detail/',
   disable = '/pg2lq/sys/basic/area/disable',
@@ -13,11 +14,10 @@ enum Api {
   list = '/pg2lq/sys/basic/area/query',
   physicalDeletion = '/pg2lq/sys/basic/area/physicalDeletion',
   recovery = '/pg2lq/sys/basic/area/recovery',
+  selectNodeAll = '/pg2lq/sys/basic/area/selectNodeAll',
   selectNodeAllPublic = '/pg2lq/sys/basic/area/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/area/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/area/selectPublic',
+  queryAll = '/pg2lq/sys/basic/area/queryAll',
   state = '/pg2lq/sys/basic/area/state',
-  update = '/pg2lq/sys/basic/area/update',
 }
 
 /**
@@ -33,16 +33,16 @@ export async function List(data?: any) {
  * 公共列表展示
  * @param data
  */
-export const selectPublic = (data?: any) => {
-  return requestClient.post(Api.selectPublic, data);
+export const queryAll = (data?: any) => {
+  return requestClient.post(Api.queryAll, data);
 };
 
 /**
  * 公共树展示
  * @param data
  */
-export const selectNodePublic = (data?: any) => {
-  return requestClient.post(Api.selectNodePublic, data);
+export const selectNodeAll = (data?: any) => {
+  return requestClient.post(Api.selectNodeAll, data);
 };
 
 /**
@@ -66,7 +66,7 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });
@@ -230,11 +230,10 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    1 === status ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );
-
 /**
  * 导出excel url地址
  */

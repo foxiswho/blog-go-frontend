@@ -26,7 +26,7 @@ import {
   List,
 } from './api';
 import Account from './components/account.vue';
-import Edit from './components/DrawerEdit.vue';
+import DrawerEditTpl from './components/DrawerEdit.vue';
 import PasswordModal from './components/ModalPassword.vue';
 import { columns } from './data';
 
@@ -58,7 +58,7 @@ const treeOverload = (e) => {
   reloadTable();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
-  connectedComponent: Edit,
+  connectedComponent: DrawerEditTpl,
 });
 const [FormModal, formModalApi] = useVbenModal({
   // 连接抽离的组件
@@ -214,8 +214,8 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   },
   toolbarConfig: {
     buttons: [
-      { code: 'create', name: '新增' },
-      { code: 'createAccount', name: '新增账号' },
+      { code: 'createAccount', name: '新增' },
+      { code: 'create', name: '新增全量' },
       { code: 'batchEnable', name: '批量有效' },
       { code: 'batchDisable', name: '批量停用' },
       {
@@ -227,38 +227,15 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
           { code: 'delete', name: '删除' },
           { code: 'recovery', name: '删除恢复' },
           { code: 'mark_cancel', name: '标记[删除/取消]' },
+          // { code: 'physicalDeletion', name: '物理删除' },
           // {code: 'save', name: '保存', status: 'success'}
         ],
       },
     ],
-    slots: {
-      // buttons: 'toolbar_buttons',
-      // tools: 'toolbar_tools'
-    },
-    tools: [
-      {
-        name: '更多',
-        status: 'primary',
-        size: 'small',
-        toolRender: {
-          props: { className: 'mr-2', class: 'mr-2', popupClassName: 'mr-2' },
-          attrs: { className: 'mr-2', class: 'mr-2' },
-          name: '$buttons',
-        },
-        dropdowns: [
-          // {code: 'delete', name: '直接删除'},
-          // {code: 'mark_cancel', name: '标记[删除/取消]'},
-          // {code: 'myInsert', name: '插入'},
-          // {code: 'mySave', name: '保存'},
-          { code: 'myPrint', name: '打印' },
-          { code: 'physicalDeletion', name: '物理删除' },
-        ],
-      },
-    ],
     refresh: true, // 显示刷新按钮
-    import: true, // 显示导入按钮
-    export: true, // 显示导出按钮
-    print: true, // 显示打印按钮
+    import: false, // 显示导入按钮
+    export: false, // 显示导出按钮
+    print: false, // 显示打印按钮
     zoom: true, // 显示全屏按钮
     custom: true, // 显示自定义列按钮
   },
@@ -317,44 +294,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     },
   },
   columns,
-  importConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['insert'],
-    // 自定义服务端导入
-    importMethod({ file }) {
-      const $grid = xGrid.value;
-      const formBody = new FormData();
-      formBody.append('file', file);
-      return fetch(`/api/pub/import`, { method: 'POST', body: formBody })
-        .then((response) => response.json())
-        .then((data) => {
-          VXETable.modal.message({
-            content: `成功导入 ${data.result.insertRows} 条记录！`,
-            status: 'success',
-          });
-          // 导入完成，刷新表格
-          if ($grid) {
-            $grid.commitProxy('query');
-          }
-        })
-        .catch(() => {
-          VXETable.modal.message({
-            content: '导入失败，请检查数据是否正确！',
-            status: 'error',
-          });
-        });
-    },
-  },
-  exportConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['current', 'selected', 'all'],
-    // 自定义服务端导出
-    exportMethod({ options }) {
-      return Promise.resolve();
-    },
-  },
   checkboxConfig: {
     labelField: 'id',
     reserve: true,
@@ -405,7 +344,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
         }
         // 批量 有效
         case 'batchEnable': {
-          console.log('$grid.getCheckboxRecords()', $grid.getCheckboxRecords());
           const checkboxRecords = $grid.getCheckboxRecords();
           if (checkboxRecords.length <= 0) {
             message.warning('你没有选择任何数据');
@@ -448,27 +386,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
           formModalApi.open();
           break;
         }
-        case 'myExport': {
-          $grid.exportData({
-            type: 'csv',
-          });
-          break;
-        }
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增2 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
         // 删除恢复
         case 'recovery': {
           const checkboxRecords = $grid.getCheckboxRecords();
@@ -492,32 +409,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
           batchSelectRecovery(ids, () => {
             reloadTable();
             $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-      }
-    }
-  },
-  toolbarToolClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'myPrint': {
-          $grid.print();
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
           });
           break;
         }
@@ -673,30 +564,29 @@ function handleAccount(row) {
           </template>
           <template #osAll="{ row }">
             <div class="text-xs">
-              <div>主部门:{{ row.departmentIdName }}</div>
+              <div>主部门:{{ row.departmentNoName }}</div>
               <div>
                 多部门:{{
-                  row.os?.codeName?.departments
-                    ? row.os?.codeName?.departments.join(',')
+                  row.os?.noName?.departments
+                    ? row.os?.noName?.departments.join(',')
                     : ''
                 }}
               </div>
-              <div>主角色:{{ row.roleIdName }}</div>
               <div>
                 多角色:{{
-                  row.os?.codeName?.roles
-                    ? row.os?.codeName?.roles.join(',')
+                  row.os?.noName?.roles
+                    ? row.os?.noName?.roles.join(',')
                     : ''
                 }}
               </div>
-              <div>级别:{{ row.levelIdName }}</div>
-              <div>分组:{{ row.groupIdName }}</div>
+              <div>级别:{{ row.levelNoName }}</div>
+              <div>分组:{{ row.groupNoName }}</div>
             </div>
           </template>
           <template #jobAll="{ row }">
             <div class="text-xs">
-              <div>职位:{{ row.job }}</div>
-              <div>岗位:{{ row.position }}</div>
+              <div>职位:{{ row.jobName }}</div>
+              <div>岗位:{{ row.positionName }}</div>
               <div>职衔:{{ row.jobTitle }}</div>
               <div>职级:{{ row.jobRank }}</div>
             </div>
@@ -748,7 +638,7 @@ function handleAccount(row) {
         </vxe-grid>
       </NLayoutContent>
     </NLayout>
-    <FormDrawer />
+    <FormDrawer @ok="reloadTable" />
     <FormModal @ok="reloadTable" />
     <FormModalPassword />
   </NLayout>

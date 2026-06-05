@@ -5,7 +5,7 @@ import { useVbenDrawer } from '@vben-core/popup-ui';
 
 import { PgTree } from '@pg/components-n';
 
-import { selectNodeAllPublic } from './api';
+import { selectNodeAll } from './api';
 import DrawerEditTpl from './components/DrawerEdit.vue';
 import TabForm from './components/TabForm.vue';
 import TabRule from './components/TabRule.vue';
@@ -82,7 +82,7 @@ const menuDropdownOptions = [
   <NLayout class="h-full p-2" has-sider>
     <NLayoutSider class="min-w-[200px]">
       <PgTree
-        :api="selectNodeAllPublic"
+        :api="selectNodeAll"
         :is-node-all="true"
         :menu-dropdown-options="menuDropdownOptions"
         :reload="reloadTreeComputed"

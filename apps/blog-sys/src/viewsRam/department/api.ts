@@ -3,6 +3,7 @@ import { requestClient } from '#/api/request';
 
 enum Api {
   create = '/pg2lq/sys/ram/department/create',
+  createUpdate = '/pg2lq/sys/ram/department/createUpdate',
   delete = '/pg2lq/sys/ram/department/delete',
   detail = '/pg2lq/sys/ram/department/detail/',
   disable = '/pg2lq/sys/ram/department/disable',
@@ -12,6 +13,7 @@ enum Api {
   list = '/pg2lq/sys/ram/department/query',
   physicalDeletion = '/pg2lq/sys/ram/department/physicalDeletion',
   recovery = '/pg2lq/sys/ram/department/recovery',
+  selectNodeAll = '/pg2lq/sys/ram/department/selectNodeAll',
   selectNodeAllPublic = '/pg2lq/sys/ram/department/selectNodeAllPublic',
   selectNodePublic = '/pg2lq/sys/ram/department/selectNodePublic',
   selectPublic = '/pg2lq/sys/ram/department/selectPublic',
@@ -52,6 +54,13 @@ export const selectNodeAllPublic = (data?: any) => {
   return requestClient.post(Api.selectNodeAllPublic, data);
 };
 /**
+ * 公共树展示
+ * @param data
+ */
+export const selectNodeAll = (data?: any) => {
+  return requestClient.post(Api.selectNodeAll, data);
+};
+/**
  * 详情
  * @param data
  */
@@ -65,7 +74,7 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });
@@ -229,11 +238,10 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess, dialog) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    1 === status ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );
-
 /**
  * 导出excel url地址
  */

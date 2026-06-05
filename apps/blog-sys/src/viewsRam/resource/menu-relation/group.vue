@@ -14,7 +14,7 @@ import {
 } from 'vxe-table';
 
 import { message } from '#/adapter';
-import { selectPublic } from '#/viewsRam/resource/menu/api';
+import { selectNodeAllPublic } from '#/viewsRam/resource/menu/api';
 
 import ResourceGroupTree from '../group/invoke/tree.vue';
 import ResourceList from '../resource/invoke/list.vue';
@@ -33,13 +33,13 @@ const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { menuId: '', typeCategory: 'group' };
+const formParam = { menuNo: '', typeCategory: 'group' };
 
 const treeChang = (record) => {
   currenRecord.value = true;
-  currenData.value = record;
+  currenData.value = record.data;
   // console.log('record', record);
-  formParam.menuId = record.key;
+  formParam.menuNo = record.key;
   reloadTable();
 };
 /**
@@ -55,7 +55,7 @@ function reloadTree() {
 const treeOverload = (e) => {
   currenRecord.value = false;
   currenData.value = {};
-  formParam.menuId = '';
+  formParam.menuNo = '';
   reloadTable();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
@@ -279,7 +279,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
           break;
         }
         case 'selectResource': {
-          if (formParam.menuId) {
+          if (formParam.menuNo) {
             formModalApiResource.setData({
               // 表单值
               values: {},
@@ -293,7 +293,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
           break;
         }
         case 'selectResourceGroup': {
-          if (formParam.menuId) {
+          if (formParam.menuNo) {
             formModalApiGroupTree.setData({
               // 表单值
               values: {},
@@ -389,15 +389,15 @@ const rightClickMenuOptions = ({ option }) => {
 };
 function selectResourceOk(rows) {
   console.log('rows', rows);
-  if (formParam.menuId) {
+  if (formParam.menuNo) {
     if (!rows || rows <= 0) {
       message.warning('你没有选择资源数据');
       return;
     }
     updateByMenu({
-      menuId: formParam.menuId,
+      menuNo: formParam.menuNo,
       data: rows.map((item) => {
-        return { id: item.id, type: 'resource' };
+        return { no: item.no, type: 'resource' };
       }),
     }).then(() => {
       setTimeout(() => {
@@ -410,15 +410,15 @@ function selectResourceOk(rows) {
 }
 function selectResourceGroupOk(rows) {
   console.log('rows', rows);
-  if (formParam.menuId) {
+  if (formParam.menuNo) {
     if (!rows || rows <= 0) {
       message.warning('你没有选择资源组数据');
       return;
     }
     updateByMenu({
-      menuId: formParam.menuId,
+      menuNo: formParam.menuNo,
       data: rows.map((item) => {
-        return { id: item.data.id, type: 'group' };
+        return { no: item.data.no, type: 'group' };
       }),
     }).then(() => {
       setTimeout(() => {
@@ -433,16 +433,11 @@ function selectResourceGroupOk(rows) {
 
 <template>
   <div>
-    <div>
-      <n-tabs v-model:value="tabSelectActive" type="segment">
-        <n-tab name="system"> 系统 </n-tab>
-        <n-tab name="tenant"> 租户 </n-tab>
-      </n-tabs>
-    </div>
     <NLayout class="h-full p-2" has-sider>
       <NLayoutSider class="min-w-[160px]" width="160">
         <PgTree
-          :api="selectPublic"
+          :api="selectNodeAllPublic"
+          :is-node-all="true"
           :menu-dropdown-options="menuDropdownOptions"
           :reload="reloadTreeComputed"
           :right-click-menu="true"
@@ -453,6 +448,9 @@ function selectResourceGroupOk(rows) {
       </NLayoutSider>
       <NLayout class="w-[calc(100%-160px)]">
         <NLayoutContent>
+          <div >
+          当前 选中：<n-tag type="success" v-if="currenData.name">{{currenData.name}}</n-tag>
+          </div>
           <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
             <template #nameAll="{ row }">
               <div>

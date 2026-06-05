@@ -14,7 +14,7 @@ import {
 } from 'vxe-table';
 
 import { dialog, message } from '#/adapter';
-import { deletePhysicalDeletion as groupDeletePhysicalDeletion, selectPublic} from '#/viewsRam/resource/group/api';
+import { deletePhysicalDeletion as groupDeletePhysicalDeletion, selectNodeAllPublic} from '#/viewsRam/resource/group/api';
 
 import Category from './components/category.vue';
 import ResourceList from '../resource/invoke/list.vue';
@@ -36,8 +36,8 @@ const formParam = { typeValue: '', typeCategory: 'group' };
 
 const treeChang = (record) => {
   currenRecord.value = true;
-  currenData.value = record;
-  // console.log('record', record);
+  currenData.value = record.data;
+  console.log('record', record);
   formParam.typeValue = record.key;
   reloadTable();
 };
@@ -444,8 +444,8 @@ function selectResourceOk(rows) {
       return;
     }
     createByGroup({
-      groupId: formParam.typeValue,
-      ids: rows.map((item) => item.id),
+      groupNo: formParam.typeValue,
+      ids: rows.map((item) => item.no),
     }).then(() => {
       setTimeout(() => {
         reloadTable();
@@ -459,16 +459,11 @@ function selectResourceOk(rows) {
 
 <template>
   <div>
-    <div>
-      <n-tabs v-model:value="tabSelectActive" type="segment">
-        <n-tab name="system"> 系统 </n-tab>
-        <n-tab name="tenant"> 租户 </n-tab>
-      </n-tabs>
-    </div>
     <NLayout class="h-full p-2" has-sider>
       <NLayoutSider class="min-w-[160px]" width="160">
         <PgTree
-          :api="selectPublic"
+          :api="selectNodeAllPublic"
+          :is-node-all="true"
           :menu-dropdown-options="menuDropdownOptions"
           :reload="reloadTreeComputed"
           :right-click-menu="true"
@@ -479,6 +474,9 @@ function selectResourceOk(rows) {
       </NLayoutSider>
       <NLayout class="w-[calc(100%-160px)]">
         <NLayoutContent>
+          <div >
+            当前 选中：<n-tag type="success" v-if="currenData.name">{{currenData.name}}</n-tag>
+          </div>
           <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
             <template #nameAll="{ row }">
               <div>

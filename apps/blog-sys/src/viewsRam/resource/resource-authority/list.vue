@@ -549,12 +549,6 @@ const rightClickMenuOptions = ({ option }) => {
 
 <template>
   <div>
-    <div>
-      <n-tabs v-model:value="tabSelectActive" type="segment">
-        <n-tab name="system"> 系统 </n-tab>
-        <n-tab name="tenant"> 租户 </n-tab>
-      </n-tabs>
-    </div>
     <NLayout class="h-full p-2" has-sider>
       <NLayoutSider class="min-w-[160px]" width="160">
         <PgTree

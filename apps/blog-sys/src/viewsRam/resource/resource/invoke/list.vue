@@ -24,13 +24,13 @@ const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { parentId: '' };
+const formParam = { parentNo: '' };
 
 const treeChang = (record) => {
   currenRecord.value = true;
   currenData.value = record;
   // console.log('record', record);
-  formParam.parentId =record.key;
+  formParam.parentNo =record.key;
   reloadTable();
 };
 /**
@@ -46,7 +46,7 @@ function reloadTree() {
 const treeOverload = (e) => {
   currenRecord.value = false;
   currenData.value = {};
-  formParam.parentId = '';
+  formParam.parentNo = '';
   reloadTable();
 };
 /**

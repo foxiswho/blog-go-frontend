@@ -32,13 +32,13 @@ const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { typeValue: '', typeCategory: 'group' };
+const formParam = { parentNo: '', typeCategory: 'group' };
 
 const treeChang = (record) => {
   currenRecord.value = true;
   currenData.value = record;
   // console.log('record', record);
-  formParam.typeValue = record.key;
+  formParam.parentNo = record.key;
   reloadTable();
 };
 /**
@@ -54,7 +54,7 @@ function reloadTree() {
 const treeOverload = (e) => {
   currenRecord.value = false;
   currenData.value = {};
-  formParam.typeValue = '';
+  formParam.parentNo = '';
   reloadTable();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({

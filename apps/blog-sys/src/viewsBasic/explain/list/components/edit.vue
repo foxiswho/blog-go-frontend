@@ -53,6 +53,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);

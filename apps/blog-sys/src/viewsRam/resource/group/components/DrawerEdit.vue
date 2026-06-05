@@ -7,8 +7,9 @@ import { VbenButton } from '@vben/common-ui';
 
 import { usePgForm, useVbenForm } from '#/adapter';
 
-import { existName, saveOrUpdate } from '../api';
-
+import { existName, saveOrUpdate, selectCategory } from '../api';
+import {RamResourceType, RamResourceTypeAttr} from "@pg/types";
+const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
@@ -18,6 +19,21 @@ const [Form, formApi] = usePgForm({
     ],
   },
   schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'parentNo',
+      label: '上级',
+      component: 'PgTreeSelect',
+      componentProps: {
+        api: selectCategory,
+        params: {typeAttr:'categoryLast'},
+        convertNode: true,
+        props: {
+          placeholder: '如果为空,则是一级',
+          filterable: true,
+        },
+      },
+    },
     {
       tabGroup: 'home',
       fieldName: 'name',
@@ -37,6 +53,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -58,7 +75,8 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编码',
+      label: '码值',
+      defaultValue: '系统自动建立',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',
@@ -78,6 +96,31 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
+      fieldName: 'typeSys',
+      label: '类型',
+      defaultValue: 'general',
+      component: 'PgRadioGroup',
+      componentProps: {
+        type: 'button',
+        options: RamResourceType,
+      },
+      rules: 'required',
+    },
+    // {
+    //   tabGroup: 'home',
+    //   fieldName: 'typeAttr',
+    //   label: '属性',
+    //   defaultValue: 'resource',
+    //   component: 'PgRadioGroup',
+    //   componentProps: {
+    //     placeholder: '请选择',
+    //     type: 'button',
+    //     options: RamResourceTypeAttr,
+    //   },
+    //   rules: 'required',
+    // },
+    {
+      tabGroup: 'home',
       fieldName: 'description',
       label: '描述',
       component: 'Textarea',
@@ -89,6 +132,7 @@ const [Form, formApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '0',
       component: 'Input',
       componentProps: {},
       dependencies: {
@@ -98,42 +142,58 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
       const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
       if (values) {
         formApi.setValues(values);
       }
 
-      drawerApi.setState({ title: `角色：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `分组：${isUpdate ? '编辑' : '新增'}` ,loading: false});
     }
   },
-  title: '角色：',
+  title: '：',
 });
 
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  drawerApi.lock();
   try {
+    drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate).then((d) => {
-      setTimeout(() => {
-        drawerApi.close();
-      }, 500);
-    });
+    saveOrUpdate(values, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          drawerApi.setState({ loading: false });
+          drawerApi.close();
+        }, 500);
+      });
   } catch (error) {
     console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

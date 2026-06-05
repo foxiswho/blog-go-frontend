@@ -61,6 +61,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               modalApiMerchant.setData({
@@ -94,6 +95,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -131,6 +133,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existCode(values.code, values.id);

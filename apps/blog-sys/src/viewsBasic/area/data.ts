@@ -6,7 +6,7 @@ import { existName, setStateEnableDisable } from './api';
 import {basicOptionsType} from "@pg/types";
 
 export const columns: VxeTableDefines.ColumnInfo = [
-  { type: 'checkbox', field: 'name', title: '名称', treeNode: true },
+  { type: 'checkbox', field: 'label', title: '名称', treeNode: true },
   { field: 'areaCode', title: '区号', width: 160 },
   { field: 'zipCode', title: '邮编', minWidth: 120 },
   { field: 'countryIdName', title: '国家', width: 160, visible: false },

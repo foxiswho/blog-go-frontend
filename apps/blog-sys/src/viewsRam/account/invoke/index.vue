@@ -192,7 +192,7 @@ const [Modal, modalApi] = useVbenModal({
     return true;
   },
   onOpenChange(isOpen: boolean) {
-    let title = '选择商户';
+    let title = '选择用户';
     modalApi.setState({ title });
   },
   title: '：',

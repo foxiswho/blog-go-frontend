@@ -6,7 +6,7 @@ import { VbenButton } from '@vben/common-ui';
 
 import { usePgForm, useVbenForm } from '#/adapter';
 
-import { existName, saveOrUpdate, selectNodeAllPublic } from '../api';
+import { existName, createUpdateByCategory, selectNodeAllPublic } from '../api';
 const emit = defineEmits(['ok',]);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -98,6 +98,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -191,6 +192,7 @@ const [Form, formApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '0',
       component: 'Input',
       componentProps: {},
       dependencies: {
@@ -233,9 +235,9 @@ function onSubmit(values: Record<string, any>) {
     values['typeSys'] = 'general';
     values['typeAttr'] = 'categoryLast';
     values['method'] = 'POST';
-    saveOrUpdate(values, isUpdate).then((d) => {
+    createUpdateByCategory(values).then((d) => {
       setTimeout(() => {
-        formApi.close();
+        modalApi.close();
         emit('ok',values);
       }, 500);
     });

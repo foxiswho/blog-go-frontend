@@ -34,6 +34,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
@@ -53,6 +54,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
@@ -72,6 +74,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();

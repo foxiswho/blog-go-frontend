@@ -7,15 +7,17 @@ import { $t } from '@vben/locales';
 import { usePgForm } from '#/adapter';
 
 import { updatePassword } from '../api';
+import { usePubPreStore } from '#/store';
+import { SmUtil } from '#/tools/smUtil';
 
+const pubPreStore = usePubPreStore();
+const sm = new SmUtil();
 const currentData = ref({});
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
-    group: [
-      { value: 'home', label: '修改密码' },
-    ],
+    group: [{ value: 'home', label: '修改密码' }],
   },
   schema: [
     {
@@ -64,7 +66,6 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 
@@ -75,26 +76,43 @@ const [Modal, modalApi] = useVbenModal({
   onCancel() {
     modalApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-    // modalApi.close();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
       const { values } = modalApi.getData<Record<string, any>>();
       currentData.value = values;
       formApi.setFieldValue('id', values.id);
 
-      modalApi.setState({ title: `修改密码：${values.account} (${values.phone})  ${values.id}` });
+      modalApi.setState({
+        title: `修改密码：${values.account} (${values.phone})  ${values.id}`,
+      });
     }
   },
 });
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  modalApi.lock();
   try {
-    updatePassword(values).then((d) => {
+    const data = {
+      ...values,
+    };
+    if (
+      pubPreStore.isEnable() &&
+      pubPreStore.getLoginPub() &&
+      data['passwordNew']
+    ) {
+      sm.setPublicKey(pubPreStore.getLoginPub());
+      data.passwordNew = sm.encryptHex(data.passwordNew);
+      data['encrypt'] = 'encrypt';
+    }
+    updatePassword(data).then((d) => {
       setTimeout(() => {
         emit('ok', values);
         modalApi.close();
@@ -102,6 +120,8 @@ function onSubmit(values: Record<string, any>) {
     });
   } catch (error) {
     console.error(error);
+  } finally {
+    modalApi.unlock();
   }
 }
 </script>

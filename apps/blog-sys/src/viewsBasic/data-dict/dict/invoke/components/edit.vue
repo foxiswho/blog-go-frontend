@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {h, ref} from 'vue';
+import { h, ref } from 'vue';
 
 import { useVbenDrawer, VbenButton } from '@vben/common-ui';
 
@@ -27,7 +27,9 @@ const [FormEdit, formInApi] = usePgForm({
       labelWidth: 0,
       renderComponentContent: () => {
         return {
-          default: () => [`父级码值: ${parentData.value.name} ( ${parentData.value.code} )`],
+          default: () => [
+            `父级码值: ${parentData.value.name} ( ${parentData.value.code} )`,
+          ],
         };
       },
     },
@@ -60,6 +62,7 @@ const [FormEdit, formInApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formInApi.getValues();
               existName(values.name, values.id);
@@ -97,6 +100,7 @@ const [FormEdit, formInApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formInApi.getValues();
               existCode(values.code, values.id);
@@ -113,9 +117,7 @@ const [FormEdit, formInApi] = usePgForm({
       componentProps: {
         type: 'textarea',
         placeholder: '请输入',
-        onBlur: async (e) => {
-
-        },
+        onBlur: async (e) => {},
       },
       // suffix: () =>
       //   h(
@@ -194,7 +196,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
     parentData.value = {};
     recordData.value = {};
     if (isOpen) {
-      drawerApi.setState({ loading: true, closeOnClickModal: false });
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
       const { values, isUpdate, parent } =
         drawerApi.getData<Record<string, any>>();
       let data = { typeCode: '' };
@@ -230,29 +237,26 @@ const [Drawer, drawerApi] = useVbenDrawer({
  */
 function onSubmit(values: Record<string, any>) {
   try {
-    drawerApi.setState({ loading: true });
+    drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    let data = {
+    const data = {
       ...values,
     };
     if (isUpdate) {
       data.id = recordData.value.id;
       data.typeCode = parentData.value.code;
     }
-    saveOrUpdate(values, isUpdate)
-      .then((d) => {
-        setTimeout(() => {
-          emit('ok', values);
-          drawerApi.setState({ loading: false });
-          drawerApi.close();
-        }, 500);
-      })
-      .catch((error) => {
+    saveOrUpdate(values).then((d) => {
+      setTimeout(() => {
+        emit('ok', values);
         drawerApi.setState({ loading: false });
-      });
+        drawerApi.close();
+      }, 500);
+    });
   } catch (error) {
-    drawerApi.setState({ loading: false });
     console.error(error);
+  } finally {
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

@@ -2,22 +2,20 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/tc/tenant/create',
-  delete = '/pg2lq/sys/tc/tenant/delete',
-  detail = '/pg2lq/sys/tc/tenant/detail/',
-  disable = '/pg2lq/sys/tc/tenant/disable',
-  enable = '/pg2lq/sys/tc/tenant/enable',
-  existName = '/pg2lq/sys/tc/tenant/existName',
-  existCode = '/pg2lq/sys/tc/tenant/existCode',
-  exportExcel = '/pg2lq/sys/tc/tenant/exportExcel',
-  list = '/pg2lq/sys/tc/tenant/query',
-  physicalDeletion = '/pg2lq/sys/tc/tenant/physicalDeletion',
-  recovery = '/pg2lq/sys/tc/tenant/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/tc/tenant/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/tc/tenant/selectNodePublic',
-  selectPublic = '/pg2lq/sys/tc/tenant/selectPublic',
-  state = '/pg2lq/sys/tc/tenant/state',
-  update = '/pg2lq/sys/tc/tenant/update',
+  create = '/pg2lq/sys/mc/tenant/create',
+  createUpdate = '/pg2lq/sys/mc/tenant/createUpdate',
+  delete = '/pg2lq/sys/mc/tenant/delete',
+  detail = '/pg2lq/sys/mc/tenant/detail/',
+  disable = '/pg2lq/sys/mc/tenant/disable',
+  enable = '/pg2lq/sys/mc/tenant/enable',
+  existName = '/pg2lq/sys/mc/tenant/existName',
+  existCode = '/pg2lq/sys/mc/tenant/existCode',
+  exportExcel = '/pg2lq/sys/mc/tenant/exportExcel',
+  list = '/pg2lq/sys/mc/tenant/query',
+  physicalDeletion = '/pg2lq/sys/mc/tenant/physicalDeletion',
+  recovery = '/pg2lq/sys/mc/tenant/recovery',
+  selectNodeAll = '/pg2lq/sys/mc/tenant/selectNodeAll',
+  selectNodeAllPublic = '/pg2lq/sys/mc/tenant/selectNodeAllPublic',
 }
 
 /**
@@ -30,21 +28,12 @@ export async function List(data?: any) {
 }
 
 /**
- * 公共列表展示
- * @param data
- */
-export const selectPublic = (data?: any) => {
-  return requestClient.post(Api.selectPublic, data);
-};
-
-/**
  * 公共树展示
  * @param data
  */
-export const selectNodePublic = (data?: any) => {
-  return requestClient.post(Api.selectNodePublic, data);
+export const selectNodeAll = (data?: any) => {
+  return requestClient.post(Api.selectNodeAll, data);
 };
-
 /**
  * 公共树展示
  * @param data
@@ -66,7 +55,7 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });
@@ -230,7 +219,7 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    1 === status ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );

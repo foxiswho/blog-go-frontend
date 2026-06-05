@@ -3,12 +3,20 @@ import { h } from 'vue';
 
 import { useVbenDrawer, VbenButton } from '@vben/common-ui';
 
-import { HttpMethod, RamResourceType, RamResourceTypeAttr } from '@pg/types';
+import { PgTreeSelect } from '@pg/components-n';
 
 import { usePgForm } from '#/adapter';
 
-import { existName, saveOrUpdate, selectNodeAllPublic } from '../api';
+import {
+  existCode,
+  existName,
+  saveOrUpdate,
+  selectNodeAll,
+  selectNodeAllPublic,
+  selectPublic,
+} from '../api';
 
+const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
@@ -20,12 +28,14 @@ const [Form, formApi] = usePgForm({
   schema: [
     {
       tabGroup: 'home',
-      fieldName: 'parentId',
+      fieldName: 'parentNo',
       label: '上级',
+      defaultValue: '',
       component: 'PgTreeSelect',
       componentProps: {
-        api: selectNodeAllPublic,
-        params: {typeAttr:'categoryLast'},
+        api: selectNodeAll,
+        params: { by: 'no' },
+        filterQueryAsync: true,
         props: {
           placeholder: '如果为空,则是一级',
           filterable: true,
@@ -34,35 +44,10 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
-      fieldName: 'typeSys',
-      label: '类型',
-      defaultValue: 'general',
-      component: 'PgRadioGroup',
-      componentProps: {
-        type: 'button',
-        options: RamResourceType,
-      },
-      rules: 'required',
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'typeAttr',
-      label: '属性',
-      defaultValue: 'resource',
-      component: 'PgRadioGroup',
-      componentProps: {
-        placeholder: '请选择',
-        type: 'button',
-        options: RamResourceTypeAttr,
-      },
-      rules: 'required',
-    },
-    {
-      tabGroup: 'home',
       fieldName: 'name',
       label: '名称',
       component: 'Input',
-      defaultValue: '',
+      rules: 'required',
       componentProps: {
         placeholder: '请输入',
         onBlur: async (e) => {
@@ -72,11 +57,11 @@ const [Form, formApi] = usePgForm({
           }
         },
       },
-      rules: 'required',
       suffix: () =>
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -90,6 +75,7 @@ const [Form, formApi] = usePgForm({
       fieldName: 'nameFl',
       label: '名称英文',
       component: 'Input',
+      defaultValue: '',
       componentProps: {
         placeholder: '请输入',
       },
@@ -97,7 +83,8 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '资源标识',
+      label: '码值',
+      defaultValue: '系统自动建立',
       rules: 'required',
       component: 'Input',
       componentProps: {
@@ -107,36 +94,26 @@ const [Form, formApi] = usePgForm({
           if (!values.nameFl) {
             formApi.setFieldValue('nameFl', e.target.value);
           }
-          if (!values.path) {
-            formApi.setFieldValue('path', e.target.value);
-          }
         },
       },
+      suffix: () =>
+        h(
+          VbenButton,
+          {
+            class:'pg-button-size-small',
+            onClick: async (e) => {
+              const values = await formApi.getValues();
+              existCode(values.code, values.id);
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '查重'),
+        ),
     },
     {
       tabGroup: 'other',
       fieldName: 'nameFull',
       label: '全称',
       component: 'Input',
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'path',
-      label: '路径',
-      component: 'Input',
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'method',
-      label: '方法',
-      defaultValue: 'POST',
-      rules: 'required',
-      component: 'PgRadioGroup',
-      componentProps: {
-        placeholder: '请选择',
-        type: 'button',
-        options: HttpMethod,
-      },
     },
     {
       tabGroup: 'home',
@@ -151,6 +128,7 @@ const [Form, formApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '0',
       component: 'Input',
       componentProps: {},
       dependencies: {
@@ -160,52 +138,76 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      const { values, isUpdate, parent } =
-        drawerApi.getData<Record<string, any>>();
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
+      const { values, isUpdate, parent } = drawerApi.getData<Record<string, any>>();
       if (values) {
-        if (parent) {
-          values.parentId = parent.id;
-        }
-        formApi.setValues(values);
+        formApi.setValues({
+          ...values,
+        });
+      }
+      if (parent) {
+        formApi.setFieldValue('parentNo', parent.no);
       }
 
-      drawerApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `模块：${isUpdate ? '编辑' : '新增'}` ,loading: false});
     }
   },
-  title: '角色：',
+  title: '：',
 });
 
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  drawerApi.lock();
   try {
-    console.log('values', values);
-    const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate).then((d) => {
-      setTimeout(() => {
-        drawerApi.close();
-      }, 500);
+    drawerApi.setState({
+      loading: true,
+      confirmLoading: true,
     });
+    const { isUpdate } = drawerApi.getData<Record<string, any>>();
+    // console.log('values',values)
+    saveOrUpdate(values, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          drawerApi.setState({
+            loading: false,
+            confirmLoading: false,
+          });
+          drawerApi.close();
+        }, 2500);
+      });
   } catch (error) {
     console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>
 <template>
   <Drawer>
-    <Form />
+    <Form>
+    </Form>
   </Drawer>
 </template>

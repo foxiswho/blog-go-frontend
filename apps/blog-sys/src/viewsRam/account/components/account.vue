@@ -36,6 +36,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
@@ -70,6 +71,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
@@ -89,6 +91,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
@@ -108,9 +111,10 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
-              existCode(values.mail, values.id);
+              existCode(values.code, values.id);
             },
           },
           () => h('span', { class: 'font-normal' }, '查重'),
@@ -181,7 +185,11 @@ const [Modal, modalApi] = useVbenModal({
 function onSubmit(values: Record<string, any>) {
   try {
     const { isUpdate } = modalApi.getData<Record<string, any>>();
-    saveOrUpdateAccount(values, isUpdate).then((d) => {
+    let data = {...values};
+    if(!isUpdate) {
+      data['id'] ='0';
+    }
+    saveOrUpdateAccount(data).then((d) => {
       setTimeout(() => {
         emit('ok', values);
         modalApi.close();

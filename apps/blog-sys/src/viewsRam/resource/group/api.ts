@@ -3,6 +3,8 @@ import { requestClient } from '#/api/request';
 
 enum Api {
   create = '/pg2lq/sys/ram/resource-group/create',
+  createUpdate = '/pg2lq/sys/ram/resource-group/createUpdate',
+  createUpdateByCategory = '/pg2lq/sys/ram/resource-group/createUpdateByCategory',
   delete = '/pg2lq/sys/ram/resource-group/delete',
   detail = '/pg2lq/sys/ram/resource-group/detail/',
   disable = '/pg2lq/sys/ram/resource-group/disable',
@@ -12,7 +14,10 @@ enum Api {
   list = '/pg2lq/sys/ram/resource-group/query',
   physicalDeletion = '/pg2lq/sys/ram/resource-group/physicalDeletion',
   recovery = '/pg2lq/sys/ram/resource-group/recovery',
+  selectCategory = '/pg2lq/sys/ram/resource-group/selectCategory',
+  selectCategoryPublic = '/pg2lq/sys/ram/resource-group/selectCategoryPublic',
   selectNodeAllPublic = '/pg2lq/sys/ram/resource-group/selectNodeAllPublic',
+  selectNodeAll = '/pg2lq/sys/ram/resource-group/selectNodeAll',
   selectNodePublic = '/pg2lq/sys/ram/resource-group/selectNodePublic',
   selectPublic = '/pg2lq/sys/ram/resource-group/selectPublic',
   state = '/pg2lq/sys/ram/resource-group/state',
@@ -37,6 +42,22 @@ export const selectPublic = (data?: any) => {
 };
 
 /**
+ * 公共分类
+ * @param data
+ */
+export const selectCategory = (data?: any) => {
+  return requestClient.post(Api.selectCategory, data);
+};
+
+/**
+ * 公共分类
+ * @param data
+ */
+export const selectCategoryPublic = (data?: any) => {
+  return requestClient.post(Api.selectCategoryPublic, data);
+};
+
+/**
  * 公共树展示
  * @param data
  */
@@ -52,6 +73,13 @@ export const selectNodeAllPublic = (data?: any) => {
   return requestClient.post(Api.selectNodeAllPublic, data);
 };
 /**
+ * 公共树展示
+ * @param data
+ */
+export const selectNodeAll = (data?: any) => {
+  return requestClient.post(Api.selectNodeAll, data);
+};
+/**
  * 详情
  * @param data
  */
@@ -65,7 +93,19 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
+    errorMessageMode: 'message',
+    successMessageMode: 'notification',
+  });
+};
+
+/**
+ * 保存或者更新
+ * @param data
+ * @param isUpdate
+ */
+export const createUpdateByCategory = (data: any) => {
+  return requestClient.post(Api.createUpdateByCategory, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });
@@ -237,11 +277,10 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    1 === status ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );
-
 /**
  * 导出excel url地址
  */

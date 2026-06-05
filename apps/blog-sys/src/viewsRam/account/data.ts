@@ -15,7 +15,7 @@ export const columns: VxeGridPropTypes.Columns = [
   { field: 'jobAll', title: '职位', slots: { default: 'jobAll' } },
   { field: 'mail', title: '邮箱', width: 160, visible: false },
   { field: 'phone', title: '手机号', width: 160, visible: false },
-  { field: 'code', title: '代号', width: 160, visible: false },
+  { field: 'code', title: '码值', width: 160, visible: false },
   { field: 'typeIdentity', title: '身份', width: 100, visible: false, formatter: IdentityTypeFormatter },
   { field: 'typeDomain', title: '域', width: 100, visible: false, formatter: basicTypeDomainFormatter },
   { field: 'typeDomainAll', title: '域|身份', width: 100, slots: { default: 'typeDomainAll' } },

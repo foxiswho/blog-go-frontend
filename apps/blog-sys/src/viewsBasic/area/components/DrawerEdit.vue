@@ -4,11 +4,11 @@ import { h } from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { VbenButton } from '@vben/common-ui';
 
-import {YesNoOptions} from "@pg/types";
+import { basicOptionsType } from "@pg/types";
 
 import { useVbenForm, usePgForm } from '#/adapter';
 
-import { existName, saveOrUpdate } from '../api';
+import { existName, existCode, saveOrUpdate, selectNodeAll } from '../api';
 
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
@@ -20,6 +20,21 @@ const [Form, formApi] = usePgForm({
     ],
   },
   schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'parentNo',
+      label: '上级',
+      defaultValue: '',
+      component: 'PgTreeSelect',
+      componentProps: {
+        api: selectNodeAll,
+        params: {},
+        props: {
+          placeholder: '如果为空,则是一级',
+          filterable: true,
+        },
+      },
+    },
     {
       tabGroup: 'home',
       fieldName: 'name',
@@ -39,6 +54,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -60,7 +76,9 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编码',
+      label: '码值',
+      defaultValue: '系统自动建立',
+      rules: 'required',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',
@@ -71,41 +89,52 @@ const [Form, formApi] = usePgForm({
           }
         },
       },
+      suffix: () =>
+        h(
+          VbenButton,
+          {
+            class:'pg-button-size-small',
+            onClick: async (e) => {
+              const values = await formApi.getValues();
+              existCode(values.code, values.id);
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '查重'),
+        ),
     },
     {
       tabGroup: 'home',
-      fieldName: 'iso3',
-      label: 'ISO三字代码',
+      fieldName: 'source',
+      label: '源',
       component: 'Input',
     },
     {
       tabGroup: 'home',
-      fieldName: 'domainSuffix',
-      label: '域名后缀',
+      fieldName: 'zipCode',
+      label: '邮编',
       component: 'Input',
     },
     {
       tabGroup: 'home',
-      fieldName: 'typeSys',
-      label: '区号使用',
-      defaultValue: 2,
+      fieldName: 'areaCode',
+      label: '区号',
+      component: 'Input',
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'countryId',
+      label: '国家',
+      component: 'Input',
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'type',
+      label: '类型',
+      defaultValue: 'general',
       component: 'PgRadioGroup',
       componentProps: {
         type: 'button',
-        options: YesNoOptions,
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'countryCode',
-      label: '国际区号',
-      component: 'Input',
-      dependencies: {
-        if(values) {
-          return values.typeSys===1;
-        },
-        // 随意一个字段改变时，都会触发
-        triggerFields: ['typeSys'],
+        options: basicOptionsType,
       },
     },
     {
@@ -127,8 +156,8 @@ const [Form, formApi] = usePgForm({
     {
       fieldName: 'id',
       label: 'id',
-      component: 'Input',
       defaultValue: '0',
+      component: 'Input',
       componentProps: {},
       dependencies: {
         show: false,
@@ -137,35 +166,49 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
+      const { values, isUpdate,parent } = drawerApi.getData<Record<string, any>>();
       if (values) {
-        formApi.setValues(values);
+        formApi.setValues({
+          ...values,
+        });
+      }
+      if (parent) {
+        formApi.setFieldValue('parentNo', parent.no);
       }
 
-      drawerApi.setState({ title: `角色：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `地区：${isUpdate ? '编辑' : '新增'}`,loading: false });
     }
   },
-  title: '角色：',
+  title: '：',
 });
 
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  drawerApi.lock();
   try {
-    drawerApi.setState({ loading: true });
+    drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
     saveOrUpdate(values, isUpdate).then((d) => {
       setTimeout(() => {
@@ -175,8 +218,10 @@ function onSubmit(values: Record<string, any>) {
       }, 500);
     });
   } catch (error) {
-    drawerApi.setState({ loading: false });
     console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

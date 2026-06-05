@@ -17,6 +17,14 @@ enum Api {
   selectPublic = '/pg2lq/sys/basic/attachment/selectPublic',
   state = '/pg2lq/sys/basic/attachment/state',
   update = '/pg2lq/sys/basic/attachment/update',
+  makeFileOwnerPublic = '/pg2lq/sys/basic/attachment/makeFileOwnerPublic',
+  makeFileOwnerAllPublic = '/pg2lq/sys/basic/attachment/upload-makeFileOwnerAllPublic',
+  upload = '/pg2lq/sys/basic/filePub/upload',
+  uploadQr = '/pg2lq/sys/basic/filePub/upload-qr',
+  uploadLink = '/pg2lq/sys/basic/filePub/upload-link',
+  uploadList = '/pg2lq/sys/basic/filePub/upload-list',
+  updateByFileOwner = '/pg2lq/sys/basic/filePub/upload-updateByFileOwner',
+  updateDetail = '/pg2lq/sys/basic/filePub/upload-detail',
 }
 
 /**
@@ -251,3 +259,108 @@ export const existName = (wd, id?) => {
     { errorMessageMode: 'message', successMessageMode: 'notification' },
   );
 };
+
+/**
+ * 设置文件拥有者
+ * @param data {
+ *   num: 1, //生成数量
+ *   mark : '标记',
+ *   rule : [
+ *   //自定义规则
+ *      {
+ *        mark : '标记',
+ *      }
+ *   ]
+ * }
+ */
+export const makeFileOwnerAllPublic = (data?) => {
+  data = data || {};
+  return requestClient.post(Api.makeFileOwnerAllPublic, data);
+};
+
+/**
+ * 设置文件拥有者
+ * @param data {
+ *   mark : '标记'
+ * }
+ */
+export const makeFileOwnerPublic = (data?) => {
+  data = data || {};
+  return requestClient.post(Api.makeFileOwnerPublic, data);
+};
+
+/**
+ * 设置文件拥有者
+ * @param data {
+ *   mark : '标记'
+ * }
+ */
+export const uploadUpByFileOwner = (data?) => {
+  data = data || {};
+  return requestClient.post(Api.updateByFileOwner, { data: data });
+};
+
+/**
+ * 设置文件拥有者
+ * @param data {
+ *   mark : '标记'
+ * }
+ * @param setting
+ */
+export const uploadFn = (data?: any, setting?: {
+  type?:string,
+  url?:string,
+  config?:object,
+}) => {
+  let url = Api.upload;
+  data = data || {};
+  let config = {};
+  if (setting) {
+    if (setting.type) {
+      data['type'] = setting.type;
+    }
+    if (setting.url) {
+      url = setting.url;
+    } else {
+      url = `${Api.upload}-${  setting.type}`;
+    }
+    if (setting.config) {
+      config = setting.config;
+    }
+    if(setting.type && setting.type === 'formdata') {
+      url = Api.upload;
+      config = setting?.config || {
+        errorMessageMode: 'message',
+        isTransformResponse: false,
+        successMessageMode: 'notification',
+        withToken: true,
+        headers: {
+          'Content-Type': `multipart/form-data;boundary = ${Date.now()}`,
+        },
+      };
+    }
+  }
+  return requestClient.post(url, data, config);
+};
+
+
+/**
+ * 定义自定义上传函数
+ * @param
+ */
+export const uploadFnByMarkdown = (data:any, setting?: {
+  type?:string,
+  url?:string,
+  config?:object,
+})=> {
+  let config = setting?.config || {
+    errorMessageMode: '',
+    isTransformResponse: false,
+    successMessageMode: '',
+    withToken: true,
+    headers: {
+      'Content-Type': `multipart/form-data;boundary = ${Date.now()}`,
+    },
+  };
+    return requestClient.post(Api.upload+'-more', data,config);
+}

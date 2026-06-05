@@ -3,6 +3,8 @@ import { requestClient } from '#/api/request';
 
 enum Api {
   create = '/pg2lq/sys/ram/resource/create',
+  createUpdate = '/pg2lq/sys/ram/resource/createUpdate',
+  createUpdateByCategory = '/pg2lq/sys/ram/resource/createUpdateByCategory',
   delete = '/pg2lq/sys/ram/resource/delete',
   detail = '/pg2lq/sys/ram/resource/detail/',
   disable = '/pg2lq/sys/ram/resource/disable',
@@ -12,7 +14,9 @@ enum Api {
   list = '/pg2lq/sys/ram/resource/query',
   physicalDeletion = '/pg2lq/sys/ram/resource/physicalDeletion',
   recovery = '/pg2lq/sys/ram/resource/recovery',
+  selectCategory = '/pg2lq/sys/ram/resource/selectCategory',
   selectCategoryPublic = '/pg2lq/sys/ram/resource/selectCategoryPublic',
+  selectNodeAll = '/pg2lq/sys/ram/resource/selectNodeAll',
   selectNodeAllPublic = '/pg2lq/sys/ram/resource/selectNodeAllPublic',
   selectNodePublic = '/pg2lq/sys/ram/resource/selectNodePublic',
   selectPublic = '/pg2lq/sys/ram/resource/selectPublic',
@@ -41,6 +45,14 @@ export const selectPublic = (data?: any) => {
  * 公共分类
  * @param data
  */
+export const selectCategory = (data?: any) => {
+  return requestClient.post(Api.selectCategory, data);
+};
+
+/**
+ * 公共分类
+ * @param data
+ */
 export const selectCategoryPublic = (data?: any) => {
   return requestClient.post(Api.selectCategoryPublic, data);
 };
@@ -61,6 +73,13 @@ export const selectNodeAllPublic = (data?: any) => {
   return requestClient.post(Api.selectNodeAllPublic, data);
 };
 /**
+ * 公共树展示
+ * @param data
+ */
+export const selectNodeAll = (data?: any) => {
+  return requestClient.post(Api.selectNodeAll, data);
+};
+/**
  * 详情
  * @param data
  */
@@ -74,7 +93,19 @@ export const detail = (data?: any) => {
  * @param isUpdate
  */
 export const saveOrUpdate = (data: any, isUpdate: boolean) => {
-  return requestClient.post(isUpdate ? Api.update : Api.create, data, {
+  return requestClient.post(Api.createUpdate, data, {
+    errorMessageMode: 'message',
+    successMessageMode: 'notification',
+  });
+};
+
+/**
+ * 保存或者更新
+ * @param data
+ * @param isUpdate
+ */
+export const createUpdateByCategory = (data: any) => {
+  return requestClient.post(Api.createUpdateByCategory, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });
@@ -238,11 +269,10 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    1 === status ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );
-
 /**
  * 导出excel url地址
  */

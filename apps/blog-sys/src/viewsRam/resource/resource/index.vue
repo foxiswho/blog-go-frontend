@@ -22,10 +22,10 @@ import {
   batchSelectRecovery,
   deleteIds,
   List,
-  selectCategoryPublic,
+  selectCategory,
 } from './api';
 import Category from './components/category.vue';
-import Edit from './components/edit.vue';
+import Edit from './components/DrawerEdit.vue';
 import { columns } from './data';
 
 const currenRecord = ref(false);
@@ -33,13 +33,13 @@ const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { parentId: '' };
+const formParam = { parentNo: '' };
 
 const treeChang = (record) => {
   currenRecord.value = true;
   currenData.value = record;
-  // console.log('record', record);
-  formParam.parentId =record.key;
+  console.log('record', record);
+  formParam.parentNo = record.key;
   reloadTable();
 };
 /**
@@ -53,7 +53,7 @@ function reloadTree() {
  * @param e
  */
 const treeOverload = (e) => {
-  formParam.parentId = '';
+  formParam.parentNo = '';
   reloadTable();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
@@ -238,44 +238,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     },
   },
   columns,
-  importConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['insert'],
-    // 自定义服务端导入
-    importMethod({ file }) {
-      const $grid = xGrid.value;
-      const formBody = new FormData();
-      formBody.append('file', file);
-      return fetch(`/api/pub/import`, { method: 'POST', body: formBody })
-        .then((response) => response.json())
-        .then((data) => {
-          VXETable.modal.message({
-            content: `成功导入 ${data.result.insertRows} 条记录！`,
-            status: 'success',
-          });
-          // 导入完成，刷新表格
-          if ($grid) {
-            $grid.commitProxy('query');
-          }
-        })
-        .catch(() => {
-          VXETable.modal.message({
-            content: '导入失败，请检查数据是否正确！',
-            status: 'error',
-          });
-        });
-    },
-  },
-  exportConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['current', 'selected', 'all'],
-    // 自定义服务端导出
-    exportMethod({ options }) {
-      return Promise.resolve();
-    },
-  },
   checkboxConfig: {
     labelField: 'id',
     reserve: true,
@@ -326,7 +288,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
         }
         // 批量 有效
         case 'batchEnable': {
-          console.log('$grid.getCheckboxRecords()', $grid.getCheckboxRecords());
           const checkboxRecords = $grid.getCheckboxRecords();
           if (checkboxRecords.length <= 0) {
             message.warning('你没有选择任何数据');
@@ -359,27 +320,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
             isUpdate: false,
           });
           formDrawerApi.open();
-          break;
-        }
-        case 'myExport': {
-          $grid.exportData({
-            type: 'csv',
-          });
-          break;
-        }
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增2 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
           break;
         }
         // 删除恢复
@@ -418,7 +358,11 @@ const gridEvent: VxeGridListeners<RowVO> = {
           const ids = [];
           checkboxRecords.forEach((item) => {
             console.log('$grid.item', item);
-            ids.push(item.id);
+            if (item.state > 10) {
+              ids.push(item.id);
+            } else {
+              $grid.setCheckboxRow(item, false);
+            }
           });
           if (ids.length <= 0) {
             message.warning('你没有选择任何数据');
@@ -434,30 +378,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
     }
   },
   toolbarToolClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'myPrint': {
-          $grid.print();
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
-      }
-    }
+
   },
 };
 
@@ -593,16 +514,11 @@ const rightClickMenuOptions = ({ option }) => {
 
 <template>
   <div>
-    <div>
-      <n-tabs v-model:value="tabSelectActive" type="segment">
-        <n-tab name="system"> 系统 </n-tab>
-        <n-tab name="tenant"> 租户 </n-tab>
-      </n-tabs>
-    </div>
     <NLayout class="h-full p-2" has-sider>
       <NLayoutSider class="min-w-[160px]" width="160">
         <PgTree
-          :api="selectCategoryPublic"
+          :api="selectCategory"
+          :is-node-all="true"
           :menu-dropdown-options="menuDropdownOptions"
           :reload="reloadTreeComputed"
           :right-click-menu="true"

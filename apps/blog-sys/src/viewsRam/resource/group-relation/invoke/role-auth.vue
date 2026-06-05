@@ -15,7 +15,7 @@ import {
 
 import { message } from '#/adapter';
 
-import { selectPublic } from '../../group/api';
+import { selectNodeAllPublic } from '../../group/api';
 import { updateByRole, ListByGroup } from '../../resource-authority/api';
 import { selectedByRole } from '../api';
 import { columns } from './data';
@@ -29,7 +29,7 @@ const currenData = ref<Recordable<any>>({});
 const parentData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { typeValue: '0' };
+const formParam = { typeValue: '0',typeCategory:'group' };
 
 const treeChang = (record) => {
   currenRecord.value = true;
@@ -90,8 +90,8 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   },
   pagerConfig: {
     enabled: true,
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100, 500, 1000],
+    pageSize: 5000,
+    pageSizes: [1000,5000],
   },
   toolbarConfig: {
     refresh: true, // 显示刷新按钮
@@ -229,6 +229,9 @@ function treeUpdateCheckedKeys({ keys, options, meta }) {
 }
 
 const [Modal, modalApi] = useVbenModal({
+  closeOnClickModal: false,
+  draggable: true,
+  fullscreenButton: false,
   onCancel() {
     modalApi.close();
   },
@@ -251,7 +254,7 @@ const [Modal, modalApi] = useVbenModal({
     const ids = [];
     checkedData.value.map((item) => {
       if (item && item?.data){
-        ids.push(item.data.id);
+        ids.push(item.data.no);
       }
     });
     if (ids <= 0) {
@@ -259,7 +262,7 @@ const [Modal, modalApi] = useVbenModal({
       return false;
     }
     updateByRole({
-      typeValue: parentData.value.id,
+      typeValue: parentData.value.no,
       ids,
     });
 
@@ -277,11 +280,12 @@ const [Modal, modalApi] = useVbenModal({
       if (values) {
         parentData.value = values;
         title = `角色授权：${values.name} ( ${values.code} )`;
-        selectedByRole({ typeValue: values.id }).then((d) => {
+        selectedByRole({ typeValue: values.no,typeCategory:'role' }).then((d) => {
           if (d) {
-            for (const dKey in d) {
-              console.log('dKey', d[dKey]);
-              treeCheckedKeys.value.push(d[dKey]);
+            console.log('dKey', d);
+            for (const dKey in d.data) {
+              console.log('dKey', d.data[dKey]);
+              treeCheckedKeys.value.push(d.data[dKey].groupNo);
             }
           }
           console.log('treeCheckedKeys.value', treeCheckedKeys.value);
@@ -301,7 +305,7 @@ const treeCheckedKeysComputed = computed(() => treeCheckedKeys.value);
       <NLayout class="h-full p-2" has-sider>
         <NLayoutSider class="min-w-[360px]">
           <PgTree
-            :api="selectPublic"
+            :api="selectNodeAllPublic"
             :props="{
               blockLine: true,
               showLine: true,
@@ -311,6 +315,7 @@ const treeCheckedKeysComputed = computed(() => treeCheckedKeys.value);
               defaultCheckedKeys: treeCheckedKeysComputed,
               // defaultSelectedKeys: treeCheckedKeys,
             }"
+            :is-node-all="true"
             :reload="reloadTreeComputed"
             :right-click-menu="true"
             :right-click-menu-options="rightClickMenuOptions"

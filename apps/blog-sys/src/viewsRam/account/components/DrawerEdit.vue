@@ -14,9 +14,12 @@ import { selectNodeAllPublic as postNode } from '#/viewsRam/post/api';
 import { selectNodeAllPublic as roleNode } from '#/viewsRam/role/api';
 import { selectNodeAllPublic as teamNode } from '#/viewsRam/team/api';
 
-import {existName, existPhone, saveOrUpdate, existAccount, existMail, existCode} from '../api';
+import {detail, existPhone, saveOrUpdate, existAccount, existMail, existCode} from '../api';
 import {selectNodePublicCountryCode} from "#/viewsBasic/country/api";
-
+import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
+import {uploadFn} from "#/viewsBasic/attachment/api";
+import {getNanoidNo} from "@pg/utils";
+const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
@@ -41,6 +44,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existAccount(values.account, values.id);
@@ -74,6 +78,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existPhone(values.phone, values.id);
@@ -92,6 +97,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existMail(values.mail, values.id);
@@ -110,9 +116,10 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
-              existCode(values.mail, values.id);
+              existCode(values.code, values.id);
             },
           },
           () => h('span', { class: 'font-normal' }, '查重'),
@@ -172,7 +179,7 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
-      fieldName: 'departmentId',
+      fieldName: 'departmentNo',
       label: '主部门',
       component: 'PgTreeSelect',
       componentProps: {
@@ -185,7 +192,7 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
-      fieldName: 'departmentId',
+      fieldName: 'departments',
       label: '多部门',
       component: 'PgTreeSelect',
       componentProps: {
@@ -201,15 +208,18 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'typeIdentity',
       label: '身份类型',
-      component: 'Select',
+      component: 'PgTreeSelect',
       componentProps: {
-        placeholder: '请选择',
-        options: IdentityTypeOptions,
+        api: typeCodePublic,
+        params: 'typeIdentity',
+        props: {
+          placeholder: '请选择',
+        },
       },
     },
     {
       tabGroup: 'home',
-      fieldName: 'roleId',
+      fieldName: 'roles',
       label: '角色',
       component: 'PgTreeSelect',
       componentProps: {
@@ -223,7 +233,7 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
-      fieldName: 'levelId',
+      fieldName: 'levelNo',
       label: '级别',
       component: 'PgTreeSelect',
       componentProps: {
@@ -237,7 +247,7 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
-      fieldName: 'groupId',
+      fieldName: 'groupNo',
       label: '分组',
       component: 'PgTreeSelect',
       componentProps: {
@@ -251,7 +261,7 @@ const [Form, formApi] = usePgForm({
 
     {
       tabGroup: 'home',
-      fieldName: 'team',
+      fieldName: 'teams',
       label: '团队',
       component: 'PgTreeSelect',
       componentProps: {
@@ -307,8 +317,33 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'avatar',
       label: '头像',
-      component: 'Input',
+      component: 'PgUploadGroupOwner',
     },
+    // {
+    //   tabGroup: 'home',
+    //   fieldName: 'avatar',
+    //   label: '头像',
+    //   component: 'PgUploadGroupOwner',
+    //   componentProps: {
+    //     isStandalone: true,
+    //     fetchSetting: {
+    //       uploadFn: uploadFn,
+    //       module: 'account',
+    //     },
+    //     group: [
+    //       {
+    //         // name: '主图',
+    //         key: 'main',
+    //         // description: '其他说明 图片大小：宽 500px ,高 400px,图片大小：宽 500px ,高 400px',
+    //         headerExtra: ',图片大小：宽 500px ,高 400px',
+    //         width: '500px',
+    //         height: '400px',
+    //         maxNumber: 1,
+    //         maxSize: 30,
+    //       },
+    //     ],
+    //   },
+    // },
     // {
     //   tabGroup: 'my',
     //   fieldName: 'birthday',
@@ -333,14 +368,13 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'my',
       fieldName: 'sex',
       label: '性别',
-      component: 'Select',
+      component: 'PgTreeSelect',
       componentProps: {
-        placeholder: '请选择',
-        options: [
-          { label: '男', checked: true, value: 'male' },
-          { label: '女', checked: true, value: 'female' },
-          { label: '未知', checked: true, value: 'unknown' },
-        ],
+        api: typeCodePublic,
+        params: 'sex',
+        props: {
+          placeholder: '请选择',
+        },
       },
     },
     {
@@ -356,46 +390,69 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
       const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
       if (values) {
-        formApi.setValues({
-          ...values,
-        });
+        if(isUpdate) {
+          detail(values.id).then(response => {
+            console.log('response', response);
+            let data = {
+              ...response,
+            };
+            if(!data.avatar){
+              data.avatar= getNanoidNo(32);
+            }
+            formApi.setValues(data);
+          });
+        }else {
+          formApi.setValues({
+            ...values,
+            avatar: getNanoidNo(32),
+          });
+        }
       }
 
-      drawerApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}` ,loading: false});
     }
   },
   title: '账号：',
-  loading: false,
-  confirmLoading: false,
 });
 
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues();
+  console.log('values:', values);
+  drawerApi.lock();
   try {
-    const { isUpdate } = drawerApi.getData<Record<string, any>>();
     drawerApi.setState({
       loading: true,
       confirmLoading: true,
     });
+    const { isUpdate } = drawerApi.getData<Record<string, any>>();
     saveOrUpdate(values, isUpdate)
       .then((d) => {
         setTimeout(() => {
+          emit('ok', values);
           drawerApi.close();
 
           drawerApi.setState({
@@ -403,15 +460,12 @@ function onSubmit(values: Record<string, any>) {
             confirmLoading: false,
           });
         }, 2500);
-      })
-      .catch((error) => {
-        drawerApi.setState({
-          loading: false,
-          confirmLoading: false,
-        });
       });
   } catch (error) {
     console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

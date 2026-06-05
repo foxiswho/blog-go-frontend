@@ -2,24 +2,25 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/basic/data-dictionary/create',
-  createUpdate = '/pg2lq/manage/basic/data-dictionary/createUpdate',
-  delete = '/pg2lq/manage/basic/data-dictionary/delete',
-  detail = '/pg2lq/manage/basic/data-dictionary/detail/',
-  disable = '/pg2lq/manage/basic/data-dictionary/disable',
-  enable = '/pg2lq/manage/basic/data-dictionary/enable',
-  existName = '/pg2lq/manage/basic/data-dictionary/existName',
-  existCode = '/pg2lq/manage/basic/data-dictionary/existCode',
-  existValue = '/pg2lq/manage/basic/data-dictionary/existValue',
-  exportExcel = '/pg2lq/manage/basic/data-dictionary/exportExcel',
-  list = '/pg2lq/manage/basic/data-dictionary/query',
-  physicalDeletion = '/pg2lq/manage/basic/data-dictionary/physicalDeletion',
-  recovery = '/pg2lq/manage/basic/data-dictionary/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/basic/data-dictionary/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/basic/data-dictionary/selectNodePublic',
-  selectPublic = '/pg2lq/manage/basic/data-dictionary/selectPublic',
-  state = '/pg2lq/manage/basic/data-dictionary/state',
-  update = '/pg2lq/manage/basic/data-dictionary/update',
+  create = '/pg2lq/sys/basic/data-dictionary/create',
+  createUpdate = '/pg2lq/sys/basic/data-dictionary/createUpdate',
+  delete = '/pg2lq/sys/basic/data-dictionary/delete',
+  detail = '/pg2lq/sys/basic/data-dictionary/detail/',
+  disable = '/pg2lq/sys/basic/data-dictionary/disable',
+  enable = '/pg2lq/sys/basic/data-dictionary/enable',
+  existName = '/pg2lq/sys/basic/data-dictionary/existName',
+  existCode = '/pg2lq/sys/basic/data-dictionary/existCode',
+  existValue = '/pg2lq/sys/basic/data-dictionary/existValue',
+  exportExcel = '/pg2lq/sys/basic/data-dictionary/exportExcel',
+  list = '/pg2lq/sys/basic/data-dictionary/query',
+  physicalDeletion = '/pg2lq/sys/basic/data-dictionary/physicalDeletion',
+  recovery = '/pg2lq/sys/basic/data-dictionary/recovery',
+  selectNodeAllPublic = '/pg2lq/sys/basic/data-dictionary/selectNodeAllPublic',
+  selectNodePublic = '/pg2lq/sys/basic/data-dictionary/selectNodePublic',
+  selectPublic = '/pg2lq/sys/basic/data-dictionary/selectPublic',
+  state = '/pg2lq/sys/basic/data-dictionary/state',
+  update = '/pg2lq/sys/basic/data-dictionary/update',
+  typeCodePublic = '/pg2lq/sys/basic/data-dictionary/typeCodePublic',
 }
 
 /**
@@ -30,14 +31,6 @@ enum Api {
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
 }
-
-/**
- * 公共列表展示
- * @param data
- */
-export const selectPublic = (data?: any) => {
-  return requestClient.post(Api.selectPublic, data);
-};
 
 /**
  * 公共树展示
@@ -55,6 +48,20 @@ export const selectNodeAllPublic = (data?: any) => {
   return requestClient.post(Api.selectNodeAllPublic, data);
 };
 /**
+ * 公共树展示
+ * @param data
+ */
+export const typeCodePublic = async (data) => {
+  let code = '';
+  if (data && data?.typeCode) {
+    code = data?.typeCode;
+  } else if (typeof data === 'string') {
+    code = data;
+  }
+  return requestClient.get(`${Api.typeCodePublic}/${code}`);
+};
+
+/**
  * 详情
  * @param data
  */
@@ -67,7 +74,7 @@ export const detail = (data?: any) => {
  * @param data
  * @param isUpdate
  */
-export const saveOrUpdate = (data: any, isUpdate: boolean) => {
+export const saveOrUpdate = (data: any) => {
   return requestClient.post(Api.createUpdate, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
@@ -232,11 +239,10 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    Api.state,
+    status === 1 ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );
-
 /**
  * 导出excel url地址
  */

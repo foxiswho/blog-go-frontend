@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { RowVO } from '@pg/types';
 
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref,computed } from 'vue';
 
-import { useVbenDrawer } from '@vben-core/popup-ui';
+import { useVbenDrawer,useVbenModal } from '@vben-core/popup-ui';
 
-import { message } from '#/adapter';
+import { message,dialog } from '#/adapter';
+import { PgTree } from '@pg/components-n';
 import {
   type VxeGridInstance,
   type VxeGridListeners,
@@ -20,9 +21,67 @@ import {
   batchSelectRecovery,
   deleteIds,
   List,
+  selectCategory,
 } from './api';
-import Edit from './components/edit.vue';
+import Category from './components/category.vue';
+import Edit from './components/DrawerEdit.vue';
 import { columns } from './data';
+
+const currenRecord = ref(false);
+const currenData = ref<Recordable<any>>({});
+const reloadTreeState = ref(false);
+const tabSelectActive = ref('system');
+const reloadTreeComputed = computed(() => reloadTreeState.value);
+const formParam = { parentNo: '' };
+
+const treeChang = (record) => {
+  currenRecord.value = true;
+  currenData.value = record;
+  console.log('record', record);
+  formParam.parentNo = record.key;
+  reloadTable();
+};
+/**
+ * 重新加载
+ */
+function reloadTree() {
+  reloadTreeState.value = true;
+}
+/**
+ * 树重载
+ * @param e
+ */
+const treeOverload = (e) => {
+  formParam.parentNo = '';
+  reloadTable();
+};
+const [FormDrawer, formDrawerApi] = useVbenDrawer({
+  connectedComponent: Edit,
+});
+
+const [FormModal, formModalApi] = useVbenModal({
+  // 连接抽离的组件
+  connectedComponent: Category,
+});
+/**
+ * 树 搜索尾部菜单
+ */
+const menuDropdownOptions = [
+  {
+    label: '添加',
+    key: '添加',
+    props: {
+      onClick: () => {
+        formModalApi.setData({
+          // 表单值
+          values: {},
+          isUpdate: false,
+        });
+        formModalApi.open();
+      },
+    },
+  },
+];
 
 const xGrid = ref<VxeGridInstance<RowVO>>();
 const gridOptions = reactive<VxeGridProps<RowVO>>({
@@ -40,15 +99,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   },
   columnConfig: {
     resizable: true,
-  },
-  printConfig: {
-    columns: [
-      { field: 'name' },
-      { field: 'nameFl' },
-      { field: 'code' },
-      { field: 'state' },
-      { field: 'createAt' },
-    ],
   },
   sortConfig: {
     trigger: 'cell',
@@ -110,47 +160,16 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
       { code: 'create', name: '新增' },
       { code: 'batchEnable', name: '批量有效' },
       { code: 'batchDisable', name: '批量停用' },
-      {
-        status: 'primary',
-        icon: 'vxe-icon-ellipsis-v',
-        size: 'mini',
-        circle: true,
-        dropdowns: [
-          { code: 'delete', name: '删除' },
-          { code: 'recovery', name: '删除恢复' },
-          { code: 'mark_cancel', name: '标记[删除/取消]' },
-          // {code: 'save', name: '保存', status: 'success'}
-        ],
-      },
+      { code: 'physicalDeletion', name: '物理删除' },
     ],
     slots: {
       // buttons: 'toolbar_buttons',
       // tools: 'toolbar_tools'
     },
-    tools: [
-      {
-        name: '更多',
-        status: 'primary',
-        size: 'small',
-        toolRender: {
-          props: { className: 'mr-2', class: 'mr-2', popupClassName: 'mr-2' },
-          attrs: { className: 'mr-2', class: 'mr-2' },
-          name: '$buttons',
-        },
-        dropdowns: [
-          // {code: 'delete', name: '直接删除'},
-          // {code: 'mark_cancel', name: '标记[删除/取消]'},
-          // {code: 'myInsert', name: '插入'},
-          // {code: 'mySave', name: '保存'},
-          { code: 'myPrint', name: '打印' },
-          { code: 'physicalDeletion', name: '物理删除' },
-        ],
-      },
-    ],
     refresh: true, // 显示刷新按钮
-    import: true, // 显示导入按钮
-    export: true, // 显示导出按钮
-    print: true, // 显示打印按钮
+    import: false, // 显示导入按钮
+    export: false, // 显示导出按钮
+    print: false, // 显示打印按钮
     zoom: true, // 显示全屏按钮
     custom: true, // 显示自定义列按钮
   },
@@ -181,6 +200,11 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
         });
         queryParams.pageSize = page.pageSize;
         queryParams.pageNum = page.currentPage;
+        if (formParam) {
+          for (const key in formParam) {
+            queryParams[key] = formParam[key];
+          }
+        }
         return List(queryParams);
       },
       // 当点击工具栏删除按钮或者手动提交指令 delete 时会被触发
@@ -204,44 +228,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     },
   },
   columns,
-  importConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['insert'],
-    // 自定义服务端导入
-    importMethod({ file }) {
-      const $grid = xGrid.value;
-      const formBody = new FormData();
-      formBody.append('file', file);
-      return fetch(`/api/pub/import`, { method: 'POST', body: formBody })
-        .then((response) => response.json())
-        .then((data) => {
-          VXETable.modal.message({
-            content: `成功导入 ${data.result.insertRows} 条记录！`,
-            status: 'success',
-          });
-          // 导入完成，刷新表格
-          if ($grid) {
-            $grid.commitProxy('query');
-          }
-        })
-        .catch(() => {
-          VXETable.modal.message({
-            content: '导入失败，请检查数据是否正确！',
-            status: 'error',
-          });
-        });
-    },
-  },
-  exportConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['current', 'selected', 'all'],
-    // 自定义服务端导出
-    exportMethod({ options }) {
-      return Promise.resolve();
-    },
-  },
   checkboxConfig: {
     labelField: 'id',
     reserve: true,
@@ -264,66 +250,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
     const $grid = xGrid.value;
     if ($grid) {
       switch (code) {
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增2 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
-        case 'myExport': {
-          $grid.exportData({
-            type: 'csv',
-          });
-          break;
-        }
-        case 'create': {
-          formDrawerApi.setData({
-            // 表单值
-            values: {},
-            isUpdate: false,
-          });
-          formDrawerApi.open();
-          break;
-        }
-        // 批量 有效
-        case 'batchEnable': {
-          console.log('$grid.getCheckboxRecords()', $grid.getCheckboxRecords());
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state === 2) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectEnable(
-            ids,
-            () => {
-              reloadTable();
-              $grid.setAllCheckboxRow(false);
-            }
-          );
-          break;
-        }
         // 批量 停用
         case 'batchDisable': {
           const checkboxRecords = $grid.getCheckboxRecords();
@@ -344,13 +270,46 @@ const gridEvent: VxeGridListeners<RowVO> = {
             message.warning('你没有选择任何数据');
             return;
           }
-          batchSelectDisable(
-            ids,
-            () => {
-              reloadTable();
-              $grid.setAllCheckboxRow(false);
+          batchSelectDisable(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
+          });
+          break;
+        }
+        // 批量 有效
+        case 'batchEnable': {
+          const checkboxRecords = $grid.getCheckboxRecords();
+          if (checkboxRecords.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          const ids = [];
+          checkboxRecords.forEach((item) => {
+            console.log('$grid.item', item);
+            if (item.state === 2) {
+              ids.push(item.id);
+            } else {
+              $grid.setCheckboxRow(item, false);
             }
-          );
+          });
+          if (ids.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          batchSelectEnable(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
+          });
+          break;
+        }
+        case 'create': {
+          formDrawerApi.setData({
+            // 表单值
+            values: {},
+            parent: currenData.value?.data,
+            isUpdate: false,
+          });
+          formDrawerApi.open();
           break;
         }
         // 删除恢复
@@ -373,38 +332,9 @@ const gridEvent: VxeGridListeners<RowVO> = {
             message.warning('你没有选择任何数据');
             return;
           }
-          batchSelectRecovery(
-            ids,
-            () => {
-              reloadTable();
-              $grid.setAllCheckboxRow(false);
-            }
-          );
-          break;
-        }
-      }
-    }
-  },
-  toolbarToolClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        case 'myPrint': {
-          $grid.print();
-          break;
-        }
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
+          batchSelectRecovery(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
           });
           break;
         }
@@ -428,13 +358,10 @@ const gridEvent: VxeGridListeners<RowVO> = {
             message.warning('你没有选择任何数据');
             return;
           }
-          batchSelectPhysicalDeletion(
-            ids,
-            () => {
-              reloadTable();
-              $grid.setAllCheckboxRow(false);
-            }
-          );
+          batchSelectPhysicalDeletion(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
+          });
           break;
         }
       }
@@ -491,6 +418,21 @@ const removeRowEvent = async (row: RowVO) => {
     await $grid.remove(row);
   }
 };
+/**
+ * 删除 指定数据
+ * @param row
+ */
+const removeTreeEvent = (row: RowVO) => {
+  dialog.warning({
+    title: '确认删除',
+    content: `是否[删除]选中数据[ ${row.name} ]，操作后数据不可恢复`,
+    positiveText: '确认',
+    negativeText: '取消',
+    onPositiveClick: () => {
+      deleteIds([row.id]);
+    },
+  });
+};
 
 onMounted(() => {});
 
@@ -504,50 +446,98 @@ function reloadTable() {
   }
 }
 
-const [FormDrawer, formDrawerApi] = useVbenDrawer({
-  connectedComponent: Edit,
-});
+function treeChangOverload() {
+  reloadTable();
+  treeOverload();
+}
+
+/**
+ * 树右键菜单
+ * @param option
+ */
+const rightClickMenuOptions = ({ option }) => {
+  return [
+    {
+      label: '添加下级',
+      key: '添加下级',
+      props: {
+        onClick: () => {
+          formDrawerApi.setData({
+            // 表单值
+            values: {},
+            parent: option.data,
+            isUpdate: false,
+          });
+          formDrawerApi.open();
+        },
+      },
+    },
+    {
+      label: '修改',
+      key: '修改',
+      props: {
+        onClick: () => {
+          formModalApi.setData({
+            // 表单值
+            values: option.data,
+            isUpdate: true,
+          });
+          formModalApi.open();
+        },
+      },
+    },
+    {
+      label: '删除',
+      key: '删除',
+      props: {
+        onClick: () => {
+          removeTreeEvent(option.data);
+        },
+      },
+    },
+  ];
+};
 </script>
 
 <template>
-  <div class="grid2 h-full p-2">
-    <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
-      <template #operate="{ row }">
-        <template v-if="hasActiveEditRow(row)">
-          <vxe-button content="取消" @click="clearRowEvent" />
-          <vxe-button
-            content="保存"
-            status="primary"
-            @click="saveRowEvent(row)"
-          />
-        </template>
-        <template v-else>
-          <vxe-button
-            icon="vxe-icon-edit"
-            mode="text"
-            title="编辑"
-            @click="editRowEvent(row)"
-          />
-        </template>
-        <vxe-button
-          icon="vxe-icon-delete"
-          mode="text"
-          status="danger"
-          title="删除"
-          @click="removeRowEvent(row)"
+  <div>
+    <NLayout class="h-full p-2" has-sider>
+      <NLayoutSider class="min-w-[160px]" width="160">
+        <PgTree
+          :api="selectCategory"
+          :is-node-all="true"
+          :menu-dropdown-options="menuDropdownOptions"
+          :reload="reloadTreeComputed"
+          :right-click-menu="true"
+          :right-click-menu-options="rightClickMenuOptions"
+          @ok="treeChang"
+          @overload="treeOverload"
         />
-
-        <!--        <vxe-button type="text" size="small" status="primary" icon="vxe-icon-ellipsis-v" transfer>-->
-        <!--          <template #dropdowns>-->
-        <!--            <vxe-button content="打印" @click="triggerProxy('myPrint')"/>-->
-        <!--            <vxe-button content="插入" @click="triggerProxy('myInsert')"/>-->
-        <!--            <vxe-button content="保存" @click="triggerProxy('mySave')"/>-->
-        <!--            <vxe-button content="保存" @click="triggerProxy('save')"  status="success"/>-->
-        <!--          </template>-->
-        <!--        </vxe-button>-->
-      </template>
-    </vxe-grid>
-    <FormDrawer />
+      </NLayoutSider>
+      <NLayout class="w-[calc(100%-160px)]">
+        <NLayoutContent>
+          <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
+            <template #operate="{ row }">
+              <vxe-button
+                icon="vxe-icon-edit"
+                mode="text"
+                title="编辑"
+                @click="editRowEvent(row)"
+              />
+<!--              <vxe-button-->
+<!--                icon="vxe-icon-delete"-->
+<!--                mode="text"-->
+<!--                status="danger"-->
+<!--                title="删除"-->
+<!--                @click="removeRowEvent(row)"-->
+<!--              />-->
+            </template>
+          </vxe-grid>
+        </NLayoutContent>
+      </NLayout>
+      <FormDrawer />
+      <FormModal @ok="treeChangOverload" />
+    </NLayout>
   </div>
 </template>
 
