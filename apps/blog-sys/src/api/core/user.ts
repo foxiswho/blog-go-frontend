@@ -8,3 +8,10 @@ import { requestClient } from '#/api/request';
 export async function getUserInfoApi() {
   return requestClient.get<UserInfo>('/pg2lq/sys/public/info');
 }
+
+/**
+ * 获取用户信息
+ */
+export async function getUserInfoApiPublic() {
+  return requestClient.get('/pg2lq/sys/public/infoPublic');
+}
