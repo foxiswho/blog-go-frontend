@@ -27,7 +27,7 @@ const emit = defineEmits([
 
 const treeData = ref<Recordable<any>[]>([]);
 const treeIds = ref<string[]>([]);
-const isFirstLoaded = ref<Boolean>(false);
+const isFirstLoaded = ref<boolean>(false);
 const loading = ref(false);
 const checkedAll = ref(false);
 const selectedKeys = ref([]);
@@ -123,18 +123,20 @@ const afterFetchDefault = (result) => {
   return useNode({
     data: result,
     // key 字段名称
-    keyField: 'id',
+    keyField: 'value',
     // label 字段名称
-    labelField: 'name',
+    labelField: 'label',
+    parentField: 'parentNo',
   }).getTreeData;
 };
 const afterFetchDefaultNodeAll = (result) => {
   return useNode({
     data: result,
-    // key 字段名称
-    keyField: 'id',
-    // label 字段名称
+    // key 字段名称,值
+    keyField: 'value',
+    // label 字段名称，键
     labelField: 'label',
+    parentField: 'parentNo',
     isNodeAll: true,
   }).getTreeData;
 };
@@ -154,6 +156,7 @@ async function fetch() {
     console.error(error);
   }
   // console.log('result=>',result)
+  if (!result) return;
   if (props.isNodeAll) {
     result = await afterFetchDefaultNodeAll(result);
   } else if (afterFetch && isFunction(afterFetch)) {

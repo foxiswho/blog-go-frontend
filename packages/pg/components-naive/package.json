@@ -11,18 +11,23 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm unbuild",
+    "build": "pnpm exec tsdown",
     "prepublishOnly": "npm run build"
   },
   "files": [
     "dist"
   ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
       "development": "./src/index.ts",
+      "production": "./src/index.ts",
       "default": "./dist/index.mjs"
     }
   },
@@ -50,7 +55,9 @@
     "@vben/utils": "workspace:*",
     "@vee-validate/zod": "catalog:",
     "@vueuse/core": "catalog:",
+    "@vueuse/shared": "catalog:",
     "@vueuse/integrations": "catalog:",
+    "@vue/shared": "catalog:",
     "naive-ui": "catalog:",
     "vditor": "catalog:",
     "vee-validate": "catalog:",
@@ -64,6 +71,6 @@
     "zod-defaults": "catalog:"
   },
   "devDependencies": {
-    "vue-sfc-transformer": "catalog:"
+    "unplugin-vue": "catalog:"
   }
 }

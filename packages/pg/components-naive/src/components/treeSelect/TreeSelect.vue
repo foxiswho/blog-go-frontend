@@ -14,7 +14,8 @@ import {
 import { VbenButton } from '@vben/common-ui';
 import { isFunction } from '@vben/utils';
 
-import { type NodeProps, useNode } from '@pg/utils';
+import { useNode } from '@pg/utils';
+import type { NodeProps } from '@pg/utils';
 import { NTreeSelect } from 'naive-ui';
 import { get } from 'xe-utils';
 
@@ -32,16 +33,16 @@ const emit = defineEmits(['update:value', 'ok']);
 const attrs = useAttrs();
 // console.log('props-PgInput',props)
 const treeData = ref<Recordable<any>[]>([]);
-const isFirstLoaded = ref<Boolean>(false);
+const isFirstLoaded = ref<boolean>(false);
 const loading = ref(false);
 const treeSelect = ref(null);
 
 const getAttrs = computed(() => {
   const mergedProps = {
     ...pgTreeSelectPropsDefault, // 先取默认值
-    ...(props.props || {}), // 再用传入的 props 覆盖默认值（优先级更高）
+    ...props.props, // 再用传入的 props 覆盖默认值（优先级更高）
   };
-  let baseAttrs = {
+  const baseAttrs = {
     ...attrs,
     ...mergedProps, // 使用合并后的新对象，而非原 props.props
   };
@@ -69,7 +70,7 @@ const filterResult = ref(0);
 window.setInterval(() => {
   // console.log('filterWd.value',filterWd.value)
   filterWd.value = {};
-  if ( props.params && props.params?.hasOwnProperty('wd')) {
+  if (props.params && props.params?.hasOwnProperty('wd')) {
     delete props.params.wd;
   }
   // isFirstLoaded.value = false
@@ -181,9 +182,10 @@ async function fetch() {
   } catch (error) {
     console.error(error);
   }
-  if (afterFetch && isFunction(afterFetch)) {
+  if (afterFetch && isFunction(afterFetch) && result) {
     result = afterFetch(result);
   }
+  //console.log('result=',result);
   loading.value = false;
   if (!result) return;
   if (!Array.isArray(result)) {
@@ -207,10 +209,12 @@ async function fetch() {
         nodeParam[key] = nodeFieldDefault[key];
       }
     });
+    //console.log('nodeParam=',nodeParam);
     if (nodeParam && Array.isArray(nodeParam.data)) {
       result = await useNode(nodeParam).getTreeData;
     }
   }
+  //console.log('result3',result)
   treeData.value = (result as Recordable<any>[]) || [];
   isFirstLoaded.value = true;
   // emit('update:value', treeData.value);

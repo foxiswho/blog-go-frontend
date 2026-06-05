@@ -8,15 +8,13 @@ import { useVbenModal, VbenButton } from '@vben/common-ui';
 import { AntDesignCloseOutlined } from '@pg/icons';
 import { requestClient } from '@pg/request';
 import { useQRCode } from '@vueuse/integrations/useQRCode';
-import {
-  NImage,
-  NSpace,
-  type UploadCustomRequestOptions,
-  useMessage,
-} from 'naive-ui';
+import { NImage, NSpace, useMessage } from 'naive-ui';
+import type { UploadCustomRequestOptions } from 'naive-ui';
 
 import { UploadProps } from './props';
-import { type Fetch, type UploadGroupItem } from './type';
+import { emptyUploadFn } from './type';
+import type { AnyUploadFn, Fetch, UploadGroupItem } from './type';
+import { isFunction } from '@vben-core/shared/utils';
 
 const props = defineProps({
   ...UploadProps,
@@ -38,6 +36,10 @@ const uploadSetting = ref<UploadGroupItem>({
   name: '',
 });
 const uploadFetch = ref<Fetch>({ url: '', urlLink: '', urlQr: '', header: {} });
+const fetchSetting = ref<Fetch>({
+  url: '',
+  uploadFn: emptyUploadFn,
+});
 const titleRef = ref('上传');
 const submitCustom = ref(false);
 const emitsClose = ref(false);
@@ -57,8 +59,8 @@ const formData = ref({
 const fileListLengthRef = ref(0);
 const headers = computed(() => uploadFetch.value.header);
 const bodyData = computed(() => {
-  if (uploadFetch.value?.params) {
-    return uploadFetch.value?.params;
+  if (fetchSetting.value?.params) {
+    return fetchSetting.value?.params;
   }
   return {};
 });
@@ -83,7 +85,13 @@ const [Modal, modalApi] = useVbenModal({
     modalApi.setState({ loading: false });
   },
   onOpenChange(isOpen: boolean) {
-    modalApi.setState({ loading: false });
+    modalApi.setState({
+      loading: false,
+      confirmLoading: false,
+      closeOnClickModal: false, // 点击遮罩关闭弹窗
+      destroyOnClose: true, // 关闭时销毁
+      draggable: true, // 可拖拽
+    });
     emitsClose.value = false;
     formData.value.webUrlList = [];
     formData.value.fileList = [];
@@ -92,14 +100,15 @@ const [Modal, modalApi] = useVbenModal({
     formData.value.method = 'local';
     if (isOpen) {
       const modalData = modalApi.getData<Record<string, any>>();
+      console.log('modalData',modalData);
       if (modalData?.checkedNum) {
         checkedNum.value = modalData.checkedNum;
       }
       if (modalData?.uploadSetting) {
         uploadSetting.value = modalData.uploadSetting;
       }
-      if (modalData?.uploadFetch) {
-        uploadFetch.value = modalData.uploadFetch;
+      if (modalData?.fetchSetting) {
+        fetchSetting.value = modalData.fetchSetting;
       }
 
       modalApi.setState({ title: `${titleRef.value}` });
@@ -123,27 +132,34 @@ async function handleSubmit() {
         return false;
       }
       const param = {
+        ...fetchSetting.value.params,
         category: data.category,
         method: data.method,
         url: data.webUrlList,
       };
-      requestClient
-        .post(uploadFetch.value.urlLink, param, {
-          errorMessageMode: 'message',
-          successMessageMode: 'message',
-          withToken: true,
-        })
-        .then((d) => {
-          // console.log(data.method, d);
-          emitsClose.value = true;
-          emit('ok', { action: 'finish', finishData: d });
-          setTimeout(() => {
-            modalApi.close();
-          }, 300);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      if (isFunction(fetchSetting.value?.uploadFn)) {
+        fetchSetting.value
+          ?.uploadFn(param, {
+            url: fetchSetting.value.urlLink,
+            type: 'link',
+            config: {
+              errorMessageMode: 'message',
+              successMessageMode: 'message',
+              withToken: true,
+            },
+          })
+          .then((d) => {
+            console.log('uploadListFn=>', d);
+            emitsClose.value = true;
+            emit('ok', { action: 'finish', finishData: d });
+            setTimeout(() => {
+              modalApi.close();
+            }, 300);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     } else if (data.method === 'scan') {
       // 扫码上传
     } else {
@@ -230,7 +246,7 @@ const customRequest = async ({
 }: UploadCustomRequestOptions) => {
   // console.log('file', file);
   // console.log('headers', headers);
-  // console.log('action', action);
+  console.log('action===', action);
   const formData = new FormData();
   if (data) {
     Object.keys(data).forEach((key) => {
@@ -241,29 +257,53 @@ const customRequest = async ({
     });
   }
   formData.append('file', file.file as File);
+  formData.append('type', 'link');
+  // if(fetchSetting.value?.params){
+  //   Object.keys(fetchSetting.value?.params).forEach((key) => {
+  //     formData.append(
+  //       key,
+  //       fetchSetting.value?.params[key],
+  //     );
+  //   });
+  // }
   headers['Content-Type'] = `multipart/form-data;boundary = ${Date.now()}`;
-  requestClient
-    .post(action, formData, {
-      errorMessageMode: 'message',
-      isTransformResponse: false,
-      successMessageMode: 'notification',
-      withToken: true,
-      headers: headers,
-    })
-    .then((json) => {
-      // console.log('then.json', json);
-      finishData.value[file.id] = json.data;
-      emit('ok', { data: json.data, file });
-      // Message.success()
-      onFinish();
-    })
-    .catch((error) => {
-      // console.log('errorn', error);
-      // console.log('errorn.response', error.response);
-      // console.log('errorn.cause', error.cause);
-      message.success(error.message);
-      onError();
-    });
+  //
+  const config = {
+    errorMessageMode: 'message',
+    isTransformResponse: false,
+    successMessageMode: 'notification',
+    withToken: true,
+    headers: headers,
+  };
+  if (isFunction(fetchSetting.value?.uploadFn)) {
+    fetchSetting.value
+      ?.uploadFn(formData, {
+        config: config,
+        type: 'formdata',
+      })
+      .then((d) => {
+        console.log('uploadListFn=>', d);
+        emitsClose.value = true;
+        emit('ok', { action: 'finish', finishData: d });
+        setTimeout(() => {
+          modalApi.close();
+        }, 300);
+      })
+      .then((json) => {
+        // console.log('then.json', json);
+        finishData.value[file.id] = json.data;
+        emit('ok', { data: json.data, file });
+        // Message.success()
+        onFinish();
+      })
+      .catch((error) => {
+        // console.log('errorn', error);
+        // console.log('errorn.response', error.response);
+        // console.log('errorn.cause', error.cause);
+        message.success(error.message);
+        onError();
+      });
+  }
 };
 // 关闭动画完成执行的回调
 function afterLeave() {
@@ -330,7 +370,6 @@ function handleValidateButtonClick(e: MouseEvent) {
         <div class="flex flex-col">
           <n-upload
             ref="pgUpFileRef"
-            :action="uploadFetch.url"
             :custom-request="customRequest"
             :data="bodyData"
             :default-upload="false"

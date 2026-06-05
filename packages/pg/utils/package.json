@@ -15,15 +15,15 @@
     }
   },
   "dependencies": {
+    "@vben/constants": "workspace:*",
     "@vue/runtime-core": "catalog:",
     "@vueuse/core": "catalog:",
     "@vueuse/shared": "catalog:",
-    "@vben/constants": "workspace:*",
     "lodash-es": "catalog:",
-    "vue": "catalog:",
-    "vue-types": "catalog:",
     "mitt": "catalog:",
-    "nanoid": "catalog:"
+    "nanoid": "catalog:",
+    "vue": "catalog:",
+    "vue-types": "catalog:"
   },
   "devDependencies": {
     "@types/lodash-es": "catalog:"

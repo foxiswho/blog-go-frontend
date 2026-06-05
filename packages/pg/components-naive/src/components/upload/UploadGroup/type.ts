@@ -17,8 +17,30 @@ export interface UploadGroupItem {
   name: string;
   // 宽度
   width?: number | string;
+  group?: Object;
+  params?: Record<string, any>;
 }
 
+// 定义 uploadFn 第二个参数的类型
+export type UploadFnOptionType =
+  | 'default'
+  | 'qr'
+  | 'list'
+  | 'urlByOwner'
+  | 'urlByOwnerDel';
+
+export interface UploadFnSettingOptions {
+  url?: string;
+  type?: UploadFnOptionType; // 可选，默认值可在业务里定义
+  config?: any;
+}
+// 你要的 AnyFn 类型
+export type AnyUploadFn = (
+  param: Record<string, any>, // 第一个参数：自定义对象
+  setting: UploadFnSettingOptions, // 第二个参数：严格格式
+) => any; // 返回值任意
+// 占位函数
+export const emptyUploadFn: AnyUploadFn = () => {};
 export interface UploadDataItem {
   // 是否编辑
   edit?: boolean;
@@ -36,16 +58,9 @@ export interface Fetch {
   // 参数
   params?: object;
   // url
-  url: string;
-  urlLink?: string;
-  // 列表
-  urlList?: string;
-  // 二维码url
-  urlQr?: string;
-  // 根据所有者获取
-  urlByOwner?: string;
-  // 根据所有者删除
-  urlByOwnerDel?: string;
+  url?: string;
+  // 上传函数
+  uploadFn: AnyUploadFn;
   // 模块
   module?: string;
 }

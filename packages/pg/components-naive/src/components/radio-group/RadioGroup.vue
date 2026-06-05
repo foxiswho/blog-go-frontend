@@ -3,12 +3,14 @@ import type { RadioGroupOptions } from './typing';
 
 interface Props {
   options: RadioGroupOptions[];
+  placeholder?: string;
   // 值
-  value: number | string | boolean;
+  value: boolean | number | string;
 }
 const props = withDefaults(defineProps<Props>(), {
   // eslint-disable-next-line vue/require-valid-default-prop
   options: [],
+  placeholder: '请选择',
 });
 const emit = defineEmits(['update:value', 'ok', 'update:checked']);
 

@@ -1,10 +1,6 @@
 import { addIcon, type IconifyIcon } from '@vben-core/icons';
 
-let loaded = false;
-if (!loaded) {
-  loadSvgIcons();
-  loaded = true;
-}
+loadSvgIcons();
 
 function parseSvg(svgData: string): IconifyIcon {
   const parser = new DOMParser();

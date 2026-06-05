@@ -9,4 +9,5 @@ export * from './pg';
 export * from './time';
 export * from './tree';
 export * from './browser';
+export * from './paseto';
 export { get } from 'lodash-es';

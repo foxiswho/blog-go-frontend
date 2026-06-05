@@ -1,4 +1,5 @@
 import type { PropType } from 'vue';
+
 import { UploadProps } from 'naive-ui/lib/upload';
 
 export const uploadPropsDefault: UploadProps = {

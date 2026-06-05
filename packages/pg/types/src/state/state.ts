@@ -69,3 +69,19 @@ export const clientFormatter = ({ cellValue }) => {
   const item = client.find((item) => item.value === cellValue);
   return item ? item.label : '';
 };
+
+/**
+ * 显示隐藏
+ */
+export const stateTrueFalseString = [
+  { key: true, label: '是', value: true },
+  { key: false, label: '否', value: false },
+];
+
+/**
+ * 显示隐藏
+ */
+export const stateTrueFalseFormatter = ({cellValue}) => {
+  const item = stateTrueFalseString.find((item) => item.value === cellValue);
+  return item ? item.label : '';
+};

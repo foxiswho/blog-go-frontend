@@ -1,11 +1,10 @@
-import type { Recordable } from '@vben-core/typings';
 import type { Fn } from '@vueuse/core';
 import type { DropdownOption } from 'naive-ui';
 import type { TreeProps } from 'naive-ui/lib/tree';
 
 import type { PropType } from 'vue';
 
-import { propTypes } from '@pg/utils';
+import type { Recordable } from '@vben-core/typings';
 
 export const pgTreeSelectPropsDefault: TreeProps = {
   // 节点整行撑开
@@ -63,7 +62,10 @@ export const pgTreeSelectProps = {
     type: Boolean,
   },
   // 返回值
-  resultField: propTypes.string.def(''),
+  resultField: {
+    type: String,
+    default: '',
+  },
   // 右键菜单
   rightClickMenu: {
     default: false,

@@ -1,4 +1,4 @@
-import { type Category, type Fetch, type UploadGroupItem } from './type';
+import type { Category, Fetch, UploadGroupItem } from './type';
 
 export const UploadGroupItemDefault: UploadGroupItem = {
   // 高度
@@ -19,6 +19,16 @@ export const UploadGroupProps = {
     default: true,
     type: Boolean,
   },
+  // 是否返回
+  isReturn: {
+    default: false,
+    type: Boolean,
+  },
+  // 是否独立使用
+  isStandalone: {
+    default: false,
+    type: Boolean,
+  },
   fetchSetting: {
     default: {},
     type: Object as PropType<Fetch>,
@@ -28,8 +38,8 @@ export const UploadGroupProps = {
     type: Array<UploadGroupItem>,
   },
   modelValue: {
-    default: {},
-    type: Object,
+    default: null,
+    type: [Object, String],
   },
 };
 

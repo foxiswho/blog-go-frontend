@@ -1,7 +1,7 @@
 // eslint-disable-next-line n/no-extraneous-import
 import { h } from 'vue';
 
-// import { isFunction } from '@vben/utils';
+import { get } from '@vben-core/shared/utils';
 
 import { VxeSwitch } from 'vxe-pc-ui';
 // VXE事件拦截
@@ -50,14 +50,15 @@ export const useRenderer = () => {
         // console.log('params',params)
         const { $table, row } = params;
         const { events } = renderOpts;
-        const state = Number(row.state);
+        const field = renderOpts?.stateField ?? 'state';
+        const state = Number(get(row, field));
         if (state < 10) {
           return [
             h(VxeSwitch, {
               attrs: {},
               closeLabel: '停用',
               closeValue: 2,
-              modelValue: row.state,
+              modelValue: get(row, field),
               onChange: (e) => {
                 events.click($table, row, e);
                 // console.info('row.end',row)

@@ -1,12 +1,11 @@
-import type { Recordable } from '@vben-core/typings';
 import type { Fn } from '@vueuse/core';
 import type { TreeSelectProps } from 'naive-ui/lib/tree-select';
 
-import type { NodeField } from './type';
-
 import type { PropType } from 'vue';
 
-import { propTypes } from '@pg/utils';
+import type { Recordable } from '@vben-core/typings';
+
+import type { NodeField } from './type';
 
 export const pgTreeSelectPropsDefault: TreeSelectProps = {
   // 是否可清除
@@ -23,10 +22,10 @@ export const pgTreeSelectPropsDefault: TreeSelectProps = {
 
 export const nodeFieldDefault: NodeField = {
   // key 字段名称
-  keyField: 'key',
+  keyField: 'value',
   // label 字段名称
   labelField: 'label',
-  parentField: 'parentId',
+  parentField: 'parentNo',
   selectLast: false,
 };
 
@@ -62,14 +61,17 @@ export const pgTreeSelectProps = {
   // 接口参数
   params: {
     default: {},
-    type: Object,
+    type: [Object, String] as PropType<[] | string>,
   },
   props: {
     default: pgTreeSelectPropsDefault,
     type: Object as PropType<Partial<TreeSelectProps>>,
   },
   // 返回值
-  resultField: propTypes.string.def(''),
+  resultField: {
+    type: String,
+    default: '',
+  },
   // 值
   value: { type: [Array, String] as PropType<[] | string> },
 };

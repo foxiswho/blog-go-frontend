@@ -163,7 +163,7 @@ const computedSchema = computed(
           ...schema.formFieldProps,
         },
         formItemClass: cn(
-          'flex-shrink-0',
+          'shrink-0',
           { hidden },
           formItemClass,
           resolvedSchemaFormItemClass,
@@ -228,6 +228,7 @@ const tabsComputedProps = computed(() => {
           </FormField>
         </template>
       </template>
+      <slot :shapes="shapes"></slot>
     </div>
     <NTabs type="segment" :class="tabId" v-bind="tabsComputedProps">
       <NTabPane
@@ -263,7 +264,6 @@ const tabsComputedProps = computed(() => {
         </div>
       </NTabPane>
     </NTabs>
-    <slot :shapes="shapes"></slot>
   </component>
 </template>
 <style scoped>

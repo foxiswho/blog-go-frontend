@@ -1,16 +1,20 @@
 <script setup lang="ts">
+import type { Fetch, AnyUploadFn } from './UploadGroup/type';
+
 import { computed, ref, watch } from 'vue';
 
 import { useVbenModal, VbenButton } from '@vben/common-ui';
 
+import { isFunction } from '@vben-core/shared/utils';
+
 import { MdiFileOutline, AntDesignCloseOutlined } from '@pg/icons';
-import { requestClient } from '@pg/request';
 import { useMessage } from 'naive-ui';
 import draggable from 'vuedraggable';
 
 import { isImage } from './setting';
-import ModalUpload from './UploadGroup/ModalUploadList.vue';
+import ModalUploadList from './UploadGroup/ModalUploadList.vue';
 import { UploadGroupProps } from './UploadGroup/props';
+import { emptyUploadFn } from './UploadGroup/type';
 
 const props = defineProps({
   ...UploadGroupProps,
@@ -23,19 +27,28 @@ const dragging = ref(false);
 const activatedUpload = ref('');
 const uploadSetting = ref({});
 const listData = ref({});
-const modelValueData = ref({});
+const modelValueData = ref('');
 const draggingInfo = computed(() => (dragging.value ? 'under drag' : ''));
 const listDataComputed = computed(() => listData.value);
 const makeFileOwnerNum = ref(0);
+const fetchSetting = ref<Fetch>({
+  url: '',
+  uploadFn: emptyUploadFn,
+});
+if (isFunction(props.fetchSetting?.uploadFn)) {
+  fetchSetting.value.uploadFn = props.fetchSetting?.uploadFn;
+}
 watch(
   () => props.modelValue,
   (newValue, oldValue) => {
     modelValueData.value = newValue;
 
-    console.log('modelValueData.oldValue=>',oldValue);
-    console.log('modelValueData.newValue=>',newValue);
-    console.log('modelValueData.value=>',modelValueData.value);
-    getFileList();
+    // console.log('modelValueData.oldValue=>', oldValue);
+    console.log('modelValueData.newValue=>', newValue);
+    // console.log('modelValueData.value=>', modelValueData.value);
+    if(newValue) {
+      getFileList();
+    }
   },
   { deep: true, immediate: true },
 );
@@ -46,7 +59,7 @@ const checkMove = (e) => {
 
 const [ModalUploadCom, ModalUploadApi] = useVbenModal({
   // 连接抽离的组件
-  connectedComponent: ModalUpload,
+  connectedComponent: ModalUploadList,
 });
 function modalUploadOk(val) {
   console.log('modalUploadOk=>', val);
@@ -63,12 +76,32 @@ function modalUploadOk(val) {
       message.error(`超过限制数量: ${uploadSetting.value.maxNumber}`);
       return;
     }
+    let ids = [];
     val.data.forEach((item) => {
       if (!listData.value[activatedUpload.value]) {
         listData.value[activatedUpload.value] = [];
       }
       listData.value[activatedUpload.value].push(item);
+      //
+      ids.push(item.id);
     });
+    if (isFunction(fetchSetting.value?.uploadFn)) {
+      const param = {
+        ...fetchSetting.value.params,
+        fileOwner:val.fileOwner,
+        fileOwnerSub:activatedUpload.value,
+        nos: ids,
+      };
+      fetchSetting.value
+        ?.uploadFn(param, {
+          type: 'addByFileOwner',
+          config: {
+            successMessageMode: 'none',
+            errorMessageMode: 'message',
+            withToken: true,
+          },
+        });
+    }
   }
   emit('ok', { data: listData.value, owner: modelValueData.value });
 }
@@ -81,46 +114,43 @@ const handleUpload = (group) => {
   if (props.enabled) {
     activatedUpload.value = group.key;
     uploadSetting.value = group;
-    const uploadFetch = {
-      header: {},
-      params: {},
-      url: '',
-      urlLink: '',
-      urlList: '',
-      urlQr: '',
-    };
     if (props.fetchSetting) {
-      if (props.fetchSetting?.url) {
-        uploadFetch.url = props.fetchSetting?.url;
-      }
-      if (props.fetchSetting?.urlQr) {
-        uploadFetch.urlQr = props.fetchSetting?.urlQr;
-      }
-      if (props.fetchSetting?.urlLink) {
-        uploadFetch.urlLink = props.fetchSetting?.urlLink;
-      }
-      if (props.fetchSetting?.urlList) {
-        uploadFetch.urlList = props.fetchSetting?.urlList;
-      }
       if (props.fetchSetting?.header) {
         Object.keys(props.fetchSetting?.header).forEach((key) => {
-          uploadFetch.header[key] = props.fetchSetting.header[key];
+          fetchSetting.value.header[key] = props.fetchSetting.header[key];
         });
       }
       if (props.fetchSetting?.params) {
         Object.keys(props.fetchSetting?.params).forEach((key) => {
-          uploadFetch.params[key] = props.fetchSetting.params[key];
+          fetchSetting.value.params[key] = props.fetchSetting.params[key];
         });
+      }
+      if (isFunction(props.fetchSetting?.uploadFn)) {
+        fetchSetting.value.uploadFn = props.fetchSetting?.uploadFn;
       }
     }
     // console.log('uploadSetting',uploadFetch);
     // console.log('uploadFetch',uploadFetch)
+    let fileOwner = '';
+    if(typeof modelValueData.value === 'object') {
+      fileOwner = modelValueData.value[group.key];
+    } else {
+      fileOwner = modelValueData.value;
+    }
+    console.log('fileOwner',fileOwner);
     ModalUploadApi.setData({
       callback: ({ data }) => {},
       isUpdate: false,
-      sourceData: {},
-      uploadFetch: uploadFetch,
-      uploadSetting: group,
+      sourceData: fileOwner,
+      fileOwner: fileOwner,
+      fetchSetting: fetchSetting.value,
+      uploadSetting: {
+        ...group,
+        params: {
+          fileOwner: fileOwner,
+          fileOwnerSub: group.key,
+        }
+      },
       values: {},
     });
     ModalUploadApi.open();
@@ -133,17 +163,37 @@ const handleUpload = (group) => {
  */
 const delUploadItem = (item, index, key) => {
   if (listData.value[key] && listData.value[key].length > 0) {
-    let fileOwner = '';
-    for (const itemKey in props.group) {
-      if (key === props.group[itemKey].key && props.group[itemKey]?.fileOwner) {
-        fileOwner = props.group[itemKey].fileOwner;
-      }
-    }
+    let fileOwner = props.modelValue;
+    // for (const itemKey in props.group) {
+    //   if (key === props.group[itemKey].key && props.group[itemKey]?.fileOwner) {
+    //     fileOwner = props.group[itemKey].fileOwner;
+    //   }
+    // }
     if (fileOwner) {
-      fileOwnerDel({fileOwner:fileOwner,nos:[item.id]}).then((d) => {
-        console.log('ddddd=>',d);
-        listData.value[key].splice(index, 1);
-      });
+      if (isFunction(fetchSetting.value?.uploadFn)) {
+        const param = {
+          ...fetchSetting.value.params,
+          fileOwner: fileOwner,
+          nos: [item.id],
+        };
+        fetchSetting.value
+          ?.uploadFn(param, {
+            type: 'ownerDel',
+            config: {
+              successMessageMode: 'none',
+              withToken: true,
+            },
+          })
+          .then((d) => {
+            console.log('ddddd=>', d);
+            if (d) {
+              listData.value[key].splice(index, 1);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     }
   }
 };
@@ -201,32 +251,41 @@ function textEllipsisCenter(str, length = 13, fisrtIndex = 6) {
   return str;
 }
 
-const fileOwnerList = (params?) =>
-  requestClient.post(props.fetchSetting.urlByOwner, params, {
-    successMessageMode: 'none',
-    withToken: true,
-  });
-const fileOwnerDel = (params?) =>
-  requestClient.post(props.fetchSetting.urlByOwnerDel, params, {
-    successMessageMode: 'none',
-    withToken: true,
-  });
 function getFileList() {
-  let parData = [];
+  const parData = [];
+  let fileOwner = '';
   if (modelValueData.value) {
-    for (const key in modelValueData.value) {
-      parData.push({
-        group: key,
-        fileOwner: modelValueData.value[key],
-      });
+    if(typeof modelValueData.value === 'object') {
+      for (const key in modelValueData.value) {
+        parData.push({
+          group: key,
+          fileOwner: modelValueData.value[key],
+        });
+      }
+    } else {
+        fileOwner = modelValueData.value;
     }
   }
-  if (parData && parData.length > 0) {
-    fileOwnerList({groupData: parData}).then((d) => {
-      console.log('ddddd=>',d)
-      if (d && d.groupData) {
-        listData.value = d.groupData;
-      }
+  if (isFunction(fetchSetting.value?.uploadFn)) {
+    const param = {
+      ...fetchSetting.value.params,
+      groupData: parData,
+      fileOwner: fileOwner,
+    };
+    console.log('param',param);
+    fetchSetting.value
+      ?.uploadFn(param, {
+        type: 'detail',
+      }).then((d) =>{
+        let keyX = '';
+      d.forEach(item => {
+        keyX = item.fileOwnerSub??'main';
+        if(!listData.value[keyX]) {
+          listData.value[keyX] = [];
+        }
+        listData.value[keyX].push(item);
+      })
+      //
     });
   }
 }
@@ -235,7 +294,7 @@ function getFileList() {
   <n-list class="pgUploadList ml-2">
     <n-list-item v-for="group in props.group" :key="group.key">
       <n-thing content-style="margin-top: 10px;">
-        <template #header>
+        <template v-if="group?.name" #header>
           {{ group.name }}
         </template>
         <template #header-extra>
@@ -265,8 +324,9 @@ function getFileList() {
           <n-space
             class="pgImgGroup flex"
             style="
+
               --n-dragger-border-hover: 1px dashed #18a058;
-              --n-dragger-border: 1px dashed rgb(224, 224, 230);
+              --n-dragger-border: 1px dashed rgb(224 224 230);
             "
           >
             <draggable
@@ -289,7 +349,7 @@ function getFileList() {
                     @click="delUploadItem(item, index, group.key)"
                   />
 
-                  <div v-if="isImage(item.url)">
+                  <div v-if="isImage(item.url)||'ajs'===item.bucket">
                     <n-image :src="item.url" width="100" />
                   </div>
                   <div v-else>
@@ -327,7 +387,9 @@ function getFileList() {
                         <NInput
                           v-if="item?.edit"
                           v-model:value="item.sourceName"
-                          style="--n-padding-left: 0; --n-padding-right: 0"
+                          style="
+
+--n-padding-left: 0; --n-padding-right: 0"
                         />
                         <VbenButton
                           class="ml-1"

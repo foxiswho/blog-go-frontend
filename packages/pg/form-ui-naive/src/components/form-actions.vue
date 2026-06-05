@@ -30,21 +30,6 @@ const submitButtonOptions = computed(() => {
   };
 });
 
-// const isQueryForm = computed(() => {
-//   return !!unref(rootProps).showCollapseButton;
-// });
-
-const queryFormStyle = computed(() => {
-  if (!unref(rootProps).actionWrapperClass) {
-    return {
-      'grid-column': `-2 / -1`,
-      marginLeft: 'auto',
-    };
-  }
-
-  return {};
-});
-
 async function handleSubmit(e: Event) {
   e?.preventDefault();
   e?.stopPropagation();

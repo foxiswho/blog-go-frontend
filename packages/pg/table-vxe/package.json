@@ -17,6 +17,8 @@
     }
   },
   "dependencies": {
+    "@vben/tailwind-config": "workspace:*",
+    "@vben-core/shared": "workspace:*",
     "vxe-pc-ui": "catalog:",
     "vxe-table": "catalog:",
     "xe-utils": "catalog:"

@@ -8,11 +8,13 @@ import { useVbenModal, VbenButton } from '@vben/common-ui';
 import { requestClient } from '@pg/request';
 import { useNode } from '@pg/utils';
 import { NImage, NImageGroup, NPagination, NSpace, useMessage } from 'naive-ui';
-import { type VxeGridInstance } from 'vxe-table';
+import type { VxeGridInstance } from 'vxe-table';
 
 import { PgTree } from '../../tree';
 import ModalUpload from './ModalUpload.vue';
-import { type Category, type Fetch, type UploadGroupItem } from './type';
+import { emptyUploadFn } from './type';
+import type { AnyUploadFn, Category, Fetch, UploadGroupItem } from './type';
+import { isFunction } from '@vben-core/shared/utils';
 
 const props = defineProps({
   category: {
@@ -42,7 +44,10 @@ const uploadSetting = ref<UploadGroupItem>({
   maxSize: 30,
   name: '',
 });
-const uploadFetch = ref<Fetch>({ url: '' });
+const fetchSetting = ref<Fetch>({
+  url: '',
+  uploadFn: emptyUploadFn,
+});
 const xGrid = ref<VxeGridInstance<RowVO>>();
 const formParam = reactive({ catBack: '', catFront: '' });
 const option = ref([
@@ -56,7 +61,7 @@ const checkboxSelectData = ref([]);
 const checkboxSelectLengthComputed = computed(
   () => checkboxSelect.value.length,
 );
-const resultSuccess = <T = Recordable<any>,>(
+const resultSuccess = <T = Recordable<any>>(
   result: T,
   { message = 'ok' } = {},
 ) => ({
@@ -71,19 +76,39 @@ const pageData = ref([]);
 const pageDataComputed = computed(() => pageData.value);
 
 function fetchList() {
-  uploadList({ pageNum: page.value, pageSize: 24 }).then((d) => {
-    // console.log('uploadList', d);
-    pageData.value = [];
-    d.data.forEach((item) => {
-      item.checked = false;
-      pageData.value.push(item);
-    });
-    // pageData.value = d.data;
-    pageCount.value = d.totalPage;
-    pageTotal.value = d.total;
+  if (isFunction(fetchSetting.value?.uploadFn)) {
+    const param = {
+      ...fetchSetting.value.params,
+      pageNum: page.value,
+      pageSize: 24,
+    };
+    fetchSetting.value
+      ?.uploadFn(param, {
+        type: 'list',
+        config: {
+          successMessageMode: 'none',
+          withToken: true,
+        },
+      })
+      .then((d) => {
+        console.log('uploadListFn=>', d);
+        if (d) {
+          pageData.value = [];
+          d.data.forEach((item) => {
+            item.checked = false;
+            pageData.value.push(item);
+          });
+          // pageData.value = d.data;
+          pageCount.value = d.totalPage;
+          pageTotal.value = d.total;
 
-    loading.value = false;
-  });
+          loading.value = false;
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
 }
 const [Modal, modalApi] = useVbenModal({
   onCancel() {
@@ -94,20 +119,27 @@ const [Modal, modalApi] = useVbenModal({
     //modalApi.setState({ loading: false });
   },
   onOpenChange(isOpen: boolean) {
-    //modalApi.setState({ loading: true });
+    modalApi.setState({
+      loading: false,
+      confirmLoading: false,
+      closeOnClickModal: false, // 点击遮罩关闭弹窗
+      destroyOnClose: true, // 关闭时销毁
+      draggable: true, // 可拖拽
+    });
     checkboxSelect.value = [];
     checkboxSelectData.value = [];
     titleRef.value = '上传';
     if (isOpen) {
       const modalData = modalApi.getData<Record<string, any>>();
+      console.log('list.modalData',modalData);
       if (modalData.checkedNum) {
         checkedNum.value = modalData.checkedNum;
       }
       if (modalData.uploadSetting) {
         uploadSetting.value = modalData.uploadSetting;
       }
-      if (modalData.uploadFetch) {
-        uploadFetch.value = modalData.uploadFetch;
+      if (modalData.fetchSetting) {
+        fetchSetting.value = modalData.fetchSetting;
       }
 
       if (modalData.sourceData) {
@@ -210,6 +242,7 @@ const handleOkSelect = () => {
   emit('ok', {
     data: checkboxSelectData.value,
     value: urlChecked,
+    fileOwner: sourceData.value,
   });
 
   modalApi.close();
@@ -225,11 +258,23 @@ const handleOkSelect = () => {
 const handleUpload = () => {
   // console.log('list.uploadSetting.value',uploadSetting.value)
   // console.log('list.uploadFetch.value',uploadFetch.value)
+  if(fetchSetting.value){
+    if(!fetchSetting.value.params){
+      fetchSetting.value.params = {};
+    }
+    console.log('uploadSetting.value',uploadSetting.value);
+    if(uploadSetting.value.params){
+      Object.keys(uploadSetting.value.params).forEach((key) => {
+        fetchSetting.value.params[key] = uploadSetting.value.params[key];
+      });
+    }
+    //fetchSetting.value.params['fileOwner'] = uploadSetting.value.params;
+  }
   ModalApiUpload.setData({
     callback: ({ data }) => {},
     isUpdate: false,
-    sourceData: {},
-    uploadFetch: uploadFetch.value,
+    sourceData: sourceData.value,
+    fetchSetting: fetchSetting.value,
     uploadSetting: uploadSetting.value,
     values: {},
   });
@@ -293,11 +338,6 @@ function restSelectIndex() {
   }
 }
 
-const uploadList = (params?) =>
-  requestClient.post(uploadFetch.value.urlList, params, {
-    successMessageMode: 'none',
-    withToken: true,
-  });
 const updatePage = (page) => {
   loading.value = true;
   fetchList();
@@ -357,7 +397,7 @@ function isImage(url) {
             <NSelect
               :options="option"
               class="ml-4"
-              style="width: 200px; display: inline-block"
+              style="display: inline-block; width: 200px"
             />
           </div>
           <n-checkbox-group v-model:value="checkboxSelect">
@@ -372,11 +412,11 @@ function isImage(url) {
                       <NSpace
                         class="m2 item"
                         style="
-                          flex-flow: column;
                           position: relative;
+                          flex-flow: column;
                           width: 102px;
-                          max-height: 102px;
                           min-height: 100px;
+                          max-height: 102px;
                         "
                       >
                         <div class="selected flex-justify-end flex flex-row">
@@ -398,7 +438,7 @@ function isImage(url) {
                             @click="setCheckBox(item, index)"
                           />
                         </div>
-                        <div v-if="isImage(item.url)">
+                        <div v-if="isImage(item.url)||'ajs'===item.bucket">
                           <NImage
                             :alt="item.sourceName"
                             :class="`${item?.checked ? '' : 'img'}`"
@@ -422,9 +462,9 @@ function isImage(url) {
                           class="title text-ellipsis"
                           style="
                             display: -webkit-box;
+                            overflow: hidden;
                             -webkit-line-clamp: 2;
                             -webkit-box-orient: vertical;
-                            overflow: hidden;
                           "
                         >
                           {{ item.sourceName }}
