@@ -43,7 +43,29 @@ pnpm build:blog:sys
 
 如果 要看更多部署配置 请看 https://doc.vben.pro/guide/essentials/build.html
 
+# 同步 vue-vben-admin
+## 利用 github 同步
+切换到 main-source 分支
 
+## 手动同步
+```bash
+# 增加 远程分支
+git remote add upstream git@github.com:vbenjs/vue-vben-admin.git
+# upstream 远程仓库：fetch 时不自动拉取 tags
+git config remote.upstream.tagOpt --no-tags
+# 先 fetch 上游的 main 分支（不带 tags）
+git fetch upstream main --no-tags
+# 基于上游 main 创建 main-source 分支，如果已存在，跳过
+git checkout -b main-source upstream/main
+# 因为已配置 tagOpt --no-tags，直接 fetch 即可
+git fetch upstream
+# 切换到 main-source 分支
+git checkout main-source
+# 合并上游 main 分支的更新
+git merge upstream/main
+# 可选：将更新后的 main-source 推送到你的远程仓库
+git push origin main-source
+```
 
 <div align="center">
   <a href="https://github.com/anncwb/vue-vben-admin">
