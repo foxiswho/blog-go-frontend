@@ -3,9 +3,29 @@
  * 可用于 vben-form、vben-modal、vben-drawer 等组件使用,
  */
 
+import type {
+  CheckboxGroupProps,
+  CheckboxProps,
+  DatePickerProps,
+  DividerProps,
+  InputNumberProps,
+  InputProps,
+  RadioGroupProps,
+  SelectProps,
+  SpaceProps,
+  SwitchProps,
+  TimePickerProps,
+  TreeSelectProps,
+  UploadProps,
+} from 'naive-ui';
+
 import type { Component } from 'vue';
 
-import type { BaseFormComponentType } from '@vben/common-ui';
+import type {
+  ApiComponentSharedProps,
+  BaseFormComponentType,
+  IconPickerProps,
+} from '@vben/common-ui';
 import type { Recordable } from '@vben/types';
 
 import { defineAsyncComponent, defineComponent, h, ref } from 'vue';
@@ -16,11 +36,16 @@ import { $t } from '@vben/locales';
 import {
   PgDatePicker,
   PgRadioGroup,
-  PgTree,
   PgSpan,
+  PgTree,
   PgTreeSelect,
+  PgUploadGroupOwner,
+  PgMarkdown,
 } from '@pg/components-n';
+import {getNanoidNo} from "@pg/utils";
+
 import { message } from '#/adapter/naive';
+import {uploadFn, uploadFnByMarkdown} from "#/viewsBasic/attachment/api";
 
 const NButton = defineAsyncComponent(() =>
   import('naive-ui/es/button').then((res) => res.NButton),
@@ -52,6 +77,9 @@ const NRadioButton = defineAsyncComponent(() =>
 const NRadioGroup = defineAsyncComponent(() =>
   import('naive-ui/es/radio').then((res) => res.NRadioGroup),
 );
+const NRate = defineAsyncComponent(() =>
+  import('naive-ui/es/rate').then((res) => res.NRate),
+);
 const NDynamicTags = defineAsyncComponent(() =>
   import('naive-ui/es/dynamic-tags').then((res) => res.NDynamicTags),
 );
@@ -73,9 +101,12 @@ const NTreeSelect = defineAsyncComponent(() =>
 const NUpload = defineAsyncComponent(() =>
   import('naive-ui/es/upload').then((res) => res.NUpload),
 );
+const NMention = defineAsyncComponent(() =>
+  import('naive-ui/es/mention').then((res) => res.NMention),
+);
 
-const withDefaultPlaceholder = <T extends Component>(
-  component: T,
+const withDefaultPlaceholder = (
+  component: Component,
   type: 'input' | 'select',
   componentProps: Recordable<any> = {},
 ) => {
@@ -110,6 +141,8 @@ const withDefaultPlaceholder = <T extends Component>(
 
 // 这里需要自行根据业务组件库进行适配，需要用到的组件都需要在这里类型说明
 export type ComponentType =
+  | 'ApiCheckboxGroup'
+  | 'ApiRadioGroup'
   | 'ApiSelect'
   | 'ApiTreeSelect'
   | 'Checkbox'
@@ -119,17 +152,46 @@ export type ComponentType =
   | 'IconPicker'
   | 'Input'
   | 'InputNumber'
+  | 'Mentions'
+  | 'NDynamicTags'
+  | 'NMention'
+  | 'NSelect'
+  | 'PgUploadGroupOwner'
+  | 'PgMarkdown'
   | 'Radio'
   | 'RadioGroup'
+  | 'Rate'
   | 'Select'
   | 'Space'
   | 'Switch'
   | 'TimePicker'
   | 'TreeSelect'
   | 'Upload'
-  | 'NSelect'
-  | 'NDynamicTags'
   | BaseFormComponentType;
+
+/**
+ * 与 {@link ComponentType} 中注册的组件名一一对应，便于 Schema 上 `component` + `componentProps` 联动提示
+ */
+export interface ComponentPropsMap {
+  ApiRadioGroup: ApiComponentSharedProps & RadioGroupProps;
+  ApiCheckboxGroup: ApiComponentSharedProps & CheckboxGroupProps;
+  ApiSelect: ApiComponentSharedProps & SelectProps;
+  ApiTreeSelect: ApiComponentSharedProps & TreeSelectProps;
+  Checkbox: CheckboxProps;
+  CheckboxGroup: CheckboxGroupProps;
+  DatePicker: DatePickerProps;
+  Divider: DividerProps;
+  IconPicker: IconPickerProps;
+  Input: InputProps;
+  InputNumber: InputNumberProps;
+  RadioGroup: RadioGroupProps;
+  Select: SelectProps;
+  Space: SpaceProps;
+  Switch: SwitchProps;
+  TimePicker: TimePickerProps;
+  TreeSelect: TreeSelectProps;
+  Upload: UploadProps;
+}
 
 async function initComponentAdapter() {
   const components: Partial<Record<ComponentType, Component>> = {
@@ -137,6 +199,64 @@ async function initComponentAdapter() {
     // Button: () =>
     // import('xxx').then((res) => res.Button),
 
+    ApiRadioGroup: withDefaultPlaceholder(
+      {
+        ...ApiComponent,
+        name: 'ApiRadioGroup',
+      },
+      'radioGroup',
+      {
+        component: (props, { attrs, slots }) => {
+          let defaultSlot;
+          if (Reflect.has(slots, 'default')) {
+            defaultSlot = slots.default;
+          } else {
+            const { options } = attrs;
+            if (Array.isArray(options)) {
+              defaultSlot = () =>
+                options.map((option) =>
+                  h(attrs.isButton ? NRadioButton : NRadio, option),
+                );
+            }
+          }
+          const groupRender = h(
+            NRadioGroup,
+            { ...props, ...attrs },
+            { default: defaultSlot },
+          );
+          return attrs.isButton
+            ? h(NSpace, { vertical: true }, () => groupRender)
+            : groupRender;
+        },
+        modelPropName: 'value',
+      },
+    ),
+    ApiCheckboxGroup: withDefaultPlaceholder(
+      {
+        ...ApiComponent,
+        name: 'ApiCheckboxGroup',
+      },
+      'checkboxGroup',
+      {
+        component: (props, { attrs, slots }) => {
+          let defaultSlot;
+          if (Reflect.has(slots, 'default')) {
+            defaultSlot = slots.default;
+          } else {
+            const { options } = attrs;
+            if (Array.isArray(options)) {
+              defaultSlot = () => options.map((option) => h(NCheckbox, option));
+            }
+          }
+          return h(
+            NCheckboxGroup,
+            { ...props, ...attrs },
+            { default: defaultSlot },
+          );
+        },
+        modelPropName: 'value',
+      },
+    ),
     ApiSelect: withDefaultPlaceholder(
       {
         ...ApiComponent,
@@ -196,7 +316,9 @@ async function initComponentAdapter() {
       inputComponent: NInput,
     }),
     Input: withDefaultPlaceholder(NInput, 'input'),
-    InputNumber: withDefaultPlaceholder(NInputNumber, 'input'),
+    InputNumber: withDefaultPlaceholder(NInputNumber, 'input', {
+      style: { width: '100%' },
+    }),
     RadioGroup: (props, { attrs, slots }) => {
       let defaultSlot;
       if (Reflect.has(slots, 'default')) {
@@ -226,14 +348,42 @@ async function initComponentAdapter() {
     TimePicker: NTimePicker,
     TreeSelect: withDefaultPlaceholder(NTreeSelect, 'select'),
     Upload: NUpload,
-    NRadioGroup: NRadioGroup,
-    NSelect: NSelect,
-    NDynamicTags: NDynamicTags,
-    PgTree: PgTree,
-    PgTreeSelect: PgTreeSelect,
-    PgRadioGroup: PgRadioGroup,
-    PgDatePicker: PgDatePicker,
-    PgSpan: PgSpan,
+    Radio: NRadio,
+    NRadioGroup,
+    NSelect,
+    NDynamicTags,
+    Rate: NRate,
+    NMention,
+    Mentions: NMention,
+    PgTree,
+    PgTreeSelect,
+    PgRadioGroup,
+    PgDatePicker,
+    PgSpan,
+    PgUploadGroupOwner: withDefaultPlaceholder(PgUploadGroupOwner, 'input', {
+      isStandalone: true,
+      fetchSetting: {
+        uploadFn,
+      },
+      group: [
+        {
+          // name: '主图',
+          key: 'main',
+          // description: '其他说明 图片大小：宽 500px ,高 400px,图片大小：宽 500px ,高 400px',
+          headerExtra: ',图片大小：宽 500px ,高 400px',
+          width: '500px',
+          height: '400px',
+          maxNumber: 1,
+          maxSize: 30,
+        },
+      ],
+    }),
+    PgMarkdown: withDefaultPlaceholder(PgMarkdown, 'input', {
+      params:{
+        fileOwner: 'context-auto-'+getNanoidNo(32),
+      },
+      uploadByMarkdown: uploadFnByMarkdown,
+    }),
   };
 
   // 将组件注册到全局共享状态中
