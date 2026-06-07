@@ -8,10 +8,10 @@ import { usePgForm } from '#/adapter';
 
 import { updatePassword } from './api';
 import { useUserStore } from '@vben/stores';
-import { usePubPreStore } from '#/store';
+import {useConfigPubStore} from '#/store';
 import { SmUtil } from '#/tools/smUtil';
 const userStore = useUserStore();
-const pubPreStore = usePubPreStore();
+const configPubStore = useConfigPubStore();
 const sm = new SmUtil();
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
@@ -101,11 +101,11 @@ function onSubmit(values: Record<string, any>) {
       ...values,
     };
     if (
-      pubPreStore.isEnable() &&
-      pubPreStore.getLoginPub() &&
+      configPubStore.isLoginEncrypt() &&
+      configPubStore.getLoginPub() &&
       data['passwordNew']
     ) {
-      sm.setPublicKey(pubPreStore.getLoginPub());
+      sm.setPublicKey(configPubStore.getLoginPub());
       data.passwordNew = sm.encryptHex(data.passwordNew);
       data['encrypt'] = 'encrypt';
     }

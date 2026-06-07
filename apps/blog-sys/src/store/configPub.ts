@@ -7,7 +7,14 @@ interface ConfigPubState {
    * 加密登陆
    */
   loginEncrypt: boolean;
-
+  /**
+   * 登陆密钥
+   */
+  loginPub: string;
+  /**
+   * 密钥编号
+   */
+  loginPubNo: string;
   routerOtherAuth: 'allow'|'deny';
   /**
    *
@@ -29,6 +36,15 @@ export const useConfigPubStore = defineStore('configPubState', {
     },
     setLoginEncrypt(bool: boolean) {
       this.loginEncrypt = bool;
+    },
+    getLoginPub() {
+      return this.loginPub;
+    },
+    setLoginPub(loginPub: string) {
+      this.loginPub = loginPub;
+    },
+    setLoginPubNo(no: string) {
+      this.loginPubNo = no;
     },
     setRouterOtherAuth(str: string) {
       // @ts-ignore
@@ -60,10 +76,14 @@ export const useConfigPubStore = defineStore('configPubState', {
       'routerOtherAuth',
       'routerList',
       'menuAuth',
+      'loginPub',
+      'loginPubNo',
     ],
   },
   state: (): ConfigPubState => ({
     loginEncrypt: false,
+    loginPub: '',
+    loginPubNo: '',
     routerOtherAuth: 'allow',
     routerList: [],
     menuAuth: true,

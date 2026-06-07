@@ -1,24 +1,28 @@
 <script setup lang="ts">
-import type { MenuRecordRaw } from '@vben-core/typings';
 import type { RowVO } from '@pg/types';
-
-import {defineEmits, onMounted, reactive, ref} from 'vue';
-
-import { useVbenModal, VbenButton, z } from '@vben/common-ui';
-import { MenuBadge } from '@vben-core/menu-ui';
-import { IconifyIcon, Plus } from '@vben/icons';
-import { message } from '#/adapter';
-import { useAccessStore } from '@vben/stores';
-import { VXETable } from 'vxe-table';
 import type {
   VxeGridInstance,
   VxeGridListeners,
   VxeGridProps,
 } from 'vxe-table';
 
-import {columnsRouter} from '../data';
+import type { MenuRecordRaw } from '@vben-core/typings';
+
+import {defineEmits, onMounted, reactive, ref} from 'vue';
+
+import { useVbenModal, VbenButton, z } from '@vben/common-ui';
+import { IconifyIcon, Plus } from '@vben/icons';
 import {$t} from "@vben/locales";
+import { useAccessStore } from '@vben/stores';
+
+import { MenuBadge } from '@vben-core/menu-ui';
+
+import { VXETable } from 'vxe-table';
+
+import { message } from '#/adapter';
 import {IFrameView} from "#/layouts";
+
+import {columnsRouter} from '../data';
 const emit = defineEmits(['ok']);
 const recordData = ref({});
 const accessStore = useAccessStore();

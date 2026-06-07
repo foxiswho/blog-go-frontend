@@ -16,13 +16,10 @@ import { $t } from '#/locales';
 import { useConfigPubStore } from "#/store/configPub";
 import { SmUtil } from '#/tools/smUtil';
 
-import { usePubPreStore } from './pubPre';
-
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
   const userStore = useUserStore();
   const configPubStore = useConfigPubStore();
-  const pubPreStore = usePubPreStore();
   const router = useRouter();
 
   const loginLoading = ref(false);
@@ -41,12 +38,15 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loginLoading.value = true;
       //
+      console.info("isLoginEncrypt=",configPubStore.isLoginEncrypt())
+      console.info("getLoginPub=",configPubStore.getLoginPub())
+      //
       if (
-        pubPreStore.isEnable() &&
-        pubPreStore.getLoginPub() &&
+        configPubStore.isLoginEncrypt() &&
+        configPubStore.getLoginPub() &&
         params['password']
       ) {
-        sm.setPublicKey(pubPreStore.getLoginPub());
+        sm.setPublicKey(configPubStore.getLoginPub());
         params.password = sm.encryptHex(params.password);
         params['encrypt'] = 'encrypt';
       }
@@ -58,7 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (accessToken) {
         // 将 accessToken 存储到 accessStore 中
         accessStore.setAccessToken(accessToken);
-        accessStore.setAccessToken2(payload.jti);
+        //accessStore.setAccessToken2(payload.jti);
 
         // 获取用户信息并存储到 accessStore 中
         // const [fetchUserInfoResult, accessCodes] = await Promise.all([
@@ -138,17 +138,17 @@ export const useAuthStore = defineStore('auth', () => {
     if(infoPublic?.info?.roles) {
       userStore.setUserInfo(infoPublic?.info?.roles);
     }
-    if(infoPublic?.menu) {
-      if(infoPublic.menu?.otherAuth){
-        configPubStore.setRouterOtherAuth(infoPublic.menu.otherAuth);
+    if(infoPublic?.menuRouter) {
+      if(infoPublic.menuRouter?.otherAuth){
+        configPubStore.setRouterOtherAuth(infoPublic.menuRouter.otherAuth);
       }
       // 菜单
-      if(infoPublic.menu?.data){
-        configPubStore.setRouterList(infoPublic.menu.data);
+      if(infoPublic.menuRouter?.data){
+        configPubStore.setRouterList(infoPublic.menuRouter.data);
       }
       // 按钮权限码
-      if (infoPublic.menu?.dataCodes){
-        accessStore.setAccessCodes(infoPublic.menu?.dataCodes);
+      if (infoPublic.menuRouter?.dataCodes){
+        accessStore.setAccessCodes(infoPublic.menuRouter?.dataCodes);
       }
     }
     return infoPublic.info;

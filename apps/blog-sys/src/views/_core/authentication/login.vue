@@ -20,7 +20,7 @@ const MOCK_USER_OPTIONS: BasicOption[] = [
   },
   {
     label: 'Admin',
-    value: 'admin1',
+    value: 'admin',
   },
   {
     label: 'User',

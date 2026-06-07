@@ -7,10 +7,10 @@ import { $t } from '@vben/locales';
 import { usePgForm } from '#/adapter';
 
 import { updatePassword } from '../api';
-import { usePubPreStore } from '#/store';
+import {useConfigPubStore, usePubPreStore} from '#/store';
 import { SmUtil } from '#/tools/smUtil';
 
-const pubPreStore = usePubPreStore();
+const configPubStore = useConfigPubStore();
 const sm = new SmUtil();
 const currentData = ref({});
 const emit = defineEmits(['ok']);
@@ -104,11 +104,11 @@ async function onSubmit() {
       ...values,
     };
     if (
-      pubPreStore.isEnable() &&
-      pubPreStore.getLoginPub() &&
+      configPubStore.isLoginEncrypt() &&
+      configPubStore.getLoginPub() &&
       data['passwordNew']
     ) {
-      sm.setPublicKey(pubPreStore.getLoginPub());
+      sm.setPublicKey(configPubStore.getLoginPub());
       data.passwordNew = sm.encryptHex(data.passwordNew);
       data['encrypt'] = 'encrypt';
     }

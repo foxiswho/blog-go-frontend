@@ -9,7 +9,8 @@ import { useTitle } from '@vueuse/core';
 
 import { $t } from '#/locales';
 import { accessRoutes, coreRouteNames } from '#/router/routes';
-import { useAuthStore } from '#/store';
+import { useAuthStore, useConfigPubStore } from '#/store';
+import { configInitializer } from '#/viewsPub/config/api';
 
 import { generateAccess } from './access';
 
@@ -59,9 +60,12 @@ function setupAccessGuard(router: Router) {
     const accessStore = useAccessStore();
     const userStore = useUserStore();
     const authStore = useAuthStore();
+    const configPubStore = useConfigPubStore();
 
     // 基本路由，这些路由不需要进入权限拦截
     if (coreRouteNames.includes(to.name as string)) {
+      // 加载配置信息
+      configInitializer(configPubStore);
       if (to.path === LOGIN_PATH && accessStore.accessToken) {
         return decodeURIComponent(
           (to.query?.redirect as string) ||
@@ -81,6 +85,8 @@ function setupAccessGuard(router: Router) {
 
       // 没有访问权限，跳转登录页面
       if (to.fullPath !== LOGIN_PATH) {
+        // 加载配置信息
+        configInitializer(configPubStore);
         return {
           path: LOGIN_PATH,
           // 如不需要，直接删除 query
@@ -103,6 +109,8 @@ function setupAccessGuard(router: Router) {
     // 当前登录用户拥有的角色标识列表
     const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
     const userRoles = userInfo.roles ?? [];
+    // 加载配置信息
+    configInitializer(configPubStore);
 
     // 生成菜单和路由
     const { accessibleMenus, accessibleRoutes } = await generateAccess({
@@ -116,11 +124,16 @@ function setupAccessGuard(router: Router) {
     accessStore.setAccessMenus(accessibleMenus);
     accessStore.setAccessRoutes(accessibleRoutes);
     accessStore.setIsAccessChecked(true);
-    const redirectPath = (from.query.redirect ??
-      (to.path === preferences.app.defaultHomePath
-        ? userInfo.homePath || preferences.app.defaultHomePath
-        : to.fullPath)) as string;
-
+    let redirectPath: string;
+    if (from.query.redirect) {
+      redirectPath = from.query.redirect as string;
+    } else if (to.fullPath === preferences.app.defaultHomePath) {
+      redirectPath = preferences.app.defaultHomePath;
+    } else if (userInfo.homePath && to.fullPath === userInfo.homePath) {
+      redirectPath = userInfo.homePath;
+    } else {
+      redirectPath = to.fullPath;
+    }
     return {
       ...router.resolve(decodeURIComponent(redirectPath)),
       replace: true,
