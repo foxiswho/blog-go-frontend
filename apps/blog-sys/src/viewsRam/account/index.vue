@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import type { RowVO } from '@pg/types';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import {computed, onMounted, reactive, ref, toRaw} from 'vue';
+
+import {$t} from "@vben/locales";
+import {
+  cn,
+  isEqual,
+} from '@vben/utils';
 
 import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
-import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 
 import { PgTree } from '@pg/components-n';
 import { basicTypeDomainFormatter,SexOptionsFormatter,IdentityTypeFormatter } from '@pg/types';
@@ -15,7 +20,8 @@ import {
   VXETable,
 } from 'vxe-table';
 
-import { message } from '#/adapter';
+import {message, useVbenForm} from '#/adapter';
+import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 import { selectNodeAllPublic } from '#/viewsRam/department/api';
 
 import {
@@ -30,20 +36,18 @@ import Account from './components/account.vue';
 import DrawerEditTpl from './components/DrawerEdit.vue';
 import PasswordModal from './components/ModalPassword.vue';
 import { columns } from './data';
-import {$t} from "@vben/locales";
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { departments: [] };
 
 const treeChang = (record) => {
   currenRecord.value = true;
   currenData.value = record;
   // onsole.log('record', record);
-  formParam.departments = [record['key']];
-  reloadTable();
+  formApiGrid.setFieldValue('departments', [record['key']]);
+  gridQuerySubmit();
 };
 /**
  * 重新加载
@@ -56,8 +60,8 @@ function reloadTree() {
  * @param e
  */
 const treeOverload = (e) => {
-  formParam.departments = [];
-  reloadTable();
+  formApiGrid.setFieldValue('departments', []);
+  gridQuerySubmit();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: DrawerEditTpl,
@@ -75,6 +79,56 @@ const [FormModalPassword, formModalApiPassword] = useVbenModal({
  */
 const menuDropdownOptions = [];
 
+const [FormGrid, formApiGrid] = useVbenForm({
+  // fieldMappingTime: [['createTime', ['startTime', 'endTime']]],
+  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+  compact: true,
+  submitButtonOptions: {
+    content: '查询',
+  },
+  // 默认展开
+  collapsed: false,
+  // 是否在字段值改变时提交表单
+  submitOnChange: false,
+  // 按下回车时是否提交表单
+  submitOnEnter: false,
+  // 控制表单是否显示折叠按钮
+  showCollapseButton: true,
+  handleSubmit: async () => {
+    const formValues = await formApiGrid.getValues();
+    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    gridQuery(formValues);
+  },
+  handleReset: async () => {
+    const prevValues = await formApiGrid.getValues();
+    await formApiGrid.resetForm();
+    const formValues = await formApiGrid.getValues();
+    formApiGrid.setLatestSubmissionValues(formValues);
+    // 如果值发生了变化，submitOnChange会触发刷新。所以只在submitOnChange为false或者值没有发生变化时，手动刷新
+    if (!isEqual(prevValues, formValues)) {
+      gridQuery(formValues);
+    }
+  },
+  schema: [
+    {
+      component: 'Input',
+      fieldName: 'wd',
+      label: '关键词',
+    },
+    {
+      fieldName: 'departments',
+      label: '隐藏',
+      defaultValue: [],
+      component: 'Input',
+      componentProps: {},
+      dependencies: {
+        show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['wd'],
+      },
+    },
+  ],
+});
 const xGrid = ref<VxeGridInstance<RowVO>>();
 const gridOptions = reactive<VxeGridProps<RowVO>>({
   stripe: true, // 斑马纹
@@ -94,15 +148,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   },
   columnConfig: {
     resizable: true,
-  },
-  printConfig: {
-    columns: [
-      { field: 'name' },
-      { field: 'nameFl' },
-      { field: 'code' },
-      { field: 'state' },
-      { field: 'createAt' },
-    ],
   },
   sortConfig: {
     trigger: 'cell',
@@ -256,7 +301,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     // 只接收Promise，具体实现自由发挥
     ajax: {
       // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
-      query: ({ page, sorts, filters, form }) => {
+      query: ({ page, sorts, filters, form },formQuery) => {
         const queryParams: any = Object.assign({}, form);
         // 处理排序条件
         const firstSort = sorts[0];
@@ -270,9 +315,10 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
         });
         queryParams.pageSize = page.pageSize;
         queryParams.pageNum = page.currentPage;
-        if (formParam) {
-          for (let key in formParam) {
-            queryParams[key] = formParam[key];
+        // 表单 和 左侧查询
+        if(formQuery) {
+          for (let key in formQuery) {
+            queryParams[key] = formQuery[key];
           }
         }
         return List(queryParams);
@@ -447,13 +493,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
   },
 };
 
-const hasActiveEditRow = (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    return $grid.isEditByRow(row);
-  }
-  return false;
-};
 const editRowEvent = (row: RowVO) => {
   formDrawerApi.setData({
     // 表单值
@@ -463,27 +502,6 @@ const editRowEvent = (row: RowVO) => {
   formDrawerApi.open();
 };
 
-const clearRowEvent = () => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.clearEdit();
-  }
-};
-const saveRowEvent = async (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    await $grid.clearEdit();
-    gridOptions.loading = true;
-    // 模拟异步保存
-    setTimeout(() => {
-      gridOptions.loading = false;
-      VXETable.modal.message({
-        content: `${JSON.stringify(row)}`,
-        status: 'success',
-      });
-    }, 300);
-  }
-};
 /**
  * 删除 指定行数据
  * @param row
@@ -505,6 +523,28 @@ function reloadTable() {
   const $grid = xGrid.value;
   if ($grid) {
     $grid.commitProxy('query');
+  }
+}
+/**
+ * 重新查询
+ */
+async function gridQuery(params: Record<string, any> = {}) {
+  try {
+    const $grid = xGrid.value;
+    if ($grid) {
+      $grid.commitProxy('query',toRaw(params));
+    }
+  }catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
+}
+async function gridQuerySubmit() {
+  try {
+    const formValues = await formApiGrid.getValues();
+    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    await gridQuery(formValues);
+  }catch (error) {
+    console.error('Error occurred while reloading:', error);
   }
 }
 
@@ -533,6 +573,9 @@ function handleAccount(row) {
   });
   formModalApi.open();
 }
+
+
+
 </script>
 
 <template>
@@ -550,6 +593,14 @@ function handleAccount(row) {
     </NLayoutSider>
     <NLayout class="w-[calc(100%-160px)]">
       <NLayoutContent>
+        <div :class="
+            cn(
+              'relative rounded-sm py-3',
+              'pb-8',
+            )
+          ">
+          <FormGrid />
+        </div>
         <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
           <template #accountAll="{ row }">
             <div>账号:{{ row.account }}</div>

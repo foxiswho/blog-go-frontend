@@ -50,29 +50,6 @@ export const columns: VxeGridPropTypes.Columns = [
       },
       name: 'CellSwitchPg',
     },
-    // cellRender: {
-    //   name: 'PgState',
-    //   events: {
-    //     // 状态更新
-    //     click: ($table, record, e) => {
-    //       const sourceValue = record.state;
-    //       const newStatus = e.value === 1 ? 1 : 2;
-    //       setStateEnableDisable(record.id, newStatus)
-    //         .then(() => {
-    //           record.state = newStatus;
-    //           if ($table) {
-    //             $table.isUpdateByRow(record);
-    //           }
-    //         })
-    //         .catch(() => {
-    //           record.state = sourceValue;
-    //           if ($table) {
-    //             $table.isUpdateByRow(record);
-    //           }
-    //         });
-    //     },
-    //   },
-    // },
   },
   {
     field: 'createAt',

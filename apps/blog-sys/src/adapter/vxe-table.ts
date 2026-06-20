@@ -96,8 +96,8 @@ setupVbenVxeTable({
               const imageList = ref<Array<{ name: string; url: string }>>([]);
               watch(
                 () => props.fileKey,
-                (newKey) => {
-                  if (newKey) {
+                (newKey,old) => {
+                  if (newKey&&newKey!=old) {
                     updateDetail(newKey).then((res) => {
                       imageList.value = res || [];
                     });
@@ -188,45 +188,76 @@ setupVbenVxeTable({
     // 开关
     vxeUI.renderer.add('CellSwitchPg', {
       renderTableDefault({ attrs, props }, { column, row,$table }) {
-        console.log('attrs=',attrs)
-        console.log('props=',props)
-        const loadingKey = `__loading_${column.field}`;
         const finallyProps = {
           size:'small',
           inlinePrompt:true,
-          activeText: '有效',
           checkedValue: 1,
-          inactiveText: '停用',
           uncheckedValue: 2,
           ...props,
           value: row[column.field],
-          loading: row[loadingKey] ?? false,
-          onClick: onClick,
-        };
-        async function onClick() {
-          console.log('row[column.field]=',row[column.field])
-          let newVal = row[column.field]&&1===row[column.field]?2:1;
-          row[loadingKey] = true;
-          try {
-            const result = await attrs?.beforeChange?.(newVal, row,$table);
-            if (result !== false) {
-              row[column.field] = newVal;
+          onClick: async()=>{
+            let newVal = row[column.field]&&1===row[column.field]?2:1;
+            try {
+              const result = await attrs?.beforeChange?.(newVal, row,$table);
+              if (result !== false) {
+                if ($table) {
+                  row[column.field] = newVal;
+                  $table.isUpdateByRow(row);
+                }
+                return new Promise((resolve) => {
+                  return resolve(true)
+                })
+              }
               return new Promise((resolve) => {
-                return resolve(true)
+                return resolve(false)
               })
+            } catch (e) {
+              console.error(e);
+            } finally {
             }
-            return new Promise((resolve) => {
-              return resolve(false)
-            })
-          } catch (e) {
-            console.error(e);
-          } finally {
-            row[loadingKey] = false;
-          }
-        }
+          },
+        };
         return h(NSwitch, finallyProps,{
           checked:() => '有效',
           unchecked:() => '停用',
+        });
+      },
+    });
+
+    vxeUI.renderer.add('CellSwitchPgYesNo', {
+      renderTableDefault({ attrs, props }, { column, row,$table }) {
+        const finallyProps = {
+          size:'small',
+          inlinePrompt:true,
+          checkedValue: 1,
+          uncheckedValue: 2,
+          ...props,
+          value: row[column.field],
+          onClick: async()=>{
+            let newVal = row[column.field]&&1===row[column.field]?2:1;
+            try {
+              const result = await attrs?.beforeChange?.(newVal, row,$table);
+              if (result !== false) {
+                if ($table) {
+                  row[column.field] = newVal;
+                  $table.isUpdateByRow(row);
+                }
+                return new Promise((resolve) => {
+                  return resolve(true)
+                })
+              }
+              return new Promise((resolve) => {
+                return resolve(false)
+              })
+            } catch (e) {
+              console.error(e);
+            } finally {
+            }
+          },
+        };
+        return h(NSwitch, finallyProps,{
+          checked:() => '是',
+          unchecked:() => '否',
         });
       },
     });
