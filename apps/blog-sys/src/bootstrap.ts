@@ -6,6 +6,7 @@ import { preferences } from '@vben/preferences';
 import { initStores } from '@vben/stores';
 import '@vben/styles';
 import '@vben/styles/naive';
+import '#/style/style.css';
 
 import formCreate from '@form-create/naive-ui';
 import { useRenderer } from '@pg/table-vxe';

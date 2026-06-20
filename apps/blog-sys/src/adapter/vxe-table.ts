@@ -1,10 +1,13 @@
+import type { TableActionProps } from '@vben/common-ui';
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
 import type { Recordable } from '@vben/types';
 
 import type { ComponentPropsMap, ComponentType } from './component';
 
-import { h } from 'vue';
+import { defineComponent, h, ref, watch } from 'vue';
 
+import { useAccess } from '@vben/access';
+import { VbenTableAction as VbenTableActionCore } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 import { $te } from '@vben/locales';
 import {
@@ -14,10 +17,11 @@ import {
 import { get, isFunction, isString } from '@vben/utils';
 
 import { objectOmit } from '@vueuse/core';
-import { NButton, NImage, NSwitch, NTag, NPopconfirm } from 'naive-ui';
+import { NButton, NImage, NImageGroup, NSwitch, NTag, NPopconfirm } from 'naive-ui';
 
 import { useVbenForm } from './form';
 import { $t } from '#/locales';
+import { updateDetail } from '#/viewsBasic/attachment/api';
 
 setupVbenVxeTable({
   configVxeTable: (vxeUI) => {
@@ -36,9 +40,9 @@ setupVbenVxeTable({
         proxyConfig: {
           autoLoad: true,
           response: {
-            result: 'items',
+            result: 'data',
             total: 'total',
-            list: 'items',
+            list: 'data',
           },
           showActiveMsg: true,
           showResponseMsg: false,
@@ -63,7 +67,59 @@ setupVbenVxeTable({
       renderTableDefault(renderOpts, params) {
         const { props } = renderOpts;
         const { column, row } = params;
-        return h(NImage, { src: row[column.field], ...props });
+        return h(NImage, { lazy:true,src: row[column.field], ...props });
+      },
+    });
+
+    /**
+     * 根据文件key获取图片URL列表渲染器
+     * 通过 updateDetail API 获取图片信息，支持多图显示，无数据时显示空
+     */
+    vxeUI.renderer.add('CellImageKey', {
+      renderTableDefault(renderOpts, params) {
+        const { props } = renderOpts;
+        const { column, row } = params;
+        const key = row[column.field];
+
+        /**
+         * CellImageKey异步图片渲染组件
+         * @param key - 文件拥有者标识，用于查询图片URL列表
+         * @param imageProps - 传递给NImage的额外属性
+         * @returns Vue VNode - 多图时使用NImageGroup包裹，无数据时返回null
+         */
+        return h(
+          defineComponent({
+            name: 'CellImageKeyRenderer',
+            props: { fileKey: { default: '' }, imageProps: { default: () => ({}) }, limit: { default: 0 } },
+            setup(props) {
+              const imageList = ref<Array<{ name: string; url: string }>>([]);
+              watch(
+                () => props.fileKey,
+                (newKey) => {
+                  if (newKey) {
+                    updateDetail(newKey).then((res) => {
+                      imageList.value = res || [];
+                    });
+                  } else {
+                    imageList.value = [];
+                  }
+                },
+                { immediate: true },
+              );
+
+              return () => {
+                if (imageList.value.length === 0) return null;
+                const images = imageList.value.map((item) =>
+                  h(NImage, { lazy: true, src: item.url, ...props.imageProps }),
+                );
+                return imageList.value.length > 1
+                  ? h(NImageGroup, {}, { default: () => images })
+                  : images[0];
+              };
+            },
+          }),
+          { fileKey: key, imageProps: props },
+        );
       },
     });
 
@@ -83,7 +139,6 @@ setupVbenVxeTable({
     vxeUI.renderer.add('CellTag', {
       renderTableDefault({ options, props }, { column, row }) {
         const value = get(row, column.field);
-        //console.log('value=>',value)
         const tagOptions = options ?? [
           { color: 'success', label: $t('common.enabled'), value: 1 },
           { color: 'error', label: $t('common.disabled'), value: 0 },
@@ -157,9 +212,12 @@ setupVbenVxeTable({
           edit: {
             text: $t('common.edit'),
           },
+          detail: {
+            text: $t('common.detail'),
+          },
         };
         const operations: Array<Recordable<any>> = (
-          options || ['edit', 'delete']
+          options || ['edit', 'detail', 'delete']
         )
           .map((opt) => {
             if (isString(opt)) {
@@ -286,6 +344,29 @@ setupVbenVxeTable({
 export const useVbenVxeGrid = <T extends Record<string, any>>(
   ...rest: Parameters<typeof useGrid<T, ComponentType, ComponentPropsMap>>
 ) => useGrid<T, ComponentType, ComponentPropsMap>(...rest);
+
+/**
+ * 表格操作按钮组件
+ *
+ * 在适配器内部统一注入权限判断（hasPermission），使用方无需再传入 `:has-permission`。
+ * 通过 action 的 `auth` 字段声明权限码，结合 `useAccess().hasAccessByCodes` 判断是否展示。
+ * 如需自定义权限逻辑，仍可显式传入 `:has-permission` 覆盖默认行为。
+ */
+export const VbenTableAction = defineComponent(
+  (props: TableActionProps, { attrs, slots }) => {
+    const { hasAccessByCodes } = useAccess();
+    function hasPermission(auth?: string | string[]) {
+      if (!auth) return true;
+      return hasAccessByCodes(Array.isArray(auth) ? auth : [auth]);
+    }
+    return () =>
+      h(VbenTableActionCore, { hasPermission, ...props, ...attrs }, slots);
+  },
+  {
+    name: 'VbenTableAction',
+    inheritAttrs: false,
+  },
+);
 
 export type OnActionClickParams<T = Recordable<any>> = {
   code: string;

@@ -20,6 +20,12 @@ export const columns: VxeGridPropTypes.Columns = [
   { field: 'typeDomain', title: '域', width: 100, visible: false, formatter: basicTypeDomainFormatter },
   { field: 'typeDomainAll', title: '域|身份', width: 100, slots: { default: 'typeDomainAll' } },
   {
+    cellRender: { name: 'CellImageKey' },
+    field: 'avatar',
+    title: '头像',
+    width: 130,
+  },
+  {
     field: 'sex',
     title: '性别',
     formatter: SexOptionsFormatter,

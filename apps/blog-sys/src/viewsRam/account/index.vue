@@ -4,6 +4,7 @@ import type { RowVO } from '@pg/types';
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
+import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 
 import { PgTree } from '@pg/components-n';
 import { basicTypeDomainFormatter,SexOptionsFormatter,IdentityTypeFormatter } from '@pg/types';
@@ -29,6 +30,7 @@ import Account from './components/account.vue';
 import DrawerEditTpl from './components/DrawerEdit.vue';
 import PasswordModal from './components/ModalPassword.vue';
 import { columns } from './data';
+import {$t} from "@vben/locales";
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
@@ -485,9 +487,8 @@ const saveRowEvent = async (row: RowVO) => {
  * @param row
  */
 const removeRowEvent = async (row: RowVO) => {
-  const type = await VXETable.modal.confirm('您确定要删除该数据?');
   const $grid = xGrid.value;
-  if ($grid && type === 'confirm') {
+  if ($grid) {
     deleteIds([row.id]);
     await $grid.remove(row);
   }
@@ -598,42 +599,37 @@ function handleAccount(row) {
             </div>
           </template>
           <template #operate="{ row }">
-            <template v-if="hasActiveEditRow(row)">
-              <vxe-button content="取消" @click="clearRowEvent" />
-              <vxe-button
-                content="保存"
-                status="primary"
-                @click="saveRowEvent(row)"
-              />
-            </template>
-            <template v-else>
-              <vxe-button
-                icon="vxe-icon-edit"
-                mode="text"
-                title="编辑"
-                @click="editRowEvent(row)"
-              />
-            </template>
-            <vxe-button
-              icon="vxe-icon-delete"
-              mode="text"
-              status="danger"
-              title="删除"
-              @click="removeRowEvent(row)"
+            <VbenTableAction
+              :actions="[
+                {
+                  tooltip:{
+                    content: '编辑'
+                  },
+                  icon: 'lucide:edit',
+                  onClick: () => editRowEvent(row),
+                },
+              ]"
+              :dropdown-actions="[
+                {
+                  text: '删除',
+                  icon: 'lucide:trash-2',
+                  danger: true,
+                  popConfirm: {
+                    title: `确定删除 ${row.name} 吗？`,
+                    confirm: () => removeRowEvent(row),
+                  },
+                },
+                {
+                  text: '修改密码',
+                  onClick: () => handlePassword(row),
+                },
+                {
+                  text: '修改账号',
+                  onClick: () => handleAccount(row),
+                },
+              ]"
+              align="center"
             />
-
-            <vxe-button
-              mode="text"
-              size="small"
-              status="primary"
-              icon="vxe-icon-ellipsis-v"
-              transfer
-            >
-              <template #dropdowns>
-                <vxe-button content="修改密码" @click="handlePassword(row)" />
-                <vxe-button content="修改账号" @click="handleAccount(row)" />
-              </template>
-            </vxe-button>
           </template>
         </vxe-grid>
       </NLayoutContent>
