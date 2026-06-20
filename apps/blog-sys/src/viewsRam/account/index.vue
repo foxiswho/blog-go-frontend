@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RowVO } from '@pg/types';
+import {type RowVO, SexOptions, stateYesNoOption} from '@pg/types';
 
 import {computed, onMounted, reactive, ref, toRaw} from 'vue';
 
@@ -36,6 +36,7 @@ import Account from './components/account.vue';
 import DrawerEditTpl from './components/DrawerEdit.vue';
 import PasswordModal from './components/ModalPassword.vue';
 import { columns } from './data';
+import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
@@ -111,11 +112,6 @@ const [FormGrid, formApiGrid] = useVbenForm({
   },
   schema: [
     {
-      component: 'Input',
-      fieldName: 'wd',
-      label: '关键词',
-    },
-    {
       fieldName: 'departments',
       label: '隐藏',
       defaultValue: [],
@@ -125,6 +121,52 @@ const [FormGrid, formApiGrid] = useVbenForm({
         show: false,
         // 随意一个字段改变时，都会触发
         triggerFields: ['wd'],
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'wd',
+      label: '关键词',
+    },
+    {
+      component: 'Input',
+      fieldName: 'account',
+      label: '账户',
+    },
+    {
+      component: 'Input',
+      fieldName: 'mail',
+      label: '邮箱',
+    },
+    {
+      component: 'Input',
+      fieldName: 'phone',
+      label: '手机号',
+    },
+    {
+      component: 'Input',
+      fieldName: 'code',
+      label: '编号',
+    },
+    {
+      fieldName: 'sex',
+      label: '性别',
+      component: 'PgTreeSelect',
+      componentProps: {
+        api: typeCodePublic,
+        params: 'sex',
+        props: {
+          placeholder: '请选择',
+        },
+      },
+    },
+    {
+      fieldName: 'state',
+      label: '状态',
+      component: 'Select',
+      componentProps: {
+        clearable: true,
+        options: stateYesNoOption,
       },
     },
   ],
@@ -154,112 +196,12 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     remote: true,
   },
   filterConfig: {
-    remote: true,
+    remote: false,
   },
   pagerConfig: {
     enabled: true,
     pageSize: 20,
     pageSizes: [10, 20, 50, 100, 500, 1000],
-  },
-  formConfig: {
-    titleWidth: 100,
-    titleAlign: 'right',
-    items: [
-      {
-        field: 'wd',
-        title: '关键词',
-        span: 6,
-        itemRender: {
-          name: '$input',
-          props: { placeholder: '请输入', clearable: true },
-        },
-      },
-      {
-        field: 'account',
-        title: '账户',
-        span: 6,
-        itemRender: { name: '$input', props: { placeholder: '请输入' } },
-      },
-      {
-        field: 'mail',
-        title: '邮箱',
-        span: 6,
-        itemRender: { name: '$input', props: { placeholder: '请输入邮箱' } },
-      },
-      {
-        field: 'phone',
-        title: '手机号',
-        span: 6,
-        itemRender: { name: '$input', props: { placeholder: '请输入手机号' } },
-      },
-      {
-        field: 'code',
-        title: '编号',
-        span: 6,
-        itemRender: { name: '$input', props: { placeholder: '请输入编号' } },
-      },
-      {
-        field: 'departments',
-        title: '部门',
-        span: 6,
-        visible: false,
-        itemRender: { name: '$input', props: { placeholder: '请选择' } },
-      },
-      {
-        field: 'groupId',
-        title: '组',
-        span: 6,
-        itemRender: { name: '$input', props: { placeholder: '请选择' } },
-      },
-      {
-        field: 'roles',
-        title: '角色',
-        span: 6,
-        itemRender: { name: '$input', props: { placeholder: '请选择' } },
-      },
-      {
-        field: 'sex',
-        title: '性别',
-        span: 6,
-        folding: false,
-        itemRender: {
-          name: '$select',
-          options: [
-            { label: '女', value: '2' },
-            { label: '男', value: '1' },
-          ],
-          props: { clearable: true },
-        },
-      },
-      {
-        field: 'state',
-        title: '状态',
-        span: 6,
-        folding: false,
-        itemRender: {
-          name: '$select',
-          options: [
-            { label: '停用', value: '2' },
-            { label: '有效', value: '1' },
-            { label: '弃置', value: '12' },
-            { label: '取消', value: '11' },
-          ],
-          props: { clearable: true },
-        },
-      },
-      {
-        span: 24,
-        align: 'center',
-        collapseNode: true,
-        itemRender: {
-          name: '$buttons',
-          children: [
-            { props: { type: 'submit', content: '搜索', status: 'primary' } },
-            { props: { type: 'reset', content: '重置' } },
-          ],
-        },
-      },
-    ],
   },
   toolbarConfig: {
     buttons: [
