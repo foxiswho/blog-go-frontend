@@ -88,6 +88,8 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   rowConfig: {
     keyField: 'id',
     isHover: true,
+  },
+  cellConfig:{
     height: 120,
   },
   columnConfig: {

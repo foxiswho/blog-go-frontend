@@ -17,11 +17,12 @@ import {
 import { get, isFunction, isString } from '@vben/utils';
 
 import { objectOmit } from '@vueuse/core';
-import { NButton, NImage, NImageGroup, NSwitch, NTag, NPopconfirm } from 'naive-ui';
-
+import {NButton, NImage, NImageGroup, NSwitch, NTag, NPopconfirm, useDialog} from 'naive-ui';
+import { dialog } from '#/adapter/naive';
 import { useVbenForm } from './form';
 import { $t } from '#/locales';
 import { updateDetail } from '#/viewsBasic/attachment/api';
+import {stateYesNoOptionFormatter} from "@pg/types";
 
 setupVbenVxeTable({
   configVxeTable: (vxeUI) => {
@@ -109,16 +110,17 @@ setupVbenVxeTable({
 
               return () => {
                 if (imageList.value.length === 0) return null;
-                const images = imageList.value.map((item) =>
+                const displayList = props.limit > 0 ? imageList.value.slice(0, props.limit) : imageList.value;
+                const images = displayList.map((item) =>
                   h(NImage, { lazy: true, src: item.url, ...props.imageProps }),
                 );
-                return imageList.value.length > 1
+                return displayList.length > 1
                   ? h(NImageGroup, {}, { default: () => images })
                   : images[0];
               };
             },
           }),
-          { fileKey: key, imageProps: props },
+          { fileKey: key, imageProps: props, limit: props?.limit ?? 0 },
         );
       },
     });
@@ -180,6 +182,52 @@ setupVbenVxeTable({
           }
         }
         return h(NSwitch, finallyProps);
+      },
+    });
+
+    // 开关
+    vxeUI.renderer.add('CellSwitchPg', {
+      renderTableDefault({ attrs, props }, { column, row,$table }) {
+        console.log('attrs=',attrs)
+        console.log('props=',props)
+        const loadingKey = `__loading_${column.field}`;
+        const finallyProps = {
+          size:'small',
+          inlinePrompt:true,
+          activeText: '有效',
+          checkedValue: 1,
+          inactiveText: '停用',
+          uncheckedValue: 2,
+          ...props,
+          value: row[column.field],
+          loading: row[loadingKey] ?? false,
+          onClick: onClick,
+        };
+        async function onClick() {
+          console.log('row[column.field]=',row[column.field])
+          let newVal = row[column.field]&&1===row[column.field]?2:1;
+          row[loadingKey] = true;
+          try {
+            const result = await attrs?.beforeChange?.(newVal, row,$table);
+            if (result !== false) {
+              row[column.field] = newVal;
+              return new Promise((resolve) => {
+                return resolve(true)
+              })
+            }
+            return new Promise((resolve) => {
+              return resolve(false)
+            })
+          } catch (e) {
+            console.error(e);
+          } finally {
+            row[loadingKey] = false;
+          }
+        }
+        return h(NSwitch, finallyProps,{
+          checked:() => '有效',
+          unchecked:() => '停用',
+        });
       },
     });
 
@@ -376,3 +424,29 @@ export type OnActionClickFn<T = Recordable<any>> = (
   params: OnActionClickParams<T>,
 ) => void;
 export type * from '@vben/plugins/vxe-table';
+/**
+ * confirm封装为promise，方便在异步函数中调用。
+ * @param content 提示内容
+ * @param title 提示标题
+ */
+export function modalConfirm(content: string, title: string) {
+  // const dialog = useDialog();
+  return new Promise((reslove, reject) => {
+    dialog.info({
+      title: title,
+      content: content,
+      positiveText: '确定',
+      negativeText: '取消',
+      onPositiveClick: () => {
+        reslove(true);
+      },
+      onNegativeClick: () => {
+        reject(new Error('已取消'));
+      },
+    });
+  });
+}
+export function confirmSwitch(name: string, state: number) {
+  const status = stateYesNoOptionFormatter({cellValue: state})
+  return modalConfirm(`你要将【${name}】的状态切换为 【${status}】 吗？`, `切换状态`);
+}
