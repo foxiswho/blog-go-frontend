@@ -37,6 +37,7 @@ import DrawerEditTpl from './components/DrawerEdit.vue';
 import PasswordModal from './components/ModalPassword.vue';
 import { columns } from './data';
 import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
+import {Page} from "@vben/common-ui";
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
@@ -521,20 +522,20 @@ function handleAccount(row) {
 </script>
 
 <template>
-  <NLayout class="h-full p-2" has-sider>
-    <NLayoutSider class="min-w-[160px]" width="160">
-      <PgTree
-        :api="selectNodeAllPublic"
-        :is-node-all="true"
-        :menu-dropdown-options="menuDropdownOptions"
-        :reload="reloadTreeComputed"
-        :right-click-menu="false"
-        @ok="treeChang"
-        @overload="treeOverload"
-      />
-    </NLayoutSider>
-    <NLayout class="w-[calc(100%-160px)]">
-      <NLayoutContent>
+  <Page auto-content-height contentClass="p-2">
+    <div class="flex size-full">
+      <NCard class="min-w-[160px]" style="width:unset" content-style="padding-left:10px;padding-right:10px;padding-top:10px;">
+        <PgTree
+          :api="selectNodeAllPublic"
+          :is-node-all="true"
+          :menu-dropdown-options="menuDropdownOptions"
+          :reload="reloadTreeComputed"
+          :right-click-menu="false"
+          @ok="treeChang"
+          @overload="treeOverload"
+        />
+      </NCard>
+      <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
         <div :class="
             cn(
               'relative rounded-sm py-3',
@@ -542,6 +543,9 @@ function handleAccount(row) {
             )
           ">
           <FormGrid />
+          <div
+            class="absolute bottom-1 -left-2 z-100 h-2 w-[calc(100%+1rem)] overflow-hidden bg-background-deep md:bottom-2 md:h-3"
+          ></div>
         </div>
         <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
           <template #accountAll="{ row }">
@@ -627,12 +631,12 @@ function handleAccount(row) {
             />
           </template>
         </vxe-grid>
-      </NLayoutContent>
-    </NLayout>
+      </div>
+    </div>
     <FormDrawer @ok="reloadTable" />
     <FormModal @ok="reloadTable" />
     <FormModalPassword />
-  </NLayout>
+  </Page>
 </template>
 
 <style scoped></style>
