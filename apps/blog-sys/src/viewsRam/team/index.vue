@@ -368,7 +368,7 @@ onMounted(() => {});
 <template>
   <Page auto-content-height content-class="p-2">
     <div class="ml-2 pl-2 bg-card rounded-md h-full">
-      <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
+      <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent" key="team">
         <template #form>
           <div :class="
             cn(
