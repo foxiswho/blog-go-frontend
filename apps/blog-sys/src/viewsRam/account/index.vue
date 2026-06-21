@@ -522,7 +522,7 @@ function handleAccount(row) {
 </script>
 
 <template>
-  <Page auto-content-height contentClass="p-2">
+  <Page auto-content-height content-class="p-2">
     <div class="flex size-full">
       <NCard class="min-w-[160px]" style="width:unset" content-style="padding-left:10px;padding-right:10px;padding-top:10px;">
         <PgTree
