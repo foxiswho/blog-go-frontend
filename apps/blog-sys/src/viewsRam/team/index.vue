@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import {type RowVO, stateYesNoOption} from '@pg/types';
+import { stateYesNoOption } from '@pg/types';
+import type { RowVO } from '@pg/types';
 
 import { onMounted, reactive, ref,toRaw } from 'vue';
 
 import { useVbenDrawer } from '@vben-core/popup-ui';
 
 import {message, useVbenForm} from '#/adapter';
-import {
-  type VxeGridInstance,
-  type VxeGridListeners,
-  type VxeGridProps,
-  VXETable,
-} from 'vxe-table';
+import type { VxeGridInstance, VxeGridListeners, VxeGridProps } from 'vxe-table';
 
 import {
   batchSelectDisable,
@@ -50,7 +46,7 @@ const [FormGrid, formApiGrid] = useVbenForm({
   handleSubmit: async () => {
     const formValues = await formApiGrid.getValues();
     formApiGrid.setLatestSubmissionValues(toRaw(formValues));
-    gridQuery(formValues);
+    await gridQuery(formValues);
   },
   handleReset: async () => {
     const prevValues = await formApiGrid.getValues();
@@ -59,7 +55,7 @@ const [FormGrid, formApiGrid] = useVbenForm({
     formApiGrid.setLatestSubmissionValues(formValues);
     // 如果值发生了变化，submitOnChange会触发刷新。所以只在submitOnChange为false或者值没有发生变化时，手动刷新
     if (!isEqual(prevValues, formValues)) {
-      gridQuery(formValues);
+      await gridQuery(formValues);
     }
   },
   schema: [
@@ -93,13 +89,6 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   },
   columnConfig: {
     resizable: true,
-  },
-  sortConfig: {
-    trigger: 'cell',
-    remote: true,
-  },
-  filterConfig: {
-    remote: true,
   },
   pagerConfig: {
     enabled: true,
@@ -145,7 +134,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     // 只接收Promise，具体实现自由发挥
     ajax: {
       // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
-      query: ({ page, sorts, filters, form }) => {
+      query: ({ page, sorts, filters, form },formQuery) => {
         const queryParams: any = Object.assign({}, form);
         // 处理排序条件
         const firstSort = sorts[0];
@@ -159,6 +148,12 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
         });
         queryParams.pageSize = page.pageSize;
         queryParams.pageNum = page.currentPage;
+        // 表单 和 左侧查询
+        if(formQuery) {
+          for (const key in formQuery) {
+            queryParams[key] = formQuery[key];
+          }
+        }
         return List(queryParams);
       },
       // 当点击工具栏删除按钮或者手动提交指令 delete 时会被触发
@@ -373,18 +368,20 @@ onMounted(() => {});
 <template>
   <Page auto-content-height content-class="p-2">
     <div class="ml-2 pl-2 bg-card rounded-md h-full">
-      <div :class="
+      <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
+        <template #form>
+          <div :class="
             cn(
               'relative rounded-sm py-3',
               'pb-8',
             )
           ">
-        <FormGrid />
-        <div
-          class="absolute bottom-1 -left-2 z-100 h-2 w-[calc(100%+1rem)] overflow-hidden bg-background-deep md:bottom-2 md:h-3"
-        ></div>
-      </div>
-      <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
+            <FormGrid />
+            <div
+              class="absolute bottom-1 -left-2 z-100 h-2 w-[calc(100%+1rem)] overflow-hidden bg-background-deep md:bottom-2 md:h-3"
+            ></div>
+          </div>
+        </template>
         <template #operate="{ row }">
           <VbenTableAction
             :actions="[
