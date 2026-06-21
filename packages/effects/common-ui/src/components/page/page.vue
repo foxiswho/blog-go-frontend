@@ -3,9 +3,20 @@ import type { StyleValue } from 'vue';
 
 import type { PageProps } from './types';
 
-import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue';
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onMounted,
+  ref,
+  useTemplateRef,
+} from 'vue';
 
-import { CSS_VARIABLE_LAYOUT_CONTENT_HEIGHT } from '@vben-core/shared/constants';
+import {
+  CSS_VARIABLE_LAYOUT_FOOTER_HEIGHT,
+  CSS_VARIABLE_LAYOUT_HEADER_HEIGHT,
+} from '@vben-core/shared/constants';
+import { preferences } from '@vben-core/preferences';
 import { cn } from '@vben-core/shared/utils';
 
 defineOptions({
@@ -25,16 +36,31 @@ const shouldAutoHeight = ref(false);
 const headerRef = useTemplateRef<HTMLDivElement>('headerRef');
 const footerRef = useTemplateRef<HTMLDivElement>('footerRef');
 
+const footerEnable = preferences.footer.enable;
+
+
+/**
+ * 内容区样式计算
+ * autoContentHeight 模式下使用 100vh - header高度 - footer高度 计算内容区高度，
+ * 仅在 footer 启用时减去 footer 高度，避免依赖不稳定的 --vben-content-height CSS 变量
+ */
 const contentStyle = computed<StyleValue>(() => {
   if (autoContentHeight) {
+    const footerHeightCalc = footerEnable
+      ? `var(${CSS_VARIABLE_LAYOUT_FOOTER_HEIGHT})`
+      : '0px';
     return {
-      height: `calc(var(${CSS_VARIABLE_LAYOUT_CONTENT_HEIGHT}) - ${headerHeight.value}px - ${footerHeight.value}px - ${typeof heightOffset === 'number' ? `${heightOffset}px` : heightOffset})`,
+      height: `calc(100vh - var(${CSS_VARIABLE_LAYOUT_HEADER_HEIGHT}) - ${footerHeightCalc} - ${headerHeight.value}px - ${footerHeight.value}px - ${typeof heightOffset === 'number' ? `${heightOffset}px` : heightOffset})`,
       overflowY: shouldAutoHeight.value ? 'auto' : 'unset',
     };
   }
   return {};
 });
 
+/**
+ * 计算内容区高度相关状态
+ * 读取 header/footer 实际高度，延迟启用滚动条
+ */
 async function calcContentHeight() {
   if (!autoContentHeight) {
     return;
@@ -51,6 +77,10 @@ async function calcContentHeight() {
 }
 
 onMounted(() => {
+  calcContentHeight();
+});
+
+onActivated(() => {
   calcContentHeight();
 });
 </script>
