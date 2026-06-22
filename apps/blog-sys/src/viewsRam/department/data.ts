@@ -4,10 +4,11 @@ import _XEUtils_ from 'xe-utils';
 
 import { existName, setStateEnableDisable } from './api';
 import {h} from "vue";
+import {confirmSwitch} from "#/adapter/vxe-table";
 
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', title: 'ID', width: 120 },
-  { field: 'name', title: '名称', sortable: true },
+  // { type: 'checkbox', title: 'ID', width: 120 },
+  { field: 'name', title: '名称', treeNode:true, align: 'left' },
   { field: 'code', title: '码值', width: 160 },
   {
     field: 'state',
@@ -15,26 +16,16 @@ export const columns: VxeGridPropTypes.Columns = [
     // slots: { default: 'state' },
     width: 90,
     cellRender: {
-      name: 'PgState',
-      events: {
-        // 状态更新
-        click: ($table, record, e) => {
-          const sourceValue = record.state;
-          const newStatus = e.value === 1 ? 1 : 2;
-          setStateEnableDisable(record.id, newStatus)
-            .then(() => {
-              record.state = newStatus;
-              if ($table) {
-                $table.isUpdateByRow(record);
-              }
-            })
-            .catch(() => {
-              record.state = sourceValue;
-              if ($table) {
-                $table.isUpdateByRow(record);
-              }
-            });
-        },
+      name: 'CellSwitchPg',
+      attrs: { beforeChange: async(newStatus: number|string, record: any,$table)=>{
+          try {
+            await confirmSwitch(record.name,newStatus);
+            await setStateEnableDisable(record.id, newStatus);
+            return true;
+          } catch {
+            return false;
+          }
+        }
       },
     },
   },

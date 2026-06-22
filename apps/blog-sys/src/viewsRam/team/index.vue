@@ -399,7 +399,7 @@ onMounted(() => {});
                   icon: 'lucide:trash-2',
                   danger: true,
                   popConfirm: {
-                    title: `确定删除 ${row.name} 吗？`,
+                    title: `确定删除 [${row.name}] 吗？`,
                     confirm: () => onRowDelete(row),
                   },
                 },

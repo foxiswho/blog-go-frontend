@@ -11,6 +11,7 @@ enum Api {
   existName = '/pg2lq/sys/ram/department/existName',
   exportExcel = '/pg2lq/sys/ram/department/exportExcel',
   list = '/pg2lq/sys/ram/department/query',
+  queryAll = '/pg2lq/sys/ram/department/queryAll',
   physicalDeletion = '/pg2lq/sys/ram/department/physicalDeletion',
   recovery = '/pg2lq/sys/ram/department/recovery',
   selectNodeAll = '/pg2lq/sys/ram/department/selectNodeAll',
@@ -28,6 +29,14 @@ enum Api {
  */
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
+}
+/**
+ * 列表
+ * @constructor
+ * @param data
+ */
+export async function queryAll(data?: any) {
+  return requestClient.post(Api.queryAll, data);
 }
 
 /**

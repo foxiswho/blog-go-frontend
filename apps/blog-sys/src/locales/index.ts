@@ -56,7 +56,7 @@ async function loadDayjsLocale(lang: SupportedLanguagesType) {
     }
     // 默认使用英语
     default: {
-      locale = await import('dayjs/locale/en');
+      locale = await import('dayjs/locale/zh-cn');
     }
   }
   if (locale) {
