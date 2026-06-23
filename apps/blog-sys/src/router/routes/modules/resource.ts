@@ -40,7 +40,7 @@ const routes: RouteRecordRaw[] = [
         },
         name: 'resource-menu',
         path: '/lq2/ram/resource/menu',
-        component: () => import('#/viewsRam/resource/menu/tree.vue'),
+        component: () => import('#/viewsRam/resource/menu/index.vue'),
       },
       {
         meta: {

@@ -1,20 +1,18 @@
 <script lang="ts" setup>
-import {
-  type OnActionClickParams, VbenTableAction,
-  type VxeTableGridOptions,
+import type {
+  VxeTableGridOptions,
 } from '#/adapter/vxe-table';
 
-import { Page, useVbenDrawer,VbenButton } from '@vben/common-ui';
+import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { message } from '#/adapter/naive';
-
+import { VbenTableAction } from '#/adapter/vxe-table';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteIds,queryAll } from './api';
 import { $t } from '#/locales';
 
-import { columns } from './data';
+import { deleteIds, queryAll } from './api';
 import Form from './components/DrawerEdit.vue';
+import { columns } from './data';
 
 const [Drawer, drawerApi] = useVbenDrawer({
   connectedComponent: Form,
@@ -22,37 +20,41 @@ const [Drawer, drawerApi] = useVbenDrawer({
 });
 
 /**
- * 编辑部门
+ * 编辑
  * @param row
  */
 function onEdit(row: any) {
-  drawerApi.setData({values:row,isUpdate:true}).open();
+  drawerApi.setData({ values: row, isUpdate: true }).open();
 }
 
 /**
- * 添加下级部门
+ * 添加下级
  * @param row
  */
 function onAppend(row: any) {
-  drawerApi.setData({
-    values: null,
-    isUpdate:false,
-    parent: row,
-  }).open();
+  drawerApi
+    .setData({
+      values: null,
+      isUpdate: false,
+      parent: row,
+    })
+    .open();
 }
 
 /**
- * 创建新部门
+ * 创建
  */
 function onCreate() {
-  drawerApi.setData({
-    values:null,
-    isUpdate:false,
-  }).open();
+  drawerApi
+    .setData({
+      values: null,
+      isUpdate: false,
+    })
+    .open();
 }
 
 /**
- * 删除部门
+ * 删除
  * @param row
  */
 function onDelete(row: any) {
@@ -61,14 +63,14 @@ function onDelete(row: any) {
       refreshGrid();
     })
     .catch(() => {
-      refreshGrid()
+      refreshGrid();
     });
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents: {},
   gridOptions: {
-    columns: columns,
+    columns,
     height: 'auto',
     keepSource: true,
     pagerConfig: {
@@ -106,7 +108,6 @@ function refreshGrid() {
 </script>
 <template>
   <Page auto-content-height>
-    <Drawer @success="refreshGrid" />
     <Grid table-title="部门列表">
       <template #toolbar-tools>
         <VbenButton type="primary" @click="onCreate">
@@ -117,35 +118,36 @@ function refreshGrid() {
       <template #operate="{ row }">
         <VbenTableAction
           :actions="[
-                 {
-                  tooltip:{
-                    content: '添加下级'
-                  },
-                  text: '添加下级',
-                  onClick: () => onAppend(row),
-                },
-                {
-                  tooltip:{
-                    content: '编辑'
-                  },
-                  icon: 'lucide:edit',
-                  onClick: () => onEdit(row),
-                },
-                {
-                  tooltip:{
-                    content: '删除'
-                  },
-                  icon: 'lucide:trash-2',
-                  danger: true,
-                  popConfirm: {
-                    title: `确定删除 [${row.name}] 吗？`,
-                    confirm: () => onDelete(row),
-                  },
-                },
-              ]"
+            {
+              tooltip: {
+                content: '添加下级',
+              },
+              text: '添加下级',
+              onClick: () => onAppend(row),
+            },
+            {
+              tooltip: {
+                content: '编辑',
+              },
+              icon: 'lucide:edit',
+              onClick: () => onEdit(row),
+            },
+            {
+              tooltip: {
+                content: '删除',
+              },
+              icon: 'lucide:trash-2',
+              danger: true,
+              popConfirm: {
+                title: `确定删除 [${row.name}] 吗？`,
+                confirm: () => onDelete(row),
+              },
+            },
+          ]"
           align="center"
         />
       </template>
     </Grid>
+    <Drawer @success="refreshGrid" />
   </Page>
 </template>

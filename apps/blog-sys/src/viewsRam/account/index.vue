@@ -1,27 +1,31 @@
 <script setup lang="ts">
-import {type RowVO, SexOptions, stateYesNoOption} from '@pg/types';
+import type { RowVO } from '@pg/types';
+import type {
+  VxeGridInstance,
+  VxeGridListeners,
+  VxeGridProps,
+} from 'vxe-table';
 
-import {computed, onMounted, reactive, ref, toRaw} from 'vue';
+import type { Recordable } from '@vben/types';
 
-import {$t} from "@vben/locales";
-import {
-  cn,
-  isEqual,
-} from '@vben/utils';
+import { computed, onMounted, reactive, ref, toRaw } from 'vue';
+
+import { Page } from '@vben/common-ui';
+import { cn, isEqual } from '@vben/utils';
 
 import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
 
 import { PgTree } from '@pg/components-n';
-import { basicTypeDomainFormatter,SexOptionsFormatter,IdentityTypeFormatter } from '@pg/types';
+import { stateYesNoOption } from '@pg/types';
 import {
-  type VxeGridInstance,
-  type VxeGridListeners,
-  type VxeGridProps,
-  VXETable,
-} from 'vxe-table';
+  basicTypeDomainFormatter,
+  IdentityTypeFormatter,
+  SexOptionsFormatter,
+} from '@pg/types';
 
-import {message, useVbenForm} from '#/adapter';
-import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
+import { message, useVbenForm } from '#/adapter';
+import { VbenTableAction } from '#/adapter/vxe-table';
+import { typeCodePublic } from '#/viewsBasic/data-dict/dict/api';
 import { selectNodeAllPublic } from '#/viewsRam/department/api';
 
 import {
@@ -36,8 +40,6 @@ import Account from './components/account.vue';
 import DrawerEditTpl from './components/DrawerEdit.vue';
 import PasswordModal from './components/ModalPassword.vue';
 import { columns } from './data';
-import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
-import {Page} from "@vben/common-ui";
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
@@ -48,7 +50,7 @@ const treeChang = (record) => {
   currenRecord.value = true;
   currenData.value = record;
   // onsole.log('record', record);
-  formApiGrid.setFieldValue('departments', [record['key']]);
+  formApiGrid.setFieldValue('departments', [record.key]);
   gridQuerySubmit();
 };
 /**
@@ -186,7 +188,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     keyField: 'id',
     isHover: true,
   },
-  cellConfig:{
+  cellConfig: {
     height: 120,
   },
   columnConfig: {
@@ -244,7 +246,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     // 只接收Promise，具体实现自由发挥
     ajax: {
       // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
-      query: ({ page, sorts, filters, form },formQuery) => {
+      query: ({ page, sorts, filters, form }, formQuery) => {
         const queryParams: any = Object.assign({}, form);
         // 处理排序条件
         const firstSort = sorts[0];
@@ -259,8 +261,8 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
         queryParams.pageSize = page.pageSize;
         queryParams.pageNum = page.currentPage;
         // 表单 和 左侧查询
-        if(formQuery) {
-          for (let key in formQuery) {
+        if (formQuery) {
+          for (const key in formQuery) {
             queryParams[key] = formQuery[key];
           }
         }
@@ -379,32 +381,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
           formModalApi.open();
           break;
         }
-        // 删除恢复
-        case 'recovery': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state > 10) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectRecovery(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
         // 物理删除
         case 'physicalDeletion': {
           const checkboxRecords = $grid.getCheckboxRecords();
@@ -426,6 +402,32 @@ const gridEvent: VxeGridListeners<RowVO> = {
             return;
           }
           batchSelectPhysicalDeletion(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
+          });
+          break;
+        }
+        // 删除恢复
+        case 'recovery': {
+          const checkboxRecords = $grid.getCheckboxRecords();
+          if (checkboxRecords.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          const ids = [];
+          checkboxRecords.forEach((item) => {
+            console.log('$grid.item', item);
+            if (item.state > 10) {
+              ids.push(item.id);
+            } else {
+              $grid.setCheckboxRow(item, false);
+            }
+          });
+          if (ids.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          batchSelectRecovery(ids, () => {
             reloadTable();
             $grid.setAllCheckboxRow(false);
           });
@@ -475,9 +477,9 @@ async function gridQuery(params: Record<string, any> = {}) {
   try {
     const $grid = xGrid.value;
     if ($grid) {
-      $grid.commitProxy('query',toRaw(params));
+      $grid.commitProxy('query', toRaw(params));
     }
-  }catch (error) {
+  } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
 }
@@ -486,7 +488,7 @@ async function gridQuerySubmit() {
     const formValues = await formApiGrid.getValues();
     formApiGrid.setLatestSubmissionValues(toRaw(formValues));
     await gridQuery(formValues);
-  }catch (error) {
+  } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
 }
@@ -516,15 +518,16 @@ function handleAccount(row) {
   });
   formModalApi.open();
 }
-
-
-
 </script>
 
 <template>
   <Page auto-content-height content-class="p-2">
     <div class="flex size-full">
-      <NCard class="min-w-[160px]" style="width:unset" content-style="padding-left:10px;padding-right:10px;padding-top:10px;">
+      <NCard
+        class="min-w-[160px]"
+        style="width: unset"
+        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+      >
         <PgTree
           :api="selectNodeAllPublic"
           :is-node-all="true"
@@ -536,12 +539,7 @@ function handleAccount(row) {
         />
       </NCard>
       <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
-        <div :class="
-            cn(
-              'relative rounded-sm py-3',
-              'pb-8',
-            )
-          ">
+        <div :class="cn('relative rounded-sm py-3', 'pb-8')">
           <FormGrid />
           <div
             class="absolute bottom-1 -left-2 z-100 h-2 w-[calc(100%+1rem)] overflow-hidden bg-background-deep md:bottom-2 md:h-3"
@@ -574,9 +572,7 @@ function handleAccount(row) {
               </div>
               <div>
                 多角色:{{
-                  row.os?.noName?.roles
-                    ? row.os?.noName?.roles.join(',')
-                    : ''
+                  row.os?.noName?.roles ? row.os?.noName?.roles.join(',') : ''
                 }}
               </div>
               <div>级别:{{ row.levelNoName }}</div>
@@ -601,8 +597,8 @@ function handleAccount(row) {
             <VbenTableAction
               :actions="[
                 {
-                  tooltip:{
-                    content: '编辑'
+                  tooltip: {
+                    content: '编辑',
                   },
                   icon: 'lucide:edit',
                   onClick: () => editRowEvent(row),

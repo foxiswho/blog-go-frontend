@@ -1,100 +1,167 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import type { RowVO } from '@pg/types';
 
-import { useVbenDrawer } from '@vben-core/popup-ui';
+import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
+import { Plus } from '@vben/icons';
 
-import { PgTree } from '@pg/components-n';
+import { VbenTableAction } from '#/adapter/vxe-table';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
-import { selectNodeAll } from './api';
-import DrawerEditTpl from './components/DrawerEdit.vue';
-import TabForm from './components/TabForm.vue';
-import TabRule from './components/TabRule.vue';
+import { deleteIds, queryAll } from './api';
+import DrawerEdit from './components/DrawerEdit.vue';
+import { columns } from './data';
 
-const currenRecord = ref(false);
-const currenData = ref<Recordable<any>>({});
-const reloadTree = ref(false);
-const reloadTreeComputed = computed(() => reloadTree.value);
-onMounted(() => {});
+const [Drawer, drawerApi] = useVbenDrawer({
+  connectedComponent: DrawerEdit,
+});
 
-const treeChang = (record) => {
-  currenRecord.value = true;
-  currenData.value = record;
+/**
+ * 编辑
+ * @param row
+ */
+const onEdit = (row: RowVO) => {
+  drawerApi
+    .setData({
+      // 表单值
+      values: row,
+      isUpdate: true,
+    })
+    .open();
 };
 /**
- * 重新加载
+ * 添加下级
+ * @param row
  */
-function reloadTable() {
-  reloadTree.value = true;
-  setTimeout(() => {
-    reloadTree.value = true;
-  }, 2000);
+function onAppend(row: any) {
+  drawerApi
+    .setData({
+      values: null,
+      isUpdate: false,
+      parent: row,
+    })
+    .open();
 }
+
 /**
- * 树重载
- * @param e
+ * 创建
  */
-const treeOverload = (e) => {};
-const [Drawer, drawerApi] = useVbenDrawer({
-  connectedComponent: DrawerEditTpl,
-});
+function onCreate() {
+  drawerApi
+    .setData({
+      values: null,
+      isUpdate: false,
+    })
+    .open();
+}
+
 /**
- * 树右键菜单
- * @param option
+ * 删除
+ * @param row
  */
-const rightClickMenuOptions = (opt: any) => {
-  return [
-    {
-      label: '添加下级',
-      key: '添加下级',
-      props: {
-        onClick: () => {
-          drawerApi.setData({
-            // 表单值
-            values: {},
-            parent: opt?.option?.data,
-            isUpdate: false,
-          });
-          drawerApi.open();
+const onDelete = async (row: RowVO) => {
+  deleteIds([row.id])
+    .then(() => {
+      refreshGrid();
+    })
+    .catch(() => {
+      refreshGrid();
+    });
+};
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {},
+  gridOptions: {
+    columns,
+    height: 'auto',
+    keepSource: true,
+    pagerConfig: {
+      enabled: false,
+    },
+    proxyConfig: {
+      ajax: {
+        query: async (_params) => {
+          return await queryAll({});
         },
       },
     },
-  ];
-};
-/**
- * 树 搜索尾部菜单
- */
-const menuDropdownOptions = [
-  {
-    label: '添加',
-    key: '添加',
-    props: {
-      onClick: () => {
-        drawerApi.setData({
-          // 表单值
-          values: {},
-          isUpdate: false,
-        });
-        drawerApi.open();
-      },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      zoom: true,
     },
-  },
-];
-</script>
+    treeConfig: {
+      parentField: 'parentNo',
+      rowField: 'no',
+      transform: true,
+      expandAll: true,
+      showLine: true,
+    },
+  } as any,
+});
 
+/**
+ * 重新加载
+ */
+function refreshGrid() {
+  gridApi.query();
+}
+</script>
 <template>
-  <NLayout class="h-full p-2 w-[300px]" has-sider>
-    <PgTree
-      :api="selectNodeAll"
-      :is-node-all="true"
-      :menu-dropdown-options="menuDropdownOptions"
-      :reload="reloadTreeComputed"
-      :right-click-menu="true"
-      :right-click-menu-options="rightClickMenuOptions"
-      @ok="treeChang"
-      @overload="treeOverload"
-    />
-    <Drawer @ok="reloadTable" />
-  </NLayout>
+  <Page auto-content-height>
+    <Grid>
+      <template #toolbar-tools>
+        <VbenButton type="primary" @click="onCreate">
+          <Plus class="size-5" />
+          新增
+        </VbenButton>
+      </template>
+      <template #operate="{ row }">
+        <VbenTableAction
+          :actions="[
+            {
+              tooltip: {
+                content: '添加下级',
+              },
+              text: '添加下级',
+              onClick: () => onAppend(row),
+            },
+            {
+              tooltip: {
+                content: '编辑',
+              },
+              icon: 'lucide:edit',
+              onClick: () => onEdit(row),
+            },
+            {
+              tooltip: {
+                content: '删除',
+              },
+              icon: 'lucide:trash-2',
+              danger: true,
+              popConfirm: {
+                title: `确定删除 [${row.name}] 吗？`,
+                confirm: () => onDelete(row),
+              },
+            },
+          ]"
+          align="center"
+        />
+      </template>
+    </Grid>
+    <Drawer @success="refreshGrid" />
+  </Page>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.menu-badge {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+
+  & > :deep(div) {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+</style>

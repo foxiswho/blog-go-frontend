@@ -12,6 +12,7 @@ enum Api {
   exportExcel = '/pg2lq/sys/ram/menu/exportExcel',
   list = '/pg2lq/sys/ram/menu/query',
   physicalDeletion = '/pg2lq/sys/ram/menu/physicalDeletion',
+  queryAll = '/pg2lq/sys/ram/menu/queryAll',
   recovery = '/pg2lq/sys/ram/menu/recovery',
   selectNodeAll = '/pg2lq/sys/ram/menu/selectNodeAll',
   selectNodeAllPublic = '/pg2lq/sys/ram/menu/selectNodeAllPublic',
@@ -28,6 +29,14 @@ enum Api {
  */
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
+}
+/**
+ * 列表
+ * @constructor
+ * @param data
+ */
+export async function queryAll(data?: any) {
+  return requestClient.post(Api.queryAll, data);
 }
 /**
  * 公共树展示
@@ -234,8 +243,7 @@ export const exportExcelUrl = Api.exportExcel;
  * 查询名称是否存在
  * @param params
  */
-export const existName = (wd, id?) => {
-  id = id || '0';
+export const existName = (wd, id = '0') => {
   return requestClient.post(
     Api.existName,
     { wd, id },

@@ -1,18 +1,24 @@
 <script setup lang="ts">
 import type { RowVO } from '@pg/types';
-
-import { onMounted, reactive, ref,computed } from 'vue';
-
-import { useVbenDrawer,useVbenModal } from '@vben-core/popup-ui';
-
-import { message,dialog } from '#/adapter';
-import { PgTree } from '@pg/components-n';
-import {
-  type VxeGridInstance,
-  type VxeGridListeners,
-  type VxeGridProps,
-  VXETable,
+import type {
+  VxeGridInstance,
+  VxeGridListeners,
+  VxeGridProps,
 } from 'vxe-table';
+
+import type { Recordable } from '@vben/types';
+
+import { computed, onMounted, reactive, ref, toRaw } from 'vue';
+
+import { cn, isEqual } from '@vben/utils';
+
+import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
+
+import { PgTree } from '@pg/components-n';
+import { stateYesNoOption } from '@pg/types';
+
+import { dialog, message, useVbenForm } from '#/adapter';
+import { VbenTableAction } from '#/adapter/vxe-table';
 
 import {
   batchSelectDisable,
@@ -32,14 +38,13 @@ const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { parentNo: '' };
 
 const treeChang = (record) => {
   currenRecord.value = true;
   currenData.value = record;
   console.log('record', record);
-  formParam.parentNo = record.key;
-  reloadTable();
+  formApiGrid.setFieldValue('parentNo', record.key);
+  gridQuerySubmit();
 };
 /**
  * 重新加载
@@ -52,8 +57,8 @@ function reloadTree() {
  * @param e
  */
 const treeOverload = (e) => {
-  formParam.parentNo = '';
-  reloadTable();
+  formApiGrid.setFieldValue('parentNo', null);
+  gridQuerySubmit();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Edit,
@@ -83,6 +88,66 @@ const menuDropdownOptions = [
   },
 ];
 
+const [FormGrid, formApiGrid] = useVbenForm({
+  // fieldMappingTime: [['createTime', ['startTime', 'endTime']]],
+  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+  compact: true,
+  submitButtonOptions: {
+    content: '查询',
+  },
+  // 默认展开
+  collapsed: false,
+  // 是否在字段值改变时提交表单
+  submitOnChange: false,
+  // 按下回车时是否提交表单
+  submitOnEnter: false,
+  // 控制表单是否显示折叠按钮
+  showCollapseButton: true,
+  handleSubmit: async () => {
+    const formValues = await formApiGrid.getValues();
+    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    gridQuery(formValues);
+  },
+  handleReset: async () => {
+    const prevValues = await formApiGrid.getValues();
+    await formApiGrid.resetForm();
+    const formValues = await formApiGrid.getValues();
+    formApiGrid.setLatestSubmissionValues(formValues);
+    // 如果值发生了变化，submitOnChange会触发刷新。所以只在submitOnChange为false或者值没有发生变化时，手动刷新
+    if (!isEqual(prevValues, formValues)) {
+      gridQuery(formValues);
+    }
+  },
+  schema: [
+    {
+      fieldName: 'parentNo',
+      label: '隐藏',
+      defaultValue: null,
+      component: 'Input',
+      componentProps: {},
+      dependencies: {
+        show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['wd'],
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'wd',
+      label: '关键词',
+    },
+    {
+      fieldName: 'state',
+      label: '状态',
+      component: 'Select',
+      componentProps: {
+        clearable: true,
+        options: stateYesNoOption,
+      },
+    },
+  ],
+});
+
 const xGrid = ref<VxeGridInstance<RowVO>>();
 const gridOptions = reactive<VxeGridProps<RowVO>>({
   stripe: true, // 斑马纹
@@ -90,9 +155,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
   showHeaderOverflow: true,
   showOverflow: true,
   keepSource: true,
-  id: 'full_role',
-  // height: '99%',
-  minHeight: 800,
+  height: 'auto',
   rowConfig: {
     keyField: 'id',
     isHover: true,
@@ -105,55 +168,12 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     remote: true,
   },
   filterConfig: {
-    remote: true,
+    remote: false,
   },
   pagerConfig: {
     enabled: true,
     pageSize: 20,
     pageSizes: [10, 20, 50, 100, 500, 1000],
-  },
-  formConfig: {
-    titleWidth: 100,
-    titleAlign: 'right',
-    items: [
-      {
-        field: 'wd',
-        title: '关键词',
-        span: 6,
-        itemRender: {
-          name: '$input',
-          props: { placeholder: '请输入', clearable: true },
-        },
-      },
-      {
-        field: 'state',
-        title: '状态',
-        span: 6,
-        folding: false,
-        itemRender: {
-          name: '$select',
-          options: [
-            { label: '停用', value: '2' },
-            { label: '有效', value: '1' },
-            { label: '弃置', value: '12' },
-            { label: '取消', value: '11' },
-          ],
-          props: { clearable: true },
-        },
-      },
-      {
-        span: 24,
-        align: 'center',
-        collapseNode: true,
-        itemRender: {
-          name: '$buttons',
-          children: [
-            { props: { type: 'submit', content: '搜索', status: 'primary' } },
-            { props: { type: 'reset', content: '重置' } },
-          ],
-        },
-      },
-    ],
   },
   toolbarConfig: {
     buttons: [
@@ -186,7 +206,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     // 只接收Promise，具体实现自由发挥
     ajax: {
       // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
-      query: ({ page, sorts, filters, form }) => {
+      query: ({ page, sorts, filters, form }, formQuery) => {
         const queryParams: any = Object.assign({}, form);
         // 处理排序条件
         const firstSort = sorts[0];
@@ -200,9 +220,10 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
         });
         queryParams.pageSize = page.pageSize;
         queryParams.pageNum = page.currentPage;
-        if (formParam) {
-          for (const key in formParam) {
-            queryParams[key] = formParam[key];
+        // 表单 和 左侧查询
+        if (formQuery) {
+          for (const key in formQuery) {
+            queryParams[key] = formQuery[key];
           }
         }
         return List(queryParams);
@@ -312,32 +333,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
           formDrawerApi.open();
           break;
         }
-        // 删除恢复
-        case 'recovery': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state > 10) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectRecovery(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
         // 物理删除
         case 'physicalDeletion': {
           const checkboxRecords = $grid.getCheckboxRecords();
@@ -364,18 +359,37 @@ const gridEvent: VxeGridListeners<RowVO> = {
           });
           break;
         }
+        // 删除恢复
+        case 'recovery': {
+          const checkboxRecords = $grid.getCheckboxRecords();
+          if (checkboxRecords.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          const ids = [];
+          checkboxRecords.forEach((item) => {
+            console.log('$grid.item', item);
+            if (item.state > 10) {
+              ids.push(item.id);
+            } else {
+              $grid.setCheckboxRow(item, false);
+            }
+          });
+          if (ids.length <= 0) {
+            message.warning('你没有选择任何数据');
+            return;
+          }
+          batchSelectRecovery(ids, () => {
+            reloadTable();
+            $grid.setAllCheckboxRow(false);
+          });
+          break;
+        }
       }
     }
   },
 };
 
-const hasActiveEditRow = (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    return $grid.isEditByRow(row);
-  }
-  return false;
-};
 const editRowEvent = (row: RowVO) => {
   formDrawerApi.setData({
     // 表单值
@@ -385,35 +399,13 @@ const editRowEvent = (row: RowVO) => {
   formDrawerApi.open();
 };
 
-const clearRowEvent = () => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.clearEdit();
-  }
-};
-const saveRowEvent = async (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    await $grid.clearEdit();
-    gridOptions.loading = true;
-    // 模拟异步保存
-    setTimeout(() => {
-      gridOptions.loading = false;
-      VXETable.modal.message({
-        content: `${JSON.stringify(row)}`,
-        status: 'success',
-      });
-    }, 300);
-  }
-};
 /**
  * 删除 指定行数据
  * @param row
  */
 const removeRowEvent = async (row: RowVO) => {
-  const type = await VXETable.modal.confirm('您确定要删除该数据?');
   const $grid = xGrid.value;
-  if ($grid && type === 'confirm') {
+  if ($grid) {
     deleteIds([row.id]);
     await $grid.remove(row);
   }
@@ -445,10 +437,27 @@ function reloadTable() {
     $grid.commitProxy('query');
   }
 }
-
-function treeChangOverload() {
-  reloadTable();
-  treeOverload();
+/**
+ * 重新查询
+ */
+async function gridQuery(params: Record<string, any> = {}) {
+  try {
+    const $grid = xGrid.value;
+    if ($grid) {
+      $grid.commitProxy('query', toRaw(params));
+    }
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
+}
+async function gridQuerySubmit() {
+  try {
+    const formValues = await formApiGrid.getValues();
+    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    await gridQuery(formValues);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
 
 /**
@@ -500,9 +509,13 @@ const rightClickMenuOptions = ({ option }) => {
 </script>
 
 <template>
-  <div>
-    <NLayout class="h-full p-2" has-sider>
-      <NLayoutSider class="min-w-[160px]" width="160">
+  <Page auto-content-height content-class="p-2">
+    <div class="flex size-full">
+      <NCard
+        class="min-w-[160px]"
+        style="width: unset"
+        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+      >
         <PgTree
           :api="selectCategory"
           :is-node-all="true"
@@ -513,32 +526,48 @@ const rightClickMenuOptions = ({ option }) => {
           @ok="treeChang"
           @overload="treeOverload"
         />
-      </NLayoutSider>
-      <NLayout class="w-[calc(100%-160px)]">
-        <NLayoutContent>
-          <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
-            <template #operate="{ row }">
-              <vxe-button
-                icon="vxe-icon-edit"
-                mode="text"
-                title="编辑"
-                @click="editRowEvent(row)"
-              />
-<!--              <vxe-button-->
-<!--                icon="vxe-icon-delete"-->
-<!--                mode="text"-->
-<!--                status="danger"-->
-<!--                title="删除"-->
-<!--                @click="removeRowEvent(row)"-->
-<!--              />-->
-            </template>
-          </vxe-grid>
-        </NLayoutContent>
-      </NLayout>
-      <FormDrawer />
-      <FormModal @ok="treeChangOverload" />
-    </NLayout>
-  </div>
+      </NCard>
+      <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
+        <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
+          <template #form>
+            <div :class="cn('relative rounded-sm py-3', 'pb-8')">
+              <FormGrid />
+              <div
+                class="absolute bottom-1 -left-2 z-100 h-2 w-[calc(100%+1rem)] overflow-hidden bg-background-deep md:bottom-2 md:h-3"
+              ></div>
+            </div>
+          </template>
+          <template #operate="{ row }">
+            <VbenTableAction
+              :actions="[
+                {
+                  tooltip: {
+                    content: '编辑',
+                  },
+                  icon: 'lucide:edit',
+                  onClick: () => editRowEvent(row),
+                },
+              ]"
+              :dropdown-actions="[
+                {
+                  text: '删除',
+                  icon: 'lucide:trash-2',
+                  danger: true,
+                  popConfirm: {
+                    title: `确定删除 ${row.name} 吗？`,
+                    confirm: () => removeRowEvent(row),
+                  },
+                },
+              ]"
+              align="center"
+            />
+          </template>
+        </vxe-grid>
+      </div>
+    </div>
+    <FormDrawer />
+    <FormModal @ok="gridQuerySubmit" />
+  </Page>
 </template>
 
 <style scoped></style>

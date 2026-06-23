@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import type { RowVO } from '@pg/types';
+import type {
+  VxeGridInstance,
+  VxeGridListeners,
+  VxeGridProps,
+} from 'vxe-table';
+
+import type { Recordable } from '@vben/types';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
 
 import { PgTree } from '@pg/components-n';
-import {
-  type VxeGridInstance,
-  type VxeGridListeners,
-  type VxeGridProps,
-  VXETable,
-} from 'vxe-table';
+import { VXETable } from 'vxe-table';
 
 import { message } from '#/adapter';
 import { selectPublic } from '#/viewsRam/resource/group/api';
@@ -440,10 +442,10 @@ function selectResourceOk(rows) {
           <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
             <template #nameAll="{ row }">
               <div>
-                {{row.name}}
+                {{ row.name }}
               </div>
               <div>
-                {{row.path}}
+                {{ row.path }}
               </div>
             </template>
             <template #operate="{ row }">

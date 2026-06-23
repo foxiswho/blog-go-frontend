@@ -2,8 +2,9 @@ import type { VxeGridPropTypes } from 'vxe-table';
 
 import _XEUtils_ from 'xe-utils';
 
-import { existName, setStateEnableDisable } from './api';
-import {h} from "vue";
+import { confirmSwitch } from '#/adapter/vxe-table';
+
+import { setStateEnableDisable } from './api';
 
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', title: 'ID', width: 120 },
@@ -15,25 +16,20 @@ export const columns: VxeGridPropTypes.Columns = [
     // slots: { default: 'state' },
     width: 90,
     cellRender: {
-      name: 'PgState',
-      events: {
-        // 状态更新
-        click: ($table, record, e) => {
-          const sourceValue = record.state;
-          const newStatus = e.value === 1 ? 1 : 2;
-          setStateEnableDisable(record.id, newStatus)
-            .then(() => {
-              record.state = newStatus;
-              if ($table) {
-                $table.isUpdateByRow(record);
-              }
-            })
-            .catch(() => {
-              record.state = sourceValue;
-              if ($table) {
-                $table.isUpdateByRow(record);
-              }
-            });
+      name: 'CellSwitchPg',
+      attrs: {
+        beforeChange: async (
+          newStatus: number | string,
+          record: any,
+          $table,
+        ) => {
+          try {
+            await confirmSwitch(record.name, newStatus);
+            await setStateEnableDisable(record.id, newStatus);
+            return true;
+          } catch {
+            return false;
+          }
         },
       },
     },
@@ -50,5 +46,4 @@ export const columns: VxeGridPropTypes.Columns = [
   { title: '操作', width: 160, field: 'right', slots: { default: 'operate' } },
 ];
 
-export const formSchema = [
-];
+export const formSchema = [];
