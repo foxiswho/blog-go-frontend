@@ -2,7 +2,9 @@
 import type { RowVO } from '@pg/types';
 
 import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
-import { Plus } from '@vben/icons';
+import { IconifyIcon, Plus } from '@vben/icons';
+
+import { MenuBadge } from '@vben-core/menu-ui';
 
 import { VbenTableAction } from '#/adapter/vxe-table';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -69,7 +71,6 @@ const onDelete = async (row: RowVO) => {
 };
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {},
   gridOptions: {
     columns,
     height: 'auto',
@@ -83,6 +84,9 @@ const [Grid, gridApi] = useVbenVxeGrid({
           return await queryAll({});
         },
       },
+    },
+    rowConfig: {
+      keyField: 'id',
     },
     toolbarConfig: {
       custom: true,
@@ -115,6 +119,34 @@ function refreshGrid() {
           <Plus class="size-5" />
           新增
         </VbenButton>
+      </template>
+      <template #title="{ row }">
+        <div class="flex w-full items-center gap-1">
+          <div
+            class="size-5 shrink-0"
+            v-if="row.typeMenu === 'button' || row.icon"
+          >
+            <IconifyIcon
+              v-if="row.typeMenu === 'button'"
+              icon="carbon:security"
+              class="size-full"
+            />
+            <IconifyIcon
+              v-else-if="row.icon"
+              :icon="row.icon || 'carbon:circle-dash'"
+              class="size-full"
+            />
+          </div>
+          <span class="flex-auto">{{ row.metaTitle }}</span>
+          <div class="items-center justify-end"></div>
+        </div>
+        <MenuBadge
+          v-if="row.metaBadgeType"
+          class="menu-badge"
+          :badge="row.metaBadge"
+          :badge-type="row.metaBadgeType"
+          :badge-variants="row.metaBadgeVariants"
+        />
       </template>
       <template #operate="{ row }">
         <VbenTableAction

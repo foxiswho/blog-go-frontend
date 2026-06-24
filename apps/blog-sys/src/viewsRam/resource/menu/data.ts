@@ -58,6 +58,7 @@ export const columns: VxeGridPropTypes.Columns = [
   {
     field: 'label',
     title: '名称',
+    align: 'left',
     fixed: 'left',
     treeNode: true,
     slots: { default: 'title' },
@@ -70,16 +71,16 @@ export const columns: VxeGridPropTypes.Columns = [
       options: typeMenuOptions(),
       props: { size: 'small' },
     },
-    field: 'extend.typeMenu',
+    field: 'typeMenu',
     title: '类型',
     width: 80,
   },
   {
-    field: 'extend.authCode',
+    field: 'authCode',
     title: '授权码',
     width: 200,
   },
-  { field: 'extend.path', title: '路由地址', width: 160 },
+  { field: 'path', title: '路由地址', width: 160 },
   { field: 'component', title: '页面组件', width: 160 },
   {
     field: 'state',
@@ -106,7 +107,7 @@ export const columns: VxeGridPropTypes.Columns = [
     },
   },
   {
-    field: 'extend.createAt',
+    field: 'createAt',
     title: '创建时间',
     width: 160,
     visible: false,
