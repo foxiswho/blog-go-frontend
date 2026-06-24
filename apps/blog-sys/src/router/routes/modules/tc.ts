@@ -12,17 +12,17 @@ const routes: RouteRecordRaw[] = [
       title: '租户',
     },
     name: 'tc',
-    path: '/lq2/tc/index',
+    path: '/lq2/tc',
     children: [
-      {
-        meta: {
-          title: '首页',
-          icon: 'mdi:account-multiple',
-        },
-        name: 'tc-index',
-        path: '/lq2/tc/index',
-        component: () => import('#/viewsMc/tenant/index.vue'),
-      },
+      // {
+      //   meta: {
+      //     title: '首页',
+      //     icon: 'mdi:account-multiple',
+      //   },
+      //   name: 'tc-index',
+      //   path: '/lq2/tc/index',
+      //   component: () => import('#/viewsMc/tenant/index.vue'),
+      // },
       {
         meta: {
           title: '租户',

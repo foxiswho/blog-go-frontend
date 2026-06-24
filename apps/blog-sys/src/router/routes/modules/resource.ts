@@ -42,15 +42,15 @@ const routes: RouteRecordRaw[] = [
         path: '/lq2/ram/resource/menu',
         component: () => import('#/viewsRam/resource/menu/index.vue'),
       },
-      {
-        meta: {
-          title: '菜单资源组关系',
-          icon: 'mdi:account-key',
-        },
-        name: 'resource-menu-relation',
-        path: '/lq2/ram/resource/menu-relation',
-        component: () => import('#/viewsRam/resource/menu-relation/group.vue'),
-      },
+      // {
+      //   meta: {
+      //     title: '菜单资源组关系',
+      //     icon: 'mdi:account-key',
+      //   },
+      //   name: 'resource-menu-relation',
+      //   path: '/lq2/ram/resource/menu-relation',
+      //   component: () => import('#/viewsRam/resource/menu-relation/group.vue'),
+      // },
     ],
   },
 ];
