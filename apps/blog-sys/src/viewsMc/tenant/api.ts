@@ -2,20 +2,20 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/mc/tenant/create',
-  createUpdate = '/pg2lq/sys/mc/tenant/createUpdate',
-  delete = '/pg2lq/sys/mc/tenant/delete',
-  detail = '/pg2lq/sys/mc/tenant/detail/',
-  disable = '/pg2lq/sys/mc/tenant/disable',
-  enable = '/pg2lq/sys/mc/tenant/enable',
-  existName = '/pg2lq/sys/mc/tenant/existName',
-  existCode = '/pg2lq/sys/mc/tenant/existCode',
-  exportExcel = '/pg2lq/sys/mc/tenant/exportExcel',
-  list = '/pg2lq/sys/mc/tenant/query',
-  physicalDeletion = '/pg2lq/sys/mc/tenant/physicalDeletion',
-  recovery = '/pg2lq/sys/mc/tenant/recovery',
-  selectNodeAll = '/pg2lq/sys/mc/tenant/selectNodeAll',
-  selectNodeAllPublic = '/pg2lq/sys/mc/tenant/selectNodeAllPublic',
+  create = '/pg2lq/sys/tc/tenant/create',
+  createUpdate = '/pg2lq/sys/tc/tenant/createUpdate',
+  delete = '/pg2lq/sys/tc/tenant/delete',
+  detail = '/pg2lq/sys/tc/tenant/detail/',
+  disable = '/pg2lq/sys/tc/tenant/disable',
+  enable = '/pg2lq/sys/tc/tenant/enable',
+  existName = '/pg2lq/sys/tc/tenant/existName',
+  existCode = '/pg2lq/sys/tc/tenant/existCode',
+  exportExcel = '/pg2lq/sys/tc/tenant/exportExcel',
+  list = '/pg2lq/sys/tc/tenant/query',
+  physicalDeletion = '/pg2lq/sys/tc/tenant/physicalDeletion',
+  recovery = '/pg2lq/sys/tc/tenant/recovery',
+  selectNodeAll = '/pg2lq/sys/tc/tenant/selectNodeAll',
+  selectNodeAllPublic = '/pg2lq/sys/tc/tenant/selectNodeAllPublic',
 }
 
 /**
@@ -219,7 +219,7 @@ export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
  */
 export const setStateEnableDisable = (id: number, status: number) =>
   requestClient.post(
-    1 === status ? Api.enable : Api.disable,
+    status === 1 ? Api.enable : Api.disable,
     { ids: [id], state: status },
     { errorMessageMode: 'message', successMessageMode: 'message' },
   );
@@ -233,8 +233,7 @@ export const exportExcelUrl = Api.exportExcel;
  * 查询名称是否存在
  * @param params
  */
-export const existName = (wd, id?) => {
-  id = id || '0';
+export const existName = (wd, id = '0') => {
   return requestClient.post(
     Api.existName,
     { wd, id },
@@ -245,8 +244,7 @@ export const existName = (wd, id?) => {
  * 查询名称是否存在
  * @param params
  */
-export const existCode = (wd, id?) => {
-  id = id || '0';
+export const existCode = (wd, id = '0') => {
   return requestClient.post(
     Api.existCode,
     { wd, id },
