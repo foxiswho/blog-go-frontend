@@ -76,7 +76,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(toRaw(params));
+    gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -86,7 +86,7 @@ async function gridQuery(params: Record<string, any> = {}) {
  */
 async function onRefresh() {
   const formValues = await gridApi.formApi.getValues();
-  gridApi.formApi.setLatestSubmissionValues(toRaw(formValues));
+  gridApi.formApi.setLatestSubmissionValues(formValues);
   gridQuery(formValues);
 }
 
@@ -329,12 +329,16 @@ const rowEventFounderEdit = (row: any) => {
         <VbenTableAction
           :actions="[
             {
-              text: '编辑',
+               tooltip: {
+                content: '编辑',
+              },
               icon: 'lucide:edit',
               onClick: () => onEdit(row),
             },
             {
-              text: '删除',
+              tooltip: {
+                content: '删除',
+              },
               icon: 'lucide:trash-2',
               danger: true,
               popConfirm: {
