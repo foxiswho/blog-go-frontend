@@ -40,7 +40,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
-            class:'pg-button-size-small',
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -79,7 +79,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
-            class:'pg-button-size-small',
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existCode(values.code, values.id);
@@ -117,7 +117,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
-            class:'pg-button-size-small',
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               modalApi.setData({
@@ -182,7 +182,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
         formApi.setValues(values);
       }
 
-      drawerApi.setState({ title: `租户：${isUpdate ? '编辑' : '新增'}` ,loading: false});
+      drawerApi.setState({
+        title: `租户：${isUpdate ? '编辑' : '新增'}`,
+        loading: false,
+      });
     }
   },
   title: '',
