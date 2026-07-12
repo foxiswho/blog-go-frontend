@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/mc/channel/create',
-  delete = '/pg2lq/sys/mc/channel/delete',
-  detail = '/pg2lq/sys/mc/channel/detail/',
-  disable = '/pg2lq/sys/mc/channel/disable',
-  enable = '/pg2lq/sys/mc/channel/enable',
-  existName = '/pg2lq/sys/mc/channel/existName',
-  existCode = '/pg2lq/sys/mc/channel/existCode',
-  exportExcel = '/pg2lq/sys/mc/channel/exportExcel',
-  list = '/pg2lq/sys/mc/channel/query',
-  physicalDeletion = '/pg2lq/sys/mc/channel/physicalDeletion',
-  recovery = '/pg2lq/sys/mc/channel/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/mc/channel/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/mc/channel/selectNodePublic',
-  selectPublic = '/pg2lq/sys/mc/channel/selectPublic',
-  state = '/pg2lq/sys/mc/channel/state',
-  update = '/pg2lq/sys/mc/channel/update',
+  create = '/xianfu/sys/mc/channel/create',
+  delete = '/xianfu/sys/mc/channel/delete',
+  detail = '/xianfu/sys/mc/channel/detail/',
+  disable = '/xianfu/sys/mc/channel/disable',
+  enable = '/xianfu/sys/mc/channel/enable',
+  existName = '/xianfu/sys/mc/channel/existName',
+  existCode = '/xianfu/sys/mc/channel/existCode',
+  exportExcel = '/xianfu/sys/mc/channel/exportExcel',
+  list = '/xianfu/sys/mc/channel/query',
+  physicalDeletion = '/xianfu/sys/mc/channel/physicalDeletion',
+  recovery = '/xianfu/sys/mc/channel/recovery',
+  selectNodeAllPublic = '/xianfu/sys/mc/channel/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/mc/channel/selectNodePublic',
+  selectPublic = '/xianfu/sys/mc/channel/selectPublic',
+  state = '/xianfu/sys/mc/channel/state',
+  update = '/xianfu/sys/mc/channel/update',
 }
 
 /**

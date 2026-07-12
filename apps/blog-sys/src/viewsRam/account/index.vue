@@ -43,7 +43,7 @@ const reloadTreeComputed = computed(() => reloadTreeState.value);
 const treeChang = (record: any) => {
   currenRecord.value = true;
   currenData.value = record;
-  formApiGrid.setFieldValue('departments', [record.key]);
+  gridApi.formApi.setFieldValue('departments', [record.key]);
   gridQuerySubmit();
 };
 /**
@@ -57,7 +57,7 @@ function reloadTree() {
  * @param e
  */
 const treeOverload = (_e: any) => {
-  formApiGrid.setFieldValue('departments', []);
+  gridApi.formApi.setFieldValue('departments', []);
   gridQuerySubmit();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
@@ -74,92 +74,69 @@ const [FormModalPassword, formModalApiPassword] = useVbenModal({
  */
 const menuDropdownOptions: any[] = [];
 
-const [FormGrid, formApiGrid] = useVbenForm({
-  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-  compact: true,
-  submitButtonOptions: {
-    content: '查询',
-  },
-  collapsed: false,
-  submitOnChange: false,
-  submitOnEnter: false,
-  showCollapseButton: true,
-  handleSubmit: async () => {
-    const formValues = await formApiGrid.getValues();
-    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
-    gridQuery(formValues);
-  },
-  handleReset: async () => {
-    const prevValues = await formApiGrid.getValues();
-    await formApiGrid.resetForm();
-    const formValues = await formApiGrid.getValues();
-    formApiGrid.setLatestSubmissionValues(formValues);
-    if (!isEqual(prevValues, formValues)) {
-      gridQuery(formValues);
-    }
-  },
-  schema: [
-    {
-      fieldName: 'departments',
-      label: '隐藏',
-      defaultValue: [],
-      component: 'Input',
-      componentProps: {},
-      dependencies: {
-        show: false,
-        triggerFields: ['wd'],
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'wd',
-      label: '关键词',
-    },
-    {
-      component: 'Input',
-      fieldName: 'account',
-      label: '账户',
-    },
-    {
-      component: 'Input',
-      fieldName: 'mail',
-      label: '邮箱',
-    },
-    {
-      component: 'Input',
-      fieldName: 'phone',
-      label: '手机号',
-    },
-    {
-      component: 'Input',
-      fieldName: 'code',
-      label: '编号',
-    },
-    {
-      fieldName: 'sex',
-      label: '性别',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: typeCodePublic,
-        params: 'sex',
-        props: {
-          placeholder: '请选择',
+const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: [
+      {
+        fieldName: 'departments',
+        label: '隐藏',
+        defaultValue: [],
+        component: 'Input',
+        componentProps: {},
+        dependencies: {
+          show: false,
+          triggerFields: ['wd'],
         },
       },
-    },
-    {
-      fieldName: 'state',
-      label: '状态',
-      component: 'Select',
-      componentProps: {
-        clearable: true,
-        options: stateYesNoOption,
+      {
+        component: 'Input',
+        fieldName: 'wd',
+        label: '关键词',
       },
-    },
-  ],
-});
-
-const [Grid, gridApi] = useVbenVxeGrid({
+      {
+        component: 'Input',
+        fieldName: 'account',
+        label: '账户',
+      },
+      {
+        component: 'Input',
+        fieldName: 'mail',
+        label: '邮箱',
+      },
+      {
+        component: 'Input',
+        fieldName: 'phone',
+        label: '手机号',
+      },
+      {
+        component: 'Input',
+        fieldName: 'code',
+        label: '编号',
+      },
+      {
+        fieldName: 'sex',
+        label: '性别',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: typeCodePublic,
+          params: 'sex',
+          props: {
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'state',
+        label: '状态',
+        component: 'Select',
+        componentProps: {
+          clearable: true,
+          options: stateYesNoOption,
+        },
+      },
+    ],
+    submitOnChange: false,
+  },
   gridOptions: {
     columns,
     height: 'auto',
@@ -205,8 +182,8 @@ async function gridQuery(params: Record<string, any> = {}) {
 }
 async function gridQuerySubmit() {
   try {
-    const formValues = await formApiGrid.getValues();
-    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    const formValues = await gridApi.formApi.getValues();
+    gridApi.formApi.setLatestSubmissionValues(formValues);
     await gridQuery(formValues);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
@@ -216,8 +193,8 @@ async function gridQuerySubmit() {
  * 刷新表格
  */
 async function onRefresh() {
-  const formValues = await formApiGrid.getValues();
-  formApiGrid.setLatestSubmissionValues(formValues);
+  const formValues = await gridApi.formApi.getValues();
+  gridApi.formApi.setLatestSubmissionValues(formValues);
   gridQuery(formValues);
 }
 
@@ -340,7 +317,6 @@ function onRecovery() {
       onRefresh();
       $grid.setAllCheckboxRow(false);
     },
-    dialog,
   );
 }
 
@@ -373,7 +349,6 @@ function onPhysicalDeletion() {
       onRefresh();
       $grid.setAllCheckboxRow(false);
     },
-    dialog,
   );
 }
 
@@ -421,12 +396,6 @@ function handleAccount(row: any) {
         />
       </NCard>
       <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
-        <div :class="cn('relative rounded-sm py-3', 'pb-8')">
-          <FormGrid />
-          <div
-            class="absolute bottom-1 -left-2 z-100 h-2 w-[calc(100%+1rem)] overflow-hidden bg-background-deep md:bottom-2 md:h-3"
-          ></div>
-        </div>
         <Grid>
           <template #toolbar-actions>
             <VbenButton

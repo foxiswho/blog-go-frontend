@@ -110,7 +110,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
       // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
       query: () => {
         const data = flattenAccessMenus(accessStore.accessRoutes);
-        return Promise.resolve({ items: data });
+        return Promise.resolve({ data: data });
       },
     },
   },
@@ -197,8 +197,8 @@ onMounted(() => {});
           class="float-right"
           size="tiny"
           text
-          tag="a"
-          type="primary"
+          type="error"
+          secondary
           @click="eventCopy(row)"
         >
           选择

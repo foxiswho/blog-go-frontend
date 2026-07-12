@@ -8,6 +8,7 @@ import { HttpMethod, RamResourceType, RamResourceTypeAttr } from '@pg/types';
 import { usePgForm } from '#/adapter';
 
 import { existName, saveOrUpdate, selectCategory } from '../api';
+import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -18,6 +19,20 @@ const [Form, formApi] = usePgForm({
     ],
   },
   schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'terminalCode',
+      label: '终端类型',
+      component: 'ApiRadioGroup',
+      componentProps: {
+        api: typeCodePublic,
+        params: {typeCode:'terminalCode'},
+        autoSelect: 'first',
+        optionType: 'button',
+        buttonStyle: 'solid',
+      },
+      rules: 'required',
+    },
     {
       tabGroup: 'home',
       fieldName: 'parentNo',
@@ -92,6 +107,7 @@ const [Form, formApi] = usePgForm({
       fieldName: 'nameFl',
       label: '名称英文',
       component: 'Input',
+      defaultValue: '',
       componentProps: {
         placeholder: '请输入',
       },

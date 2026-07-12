@@ -6,7 +6,7 @@ import { VbenButton } from '@vben/common-ui';
 
 import { usePgForm, useVbenForm } from '#/adapter';
 
-import { existName, createUpdateByCategory, selectNodeAllPublic } from '../api';
+import { existName, createUpdateByCategory, selectNodeAllPublic, selectCategory } from '../api';
 const emit = defineEmits(['ok',]);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -19,12 +19,12 @@ const [Form, formApi] = usePgForm({
   schema: [
     {
       tabGroup: 'home',
-      fieldName: 'parentId',
+      fieldName: 'parentNo',
       label: '上级',
       defaultValue: '',
-      component: 'Input',
+      component: 'PgTreeSelect',
       componentProps: {
-        api: selectNodeAllPublic,
+        api: selectCategory,
         params: {},
         props: {
           placeholder: '如果为空,则是一级',
@@ -214,9 +214,14 @@ const [Modal, modalApi] = useVbenModal({
   },
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      const { values, isUpdate } = modalApi.getData<Record<string, any>>();
+      const { values, isUpdate,parent } = modalApi.getData<Record<string, any>>();
       if (values) {
-        formApi.setValues(values);
+        formApi.setValues({
+          ...values,
+        });
+      }
+      if(parent) {
+        formApi.setFieldValue('parentNo', parent.no);
       }
 
       modalApi.setState({ title: `分类：${isUpdate ? '编辑' : '新增'}` });

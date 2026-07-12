@@ -6,5 +6,5 @@ import { requestClient } from '#/api/request';
  * 获取用户信息
  */
 export async function getUserInfoApi() {
-  return requestClient.get<UserInfo>('/pg2lq/manage/public/info');
+  return requestClient.get<UserInfo>('/xianfu/manage/public/info');
 }

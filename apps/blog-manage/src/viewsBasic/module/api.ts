@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/basic/module/create',
-  delete = '/pg2lq/manage/basic/module/delete',
-  detail = '/pg2lq/manage/basic/module/detail/',
-  disable = '/pg2lq/manage/basic/module/disable',
-  enable = '/pg2lq/manage/basic/module/enable',
-  existName = '/pg2lq/manage/basic/module/existName',
-  existCode = '/pg2lq/manage/basic/module/existCode',
-  exportExcel = '/pg2lq/manage/basic/module/exportExcel',
-  list = '/pg2lq/manage/basic/module/query',
-  physicalDeletion = '/pg2lq/manage/basic/module/physicalDeletion',
-  recovery = '/pg2lq/manage/basic/module/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/basic/module/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/basic/module/selectNodePublic',
-  selectPublic = '/pg2lq/manage/basic/module/selectPublic',
-  state = '/pg2lq/manage/basic/module/state',
-  update = '/pg2lq/manage/basic/module/update',
+  create = '/xianfu/manage/basic/module/create',
+  delete = '/xianfu/manage/basic/module/delete',
+  detail = '/xianfu/manage/basic/module/detail/',
+  disable = '/xianfu/manage/basic/module/disable',
+  enable = '/xianfu/manage/basic/module/enable',
+  existName = '/xianfu/manage/basic/module/existName',
+  existCode = '/xianfu/manage/basic/module/existCode',
+  exportExcel = '/xianfu/manage/basic/module/exportExcel',
+  list = '/xianfu/manage/basic/module/query',
+  physicalDeletion = '/xianfu/manage/basic/module/physicalDeletion',
+  recovery = '/xianfu/manage/basic/module/recovery',
+  selectNodeAllPublic = '/xianfu/manage/basic/module/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/basic/module/selectNodePublic',
+  selectPublic = '/xianfu/manage/basic/module/selectPublic',
+  state = '/xianfu/manage/basic/module/state',
+  update = '/xianfu/manage/basic/module/update',
 }
 
 /**

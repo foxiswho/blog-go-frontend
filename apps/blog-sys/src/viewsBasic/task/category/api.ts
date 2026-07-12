@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/basic/task-category/create',
-  delete = '/pg2lq/sys/basic/task-category/delete',
-  detail = '/pg2lq/sys/basic/task-category/detail/',
-  disable = '/pg2lq/sys/basic/task-category/disable',
-  enable = '/pg2lq/sys/basic/task-category/enable',
-  existName = '/pg2lq/sys/basic/task-category/existName',
-  exportExcel = '/pg2lq/sys/basic/task-category/exportExcel',
-  list = '/pg2lq/sys/basic/task-category/query',
-  physicalDeletion = '/pg2lq/sys/basic/task-category/physicalDeletion',
-  recovery = '/pg2lq/sys/basic/task-category/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/basic/task-category/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/task-category/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/task-category/selectPublic',
-  state = '/pg2lq/sys/basic/task-category/state',
-  update = '/pg2lq/sys/basic/task-category/update',
+  create = '/xianfu/sys/basic/task-category/create',
+  delete = '/xianfu/sys/basic/task-category/delete',
+  detail = '/xianfu/sys/basic/task-category/detail/',
+  disable = '/xianfu/sys/basic/task-category/disable',
+  enable = '/xianfu/sys/basic/task-category/enable',
+  existName = '/xianfu/sys/basic/task-category/existName',
+  exportExcel = '/xianfu/sys/basic/task-category/exportExcel',
+  list = '/xianfu/sys/basic/task-category/query',
+  physicalDeletion = '/xianfu/sys/basic/task-category/physicalDeletion',
+  recovery = '/xianfu/sys/basic/task-category/recovery',
+  selectNodeAllPublic = '/xianfu/sys/basic/task-category/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/basic/task-category/selectNodePublic',
+  selectPublic = '/xianfu/sys/basic/task-category/selectPublic',
+  state = '/xianfu/sys/basic/task-category/state',
+  update = '/xianfu/sys/basic/task-category/update',
 }
 
 /**

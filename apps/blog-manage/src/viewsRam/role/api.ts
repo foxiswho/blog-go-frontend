@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/iam/role/create',
-  delete = '/pg2lq/manage/iam/role/delete',
-  detail = '/pg2lq/manage/iam/role/detail/',
-  disable = '/pg2lq/manage/iam/role/disable',
-  enable = '/pg2lq/manage/iam/role/enable',
-  existName = '/pg2lq/manage/iam/role/existName',
-  exportExcel = '/pg2lq/manage/iam/role/exportExcel',
-  list = '/pg2lq/manage/iam/role/query',
-  physicalDeletion = '/pg2lq/manage/iam/role/physicalDeletion',
-  recovery = '/pg2lq/manage/iam/role/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/iam/role/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/iam/role/selectNodePublic',
-  selectPublic = '/pg2lq/manage/iam/role/selectPublic',
-  state = '/pg2lq/manage/iam/role/state',
-  update = '/pg2lq/manage/iam/role/update',
+  create = '/xianfu/manage/iam/role/create',
+  delete = '/xianfu/manage/iam/role/delete',
+  detail = '/xianfu/manage/iam/role/detail/',
+  disable = '/xianfu/manage/iam/role/disable',
+  enable = '/xianfu/manage/iam/role/enable',
+  existName = '/xianfu/manage/iam/role/existName',
+  exportExcel = '/xianfu/manage/iam/role/exportExcel',
+  list = '/xianfu/manage/iam/role/query',
+  physicalDeletion = '/xianfu/manage/iam/role/physicalDeletion',
+  recovery = '/xianfu/manage/iam/role/recovery',
+  selectNodeAllPublic = '/xianfu/manage/iam/role/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/iam/role/selectNodePublic',
+  selectPublic = '/xianfu/manage/iam/role/selectPublic',
+  state = '/xianfu/manage/iam/role/state',
+  update = '/xianfu/manage/iam/role/update',
 }
 
 /**

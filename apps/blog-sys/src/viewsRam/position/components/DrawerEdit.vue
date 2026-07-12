@@ -121,7 +121,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         formApi.setValues(values);
       }
 
-      drawerApi.setState({ title: `职务：${isUpdate ? '编辑' : '新增'}` ,loading: false});
+      drawerApi.setState({ title: `职位：${isUpdate ? '编辑' : '新增'}` ,loading: false});
     }
   },
   title: '：',

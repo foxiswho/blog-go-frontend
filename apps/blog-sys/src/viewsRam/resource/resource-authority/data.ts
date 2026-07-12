@@ -11,11 +11,11 @@ import {
 } from "@pg/types";
 
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', title: 'ID', width: 120 },
+  { type: 'checkbox', title: '', width: 39 },
   { field: 'name', title: '名称', minWidth: 160, visible: false },
   {
     field: 'nameAll',
-    title: '名称',
+    title: '资源权限',
     slots: { default: 'nameAll' },
   },
   { field: 'path', title: '路径', minWidth: 160, visible: false },

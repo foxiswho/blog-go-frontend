@@ -11,6 +11,17 @@ export const columns: VxeGridPropTypes.Columns = [
   { field: 'name', title: '名称', sortable: true },
   { field: 'code', title: '码值', width: 160 },
   {
+    field: 'terminalCode',
+    title: '终端类型',
+    width: 90,
+    visible: false,
+  },
+  {
+    field: 'terminalCodeName',
+    title: '终端类型',
+    width: 90,
+  },
+  {
     field: 'state',
     title: '状态',
     // slots: { default: 'state' },

@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/iam/resource-group/create',
-  delete = '/pg2lq/manage/iam/resource-group/delete',
-  detail = '/pg2lq/manage/iam/resource-group/detail/',
-  disable = '/pg2lq/manage/iam/resource-group/disable',
-  enable = '/pg2lq/manage/iam/resource-group/enable',
-  existName = '/pg2lq/manage/iam/resource-group/existName',
-  exportExcel = '/pg2lq/manage/iam/resource-group/exportExcel',
-  list = '/pg2lq/manage/iam/resource-group/query',
-  physicalDeletion = '/pg2lq/manage/iam/resource-group/physicalDeletion',
-  recovery = '/pg2lq/manage/iam/resource-group/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/iam/resource-group/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/iam/resource-group/selectNodePublic',
-  selectPublic = '/pg2lq/manage/iam/resource-group/selectPublic',
-  state = '/pg2lq/manage/iam/resource-group/state',
-  update = '/pg2lq/manage/iam/resource-group/update',
+  create = '/xianfu/manage/iam/resource-group/create',
+  delete = '/xianfu/manage/iam/resource-group/delete',
+  detail = '/xianfu/manage/iam/resource-group/detail/',
+  disable = '/xianfu/manage/iam/resource-group/disable',
+  enable = '/xianfu/manage/iam/resource-group/enable',
+  existName = '/xianfu/manage/iam/resource-group/existName',
+  exportExcel = '/xianfu/manage/iam/resource-group/exportExcel',
+  list = '/xianfu/manage/iam/resource-group/query',
+  physicalDeletion = '/xianfu/manage/iam/resource-group/physicalDeletion',
+  recovery = '/xianfu/manage/iam/resource-group/recovery',
+  selectNodeAllPublic = '/xianfu/manage/iam/resource-group/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/iam/resource-group/selectNodePublic',
+  selectPublic = '/xianfu/manage/iam/resource-group/selectPublic',
+  state = '/xianfu/manage/iam/resource-group/state',
+  update = '/xianfu/manage/iam/resource-group/update',
 }
 
 /**

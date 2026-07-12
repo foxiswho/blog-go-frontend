@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/mc/merchant/create',
-  delete = '/pg2lq/sys/mc/merchant/delete',
-  detail = '/pg2lq/sys/mc/merchant/detail/',
-  disable = '/pg2lq/sys/mc/merchant/disable',
-  enable = '/pg2lq/sys/mc/merchant/enable',
-  existName = '/pg2lq/sys/mc/merchant/existName',
-  existCode = '/pg2lq/sys/mc/merchant/existCode',
-  exportExcel = '/pg2lq/sys/mc/merchant/exportExcel',
-  list = '/pg2lq/sys/mc/merchant/query',
-  physicalDeletion = '/pg2lq/sys/mc/merchant/physicalDeletion',
-  recovery = '/pg2lq/sys/mc/merchant/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/mc/merchant/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/mc/merchant/selectNodePublic',
-  selectPublic = '/pg2lq/sys/mc/merchant/selectPublic',
-  state = '/pg2lq/sys/mc/merchant/state',
-  update = '/pg2lq/sys/mc/merchant/update',
+  create = '/xianfu/sys/mc/merchant/create',
+  delete = '/xianfu/sys/mc/merchant/delete',
+  detail = '/xianfu/sys/mc/merchant/detail/',
+  disable = '/xianfu/sys/mc/merchant/disable',
+  enable = '/xianfu/sys/mc/merchant/enable',
+  existName = '/xianfu/sys/mc/merchant/existName',
+  existCode = '/xianfu/sys/mc/merchant/existCode',
+  exportExcel = '/xianfu/sys/mc/merchant/exportExcel',
+  list = '/xianfu/sys/mc/merchant/query',
+  physicalDeletion = '/xianfu/sys/mc/merchant/physicalDeletion',
+  recovery = '/xianfu/sys/mc/merchant/recovery',
+  selectNodeAllPublic = '/xianfu/sys/mc/merchant/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/mc/merchant/selectNodePublic',
+  selectPublic = '/xianfu/sys/mc/merchant/selectPublic',
+  state = '/xianfu/sys/mc/merchant/state',
+  update = '/xianfu/sys/mc/merchant/update',
 }
 
 /**

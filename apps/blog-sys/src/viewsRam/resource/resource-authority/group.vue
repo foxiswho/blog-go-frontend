@@ -10,6 +10,7 @@ import type { Recordable } from '@vben/types';
 
 import { computed, onMounted, reactive, ref, toRaw } from 'vue';
 
+import { VbenButton } from '@vben/common-ui';
 import { Page } from '@vben/common-ui';
 import { cn, isEqual } from '@vben/utils';
 
@@ -24,12 +25,14 @@ import {
   deletePhysicalDeletion as groupDeletePhysicalDeletion,
   selectNodeAllPublic,
 } from '#/viewsRam/resource/group/api';
+import { selectNodeAllPublic as selectNodeAllPublicMenu } from '#/viewsRam/resource/menu/api';
+
 
 import ResourceList from '../resource/invoke/list.vue';
 import {
   batchSelectPhysicalDeletion,
   createByGroup,
-  deleteIds,
+  deleteIds, createByMenu,ListByGroup,
   List,
 } from './api';
 import Category from './components/category.vue';
@@ -41,6 +44,10 @@ const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
 const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
+const checkedData = ref([]);
+const treeCheckedKeys = ref([]);
+const menuTreeKey = ref(0);
+const treeCheckedKeysComputed = computed(() => treeCheckedKeys.value);
 
 const treeChang = (record) => {
   currenRecord.value = true;
@@ -114,7 +121,7 @@ const [FormGrid, formApiGrid] = useVbenForm({
   showCollapseButton: true,
   handleSubmit: async () => {
     const formValues = await formApiGrid.getValues();
-    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    formApiGrid.setLatestSubmissionValues(formValues);
     gridQuery(formValues);
   },
   handleReset: async () => {
@@ -192,7 +199,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
     remote: false,
   },
   pagerConfig: {
-    enabled: true,
+    enabled: false,
     pageSize: 20,
     pageSizes: [10, 20, 50, 100, 500, 1000],
   },
@@ -288,8 +295,15 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
           for (const key in formQuery) {
             queryParams[key] = formQuery[key];
           }
+          queryParams['groupNo'] = formQuery.typeValue;
         }
-        return List(queryParams);
+        treeCheckedKeys.value = [];
+        return ListByGroup(queryParams).then((res) => {
+          console.log('res', res);
+          treeCheckedKeys.value = res.menus || [];
+          menuTreeKey.value++;
+          return res.data;
+        });
       },
       // 当点击工具栏删除按钮或者手动提交指令 delete 时会被触发
       delete: ({ body }) => {
@@ -351,7 +365,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
             return;
           }
           batchSelectPhysicalDeletion(ids, () => {
-            reloadTable();
+            gridQuerySubmit();
             $grid.setAllCheckboxRow(false);
           });
           break;
@@ -432,7 +446,7 @@ async function gridQuery(params: Record<string, any> = {}) {
 async function gridQuerySubmit() {
   try {
     const formValues = await formApiGrid.getValues();
-    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    formApiGrid.setLatestSubmissionValues(formValues);
     await gridQuery(formValues);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
@@ -511,6 +525,31 @@ async function selectResourceOk(rows) {
     message.warning('你没有选择资源组');
   }
 }
+
+const treeChangMenu = (record) => {
+  console.log('record', record);
+};
+
+function treeUpdateCheckedKeys(opt) {
+  console.log('treeUpdateCheckedKeys', opt);
+  if(opt && opt.keys){
+    checkedData.value = [...opt.keys];
+    console.log('checkedData', checkedData.value);
+  }
+}
+
+async function save() {
+  const values = await formApiGrid.getValues();
+  if(currenData.value && values.typeValue && currenData.value?.id) {
+    createByMenu({
+      groupNo: values.typeValue,
+      ids: checkedData.value,
+    });
+
+  } else {
+    message.warning('你没有选择资源组');
+  }
+}
 </script>
 
 <template>
@@ -532,7 +571,7 @@ async function selectResourceOk(rows) {
           @overload="treeOverload"
         />
       </NCard>
-      <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
+      <div class="w-[calc(100%-460px)] ml-2 pl-2 bg-card rounded-md">
         <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
           <template #form>
             <div>
@@ -577,6 +616,36 @@ async function selectResourceOk(rows) {
           </template>
         </vxe-grid>
       </div>
+      <NCard
+        class="min-w-[300px]"
+        style="width: unset"
+        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+      >
+        <div class="h-[30px]">
+          <VbenButton size="sm" @click="save">保存菜单权限</VbenButton>
+        </div>
+        <NDivider title-placement="left">
+          菜单权限
+        </NDivider>
+        <PgTree
+          :key="menuTreeKey"
+          :api="selectNodeAllPublicMenu"
+          min-height="calc(100vh - 426px)"
+          :is-node-all="true"
+          :right-click-menu="false"
+          :props="{
+              blockLine: true,
+              showLine: true,
+              cascade: true,
+              checkable: true,
+              selectable: false,
+              defaultCheckedKeys: treeCheckedKeysComputed,
+              defaultExpandAll: true,
+            }"
+          @ok="treeChangMenu"
+          @update:checkedKeys="treeUpdateCheckedKeys"
+        />
+      </NCard>
       <FormDrawer />
       <FormModal @ok="treeChangOverload" />
     </div>

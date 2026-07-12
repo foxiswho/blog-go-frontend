@@ -32,6 +32,20 @@ const [Form, formApi] = useVbenForm({
   },
   schema: [
     {
+      fieldName: 'terminalCode',
+      label: '终端类型',
+      component: 'ApiRadioGroup',
+      componentProps: {
+        api: typeCodePublic,
+        params: {typeCode:'terminalCode'},
+        autoSelect: 'first',
+        optionType: 'button',
+        buttonStyle: 'solid',
+      },
+      formItemClass: 'col-span-2 md:col-span-2',
+      rules: 'required',
+    },
+    {
       component: 'ApiRadioGroup',
       componentProps: {
         // 菜单接口
@@ -46,6 +60,7 @@ const [Form, formApi] = useVbenForm({
       fieldName: 'typeMenu',
       formItemClass: 'col-span-2 md:col-span-2',
       label: '菜单类型',
+      rules: 'required',
     },
     {
       fieldName: 'name',

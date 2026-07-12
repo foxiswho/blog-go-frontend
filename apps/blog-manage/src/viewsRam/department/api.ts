@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/iam/department/create',
-  delete = '/pg2lq/manage/iam/department/delete',
-  detail = '/pg2lq/manage/iam/department/detail/',
-  disable = '/pg2lq/manage/iam/department/disable',
-  enable = '/pg2lq/manage/iam/department/enable',
-  existName = '/pg2lq/manage/iam/department/existName',
-  exportExcel = '/pg2lq/manage/iam/department/exportExcel',
-  list = '/pg2lq/manage/iam/department/query',
-  physicalDeletion = '/pg2lq/manage/iam/department/physicalDeletion',
-  recovery = '/pg2lq/manage/iam/department/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/iam/department/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/iam/department/selectNodePublic',
-  selectPublic = '/pg2lq/manage/iam/department/selectPublic',
-  state = '/pg2lq/manage/iam/department/state',
-  update = '/pg2lq/manage/iam/department/update',
+  create = '/xianfu/manage/iam/department/create',
+  delete = '/xianfu/manage/iam/department/delete',
+  detail = '/xianfu/manage/iam/department/detail/',
+  disable = '/xianfu/manage/iam/department/disable',
+  enable = '/xianfu/manage/iam/department/enable',
+  existName = '/xianfu/manage/iam/department/existName',
+  exportExcel = '/xianfu/manage/iam/department/exportExcel',
+  list = '/xianfu/manage/iam/department/query',
+  physicalDeletion = '/xianfu/manage/iam/department/physicalDeletion',
+  recovery = '/xianfu/manage/iam/department/recovery',
+  selectNodeAllPublic = '/xianfu/manage/iam/department/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/iam/department/selectNodePublic',
+  selectPublic = '/xianfu/manage/iam/department/selectPublic',
+  state = '/xianfu/manage/iam/department/state',
+  update = '/xianfu/manage/iam/department/update',
 }
 
 /**

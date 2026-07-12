@@ -1,7 +1,7 @@
 import { requestClient } from '#/api/request';
 
 enum Api {
-  publicPrivateKey = '/pg2lq/auth/publicPrivateKey',
+  publicPrivateKey = '/xianfu/auth/publicPrivateKey',
 }
 
 /**

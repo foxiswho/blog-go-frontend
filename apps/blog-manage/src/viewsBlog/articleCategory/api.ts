@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/blog/article-category/create',
-  delete = '/pg2lq/manage/blog/article-category/delete',
-  detail = '/pg2lq/manage/blog/article-category/detail/',
-  disable = '/pg2lq/manage/blog/article-category/disable',
-  enable = '/pg2lq/manage/blog/article-category/enable',
-  existName = '/pg2lq/manage/blog/article-category/existName',
-  exportExcel = '/pg2lq/manage/blog/article-category/exportExcel',
-  list = '/pg2lq/manage/blog/article-category/query',
-  physicalDeletion = '/pg2lq/manage/blog/article-category/physicalDeletion',
-  recovery = '/pg2lq/manage/blog/article-category/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/blog/article-category/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/blog/article-category/selectNodePublic',
-  selectPublic = '/pg2lq/manage/blog/article-category/selectPublic',
-  state = '/pg2lq/manage/blog/article-category/state',
-  update = '/pg2lq/manage/blog/article-category/update',
+  create = '/xianfu/manage/blog/article-category/create',
+  delete = '/xianfu/manage/blog/article-category/delete',
+  detail = '/xianfu/manage/blog/article-category/detail/',
+  disable = '/xianfu/manage/blog/article-category/disable',
+  enable = '/xianfu/manage/blog/article-category/enable',
+  existName = '/xianfu/manage/blog/article-category/existName',
+  exportExcel = '/xianfu/manage/blog/article-category/exportExcel',
+  list = '/xianfu/manage/blog/article-category/query',
+  physicalDeletion = '/xianfu/manage/blog/article-category/physicalDeletion',
+  recovery = '/xianfu/manage/blog/article-category/recovery',
+  selectNodeAllPublic = '/xianfu/manage/blog/article-category/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/blog/article-category/selectNodePublic',
+  selectPublic = '/xianfu/manage/blog/article-category/selectPublic',
+  state = '/xianfu/manage/blog/article-category/state',
+  update = '/xianfu/manage/blog/article-category/update',
 }
 
 /**

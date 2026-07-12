@@ -2,16 +2,16 @@
 import type { RowVO } from '@pg/types';
 
 import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
-import { IconifyIcon, Plus } from '@vben/icons';
-
-import { MenuBadge } from '@vben-core/menu-ui';
+import {IconifyIcon, Plus} from '@vben/icons';
 
 import { VbenTableAction } from '#/adapter/vxe-table';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { MenuBadge } from '@vben-core/menu-ui';
 
 import { deleteIds, queryAll } from './api';
 import DrawerEdit from './components/DrawerEdit.vue';
 import { columns } from './data';
+import {$t} from "@vben/locales";
 
 const [Drawer, drawerApi] = useVbenDrawer({
   connectedComponent: DrawerEdit,
@@ -71,6 +71,7 @@ const onDelete = async (row: RowVO) => {
 };
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {},
   gridOptions: {
     columns,
     height: 'auto',
@@ -84,9 +85,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
           return await queryAll({});
         },
       },
-    },
-    rowConfig: {
-      keyField: 'id',
     },
     toolbarConfig: {
       custom: true,
@@ -122,12 +120,9 @@ function refreshGrid() {
       </template>
       <template #title="{ row }">
         <div class="flex w-full items-center gap-1">
-          <div
-            class="size-5 shrink-0"
-            v-if="row.typeMenu === 'button' || row.icon"
-          >
+          <div class="size-5 shrink-0" v-if="row.type === 'button'||row.icon">
             <IconifyIcon
-              v-if="row.typeMenu === 'button'"
+              v-if="row.type === 'button'"
               icon="carbon:security"
               class="size-full"
             />
@@ -137,7 +132,7 @@ function refreshGrid() {
               class="size-full"
             />
           </div>
-          <span class="flex-auto">{{ row.metaTitle }}</span>
+          <span class="flex-auto">{{ row.metaTitle?row.metaTitle:row.name}}</span>
           <div class="items-center justify-end"></div>
         </div>
         <MenuBadge

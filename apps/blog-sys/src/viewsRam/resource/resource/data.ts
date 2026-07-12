@@ -35,6 +35,17 @@ export const columns: VxeGridPropTypes.Columns = [
     formatter: RamResourceTypeAttrFormatter,
   },
   {
+    field: 'terminalCode',
+    title: '终端类型',
+    width: 90,
+    visible: false,
+  },
+  {
+    field: 'terminalCodeName',
+    title: '终端类型',
+    width: 90,
+  },
+  {
     field: 'state',
     title: '状态',
     // slots: { default: 'state' },

@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/blog/collect-category/create',
-  delete = '/pg2lq/manage/blog/collect-category/delete',
-  detail = '/pg2lq/manage/blog/collect-category/detail/',
-  disable = '/pg2lq/manage/blog/collect-category/disable',
-  enable = '/pg2lq/manage/blog/collect-category/enable',
-  existName = '/pg2lq/manage/blog/collect-category/existName',
-  exportExcel = '/pg2lq/manage/blog/collect-category/exportExcel',
-  list = '/pg2lq/manage/blog/collect-category/query',
-  physicalDeletion = '/pg2lq/manage/blog/collect-category/physicalDeletion',
-  recovery = '/pg2lq/manage/blog/collect-category/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/blog/collect-category/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/blog/collect-category/selectNodePublic',
-  selectPublic = '/pg2lq/manage/blog/collect-category/selectPublic',
-  state = '/pg2lq/manage/blog/collect-category/state',
-  update = '/pg2lq/manage/blog/collect-category/update',
+  create = '/xianfu/manage/blog/collect-category/create',
+  delete = '/xianfu/manage/blog/collect-category/delete',
+  detail = '/xianfu/manage/blog/collect-category/detail/',
+  disable = '/xianfu/manage/blog/collect-category/disable',
+  enable = '/xianfu/manage/blog/collect-category/enable',
+  existName = '/xianfu/manage/blog/collect-category/existName',
+  exportExcel = '/xianfu/manage/blog/collect-category/exportExcel',
+  list = '/xianfu/manage/blog/collect-category/query',
+  physicalDeletion = '/xianfu/manage/blog/collect-category/physicalDeletion',
+  recovery = '/xianfu/manage/blog/collect-category/recovery',
+  selectNodeAllPublic = '/xianfu/manage/blog/collect-category/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/blog/collect-category/selectNodePublic',
+  selectPublic = '/xianfu/manage/blog/collect-category/selectPublic',
+  state = '/xianfu/manage/blog/collect-category/state',
+  update = '/xianfu/manage/blog/collect-category/update',
 }
 
 /**

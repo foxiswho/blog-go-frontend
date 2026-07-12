@@ -2,25 +2,25 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/ram/resource-authority/create',
-  createByGroup = '/pg2lq/sys/ram/resource-authority/createByGroup',
-  delete = '/pg2lq/sys/ram/resource-authority/delete',
-  detail = '/pg2lq/sys/ram/resource-authority/detail/',
-  disable = '/pg2lq/sys/ram/resource-authority/disable',
-  enable = '/pg2lq/sys/ram/resource-authority/enable',
-  existName = '/pg2lq/sys/ram/resource-authority/existName',
-  exportExcel = '/pg2lq/sys/ram/resource-authority/exportExcel',
-  list = '/pg2lq/sys/ram/resource-authority/query',
-  listByGroup = '/pg2lq/sys/ram/resource-authority/queryByGroup',
-  physicalDeletion = '/pg2lq/sys/ram/resource-authority/physicalDeletion',
-  recovery = '/pg2lq/sys/ram/resource-authority/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/ram/resource-authority/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/ram/resource-authority/selectNodePublic',
-  selectPublic = '/pg2lq/sys/ram/resource-authority/selectPublic',
-  selectCategoryPublic = '/pg2lq/sys/ram/resource-authority/selectCategoryPublic',
-  state = '/pg2lq/sys/ram/resource-authority/state',
-  update = '/pg2lq/sys/ram/resource-authority/update',
-  updateByRole = '/pg2lq/sys/ram/resource-authority/updateByRole',
+  create = '/xianfu/sys/ram/resource-authority/create',
+  createByGroup = '/xianfu/sys/ram/resource-authority/createByGroup',
+  delete = '/xianfu/sys/ram/resource-authority/delete',
+  detail = '/xianfu/sys/ram/resource-authority/detail/',
+  disable = '/xianfu/sys/ram/resource-authority/disable',
+  enable = '/xianfu/sys/ram/resource-authority/enable',
+  existName = '/xianfu/sys/ram/resource-authority/existName',
+  exportExcel = '/xianfu/sys/ram/resource-authority/exportExcel',
+  list = '/xianfu/sys/ram/resource-authority/query',
+  listByGroup = '/xianfu/sys/ram/resource-authority/queryByGroup',
+  physicalDeletion = '/xianfu/sys/ram/resource-authority/physicalDeletion',
+  recovery = '/xianfu/sys/ram/resource-authority/recovery',
+  selectNodeAllPublic = '/xianfu/sys/ram/resource-authority/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/ram/resource-authority/selectNodePublic',
+  selectPublic = '/xianfu/sys/ram/resource-authority/selectPublic',
+  selectCategoryPublic = '/xianfu/sys/ram/resource-authority/selectCategoryPublic',
+  state = '/xianfu/sys/ram/resource-authority/state',
+  update = '/xianfu/sys/ram/resource-authority/update',
+  updateByRole = '/xianfu/sys/ram/resource-authority/updateByRole',
 }
 
 /**
@@ -97,6 +97,16 @@ export const saveOrUpdate = (data: any, isUpdate: boolean) => {
  */
 export const createByGroup = (data: any) => {
   return requestClient.post(Api.createByGroup, data, {
+    errorMessageMode: 'message',
+    successMessageMode: 'notification',
+  });
+};
+/**
+ * 保存或者更新
+ * @param data
+ */
+export const createByMenu = (data: any) => {
+  return requestClient.post(Api.createByMenu, data, {
     errorMessageMode: 'message',
     successMessageMode: 'notification',
   });

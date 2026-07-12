@@ -13,11 +13,11 @@ export default defineConfig(async () => {
             target: 'http://localhost:5320/api',
             ws: true,
           },
-          '/pg2lq': {
+          '/xianfu': {
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/pg2lq/, ''),
+            rewrite: (path) => path.replace(/^\/xianfu/, ''),
             // 博客目标地址
-            target: 'http://localhost:9981/pg2lq',
+            target: 'http://localhost:9981/xianfu',
             ws: true,
           },
         },

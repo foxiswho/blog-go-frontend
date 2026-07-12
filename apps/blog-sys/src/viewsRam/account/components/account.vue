@@ -4,6 +4,7 @@ import { h } from 'vue';
 import { useVbenModal, VbenButton } from '@vben/common-ui';
 
 import { usePgForm } from '#/adapter';
+import dayjs from 'dayjs';
 
 import {
   existAccount,
@@ -13,6 +14,7 @@ import {
   saveOrUpdateAccount, existCode,
 } from '../api';
 import {selectNodePublicCountryCode} from "#/viewsBasic/country/api";
+import {getNanoidNumber} from "@pg/utils";
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -37,7 +39,6 @@ const [Form, formApi] = usePgForm({
           VbenButton,
           {
             class:'pg-button-size-small',
-            size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existAccount(values.account, values.id);
@@ -46,21 +47,21 @@ const [Form, formApi] = usePgForm({
           () => h('span', { class: 'font-normal' }, '查重'),
         ),
     },
-    {
-      tabGroup: 'home',
-      fieldName: 'countryCode',
-      label: '国际区号',
-      component: 'PgTreeSelect',
-      defaultValue: '86',
-      componentProps: {
-        api: selectNodePublicCountryCode,
-        params: {},
-        props: {
-          filterable: true,
-          placeholder: '请选择',
-        },
-      },
-    },
+    // {
+    //   tabGroup: 'home',
+    //   fieldName: 'countryCode',
+    //   label: '国际区号',
+    //   component: 'PgTreeSelect',
+    //   defaultValue: '86',
+    //   componentProps: {
+    //     api: selectNodePublicCountryCode,
+    //     params: {},
+    //     props: {
+    //       filterable: true,
+    //       placeholder: '请选择',
+    //     },
+    //   },
+    // },
     {
       tabGroup: 'home',
       fieldName: 'phone',
@@ -72,13 +73,33 @@ const [Form, formApi] = usePgForm({
           VbenButton,
           {
             class:'pg-button-size-small',
-            size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existPhone(values.phone, values.id);
             },
           },
           () => h('span', { class: 'font-normal' }, '查重'),
+        ),
+      description: () =>
+        h(
+          VbenButton,
+          {
+            variant: 'link',
+            class:'pg-button-size-small',
+            onClick: async (e) => {
+              const values = await formApi.getValues();
+              const str = getNanoidNumber(10)
+              const phone = `1${str}`;
+              formApi.setFieldValue('phone',phone)
+              if(!values.mail){
+                formApi.setFieldValue('mail',phone+'@ajs.com')
+              }
+              if(!values.code){
+                formApi.setFieldValue('code',phone)
+              }
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '随机生成手机号'),
         ),
     },
     {
@@ -92,7 +113,6 @@ const [Form, formApi] = usePgForm({
           VbenButton,
           {
             class:'pg-button-size-small',
-            size: 'medium',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existMail(values.mail, values.id);
@@ -139,6 +159,17 @@ const [Form, formApi] = usePgForm({
         //     console.log('OnUpdateValue', value, formattedValue)
         // }
       },
+      suffix: () =>
+        h(
+          VbenButton,
+          {
+            class:'pg-button-size-small',
+            onClick: async (e) => {
+              formApi.setFieldValue('registerTime',dayjs().format('YYYY-MM-DD HH:mm:ss'))
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '此刻'),
+        ),
     },
     {
       fieldName: 'id',
@@ -171,10 +202,13 @@ const [Modal, modalApi] = useVbenModal({
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
       const { values, isUpdate } = modalApi.getData<Record<string, any>>();
-      if (values) {
-        formApi.setValues(values);
+      if (values && Object.keys(values).length > 0) {
+        formApi.setValues({
+          ...values,
+        });
+      } else {
+        formApi.setFieldValue('registerTime',dayjs().format('YYYY-MM-DD HH:mm:ss'))
       }
-
       modalApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}` });
     }
   },

@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/blog/topic-category/create',
-  delete = '/pg2lq/manage/blog/topic-category/delete',
-  detail = '/pg2lq/manage/blog/topic-category/detail/',
-  disable = '/pg2lq/manage/blog/topic-category/disable',
-  enable = '/pg2lq/manage/blog/topic-category/enable',
-  existName = '/pg2lq/manage/blog/topic-category/existName',
-  exportExcel = '/pg2lq/manage/blog/topic-category/exportExcel',
-  list = '/pg2lq/manage/blog/topic-category/query',
-  physicalDeletion = '/pg2lq/manage/blog/topic-category/physicalDeletion',
-  recovery = '/pg2lq/manage/blog/topic-category/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/blog/topic-category/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/blog/topic-category/selectNodePublic',
-  selectPublic = '/pg2lq/manage/blog/topic-category/selectPublic',
-  state = '/pg2lq/manage/blog/topic-category/state',
-  update = '/pg2lq/manage/blog/topic-category/update',
+  create = '/xianfu/manage/blog/topic-category/create',
+  delete = '/xianfu/manage/blog/topic-category/delete',
+  detail = '/xianfu/manage/blog/topic-category/detail/',
+  disable = '/xianfu/manage/blog/topic-category/disable',
+  enable = '/xianfu/manage/blog/topic-category/enable',
+  existName = '/xianfu/manage/blog/topic-category/existName',
+  exportExcel = '/xianfu/manage/blog/topic-category/exportExcel',
+  list = '/xianfu/manage/blog/topic-category/query',
+  physicalDeletion = '/xianfu/manage/blog/topic-category/physicalDeletion',
+  recovery = '/xianfu/manage/blog/topic-category/recovery',
+  selectNodeAllPublic = '/xianfu/manage/blog/topic-category/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/blog/topic-category/selectNodePublic',
+  selectPublic = '/xianfu/manage/blog/topic-category/selectPublic',
+  state = '/xianfu/manage/blog/topic-category/state',
+  update = '/xianfu/manage/blog/topic-category/update',
 }
 
 /**

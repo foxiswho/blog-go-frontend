@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/blog/topic/create',
-  delete = '/pg2lq/manage/blog/topic/delete',
-  detail = '/pg2lq/manage/blog/topic/detail/',
-  disable = '/pg2lq/manage/blog/topic/disable',
-  enable = '/pg2lq/manage/blog/topic/enable',
-  existName = '/pg2lq/manage/blog/topic/existName',
-  existCode = '/pg2lq/manage/blog/topic/existCode',
-  exportExcel = '/pg2lq/manage/blog/topic/exportExcel',
-  list = '/pg2lq/manage/blog/topic/query',
-  physicalDeletion = '/pg2lq/manage/blog/topic/physicalDeletion',
-  recovery = '/pg2lq/manage/blog/topic/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/blog/topic/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/blog/topic/selectNodePublic',
-  selectPublic = '/pg2lq/manage/blog/topic/selectPublic',
-  state = '/pg2lq/manage/blog/topic/state',
-  update = '/pg2lq/manage/blog/topic/update',
+  create = '/xianfu/manage/blog/topic/create',
+  delete = '/xianfu/manage/blog/topic/delete',
+  detail = '/xianfu/manage/blog/topic/detail/',
+  disable = '/xianfu/manage/blog/topic/disable',
+  enable = '/xianfu/manage/blog/topic/enable',
+  existName = '/xianfu/manage/blog/topic/existName',
+  existCode = '/xianfu/manage/blog/topic/existCode',
+  exportExcel = '/xianfu/manage/blog/topic/exportExcel',
+  list = '/xianfu/manage/blog/topic/query',
+  physicalDeletion = '/xianfu/manage/blog/topic/physicalDeletion',
+  recovery = '/xianfu/manage/blog/topic/recovery',
+  selectNodeAllPublic = '/xianfu/manage/blog/topic/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/blog/topic/selectNodePublic',
+  selectPublic = '/xianfu/manage/blog/topic/selectPublic',
+  state = '/xianfu/manage/blog/topic/state',
+  update = '/xianfu/manage/blog/topic/update',
 }
 
 /**

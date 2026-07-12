@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/basic/explain-category/create',
-  delete = '/pg2lq/sys/basic/explain-category/delete',
-  detail = '/pg2lq/sys/basic/explain-category/detail/',
-  disable = '/pg2lq/sys/basic/explain-category/disable',
-  enable = '/pg2lq/sys/basic/explain-category/enable',
-  existName = '/pg2lq/sys/basic/explain-category/existName',
-  exportExcel = '/pg2lq/sys/basic/explain-category/exportExcel',
-  list = '/pg2lq/sys/basic/explain-category/query',
-  physicalDeletion = '/pg2lq/sys/basic/explain-category/physicalDeletion',
-  recovery = '/pg2lq/sys/basic/explain-category/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/basic/explain-category/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/explain-category/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/explain-category/selectPublic',
-  state = '/pg2lq/sys/basic/explain-category/state',
-  update = '/pg2lq/sys/basic/explain-category/update',
+  create = '/xianfu/sys/basic/explain-category/create',
+  delete = '/xianfu/sys/basic/explain-category/delete',
+  detail = '/xianfu/sys/basic/explain-category/detail/',
+  disable = '/xianfu/sys/basic/explain-category/disable',
+  enable = '/xianfu/sys/basic/explain-category/enable',
+  existName = '/xianfu/sys/basic/explain-category/existName',
+  exportExcel = '/xianfu/sys/basic/explain-category/exportExcel',
+  list = '/xianfu/sys/basic/explain-category/query',
+  physicalDeletion = '/xianfu/sys/basic/explain-category/physicalDeletion',
+  recovery = '/xianfu/sys/basic/explain-category/recovery',
+  selectNodeAllPublic = '/xianfu/sys/basic/explain-category/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/basic/explain-category/selectNodePublic',
+  selectPublic = '/xianfu/sys/basic/explain-category/selectPublic',
+  state = '/xianfu/sys/basic/explain-category/state',
+  update = '/xianfu/sys/basic/explain-category/update',
 }
 
 /**

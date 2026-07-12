@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  all = '/pg2lq/manage/basic/tags-relation/all',
-  create = '/pg2lq/manage/basic/tags-relation/create',
-  delete = '/pg2lq/manage/basic/tags-relation/delete',
-  detail = '/pg2lq/manage/basic/tags-relation/detail/',
-  disable = '/pg2lq/manage/basic/tags-relation/disable',
-  enable = '/pg2lq/manage/basic/tags-relation/enable',
-  existName = '/pg2lq/manage/basic/tags-relation/existName',
-  exportExcel = '/pg2lq/manage/basic/tags-relation/exportExcel',
-  list = '/pg2lq/manage/basic/tags-relation/query',
-  physicalDeletion = '/pg2lq/manage/basic/tags-relation/physicalDeletion',
-  recovery = '/pg2lq/manage/basic/tags-relation/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/basic/tags-relation/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/basic/tags-relation/selectNodePublic',
-  selectPublic = '/pg2lq/manage/basic/tags-relation/selectPublic',
-  state = '/pg2lq/manage/basic/tags-relation/state',
-  update = '/pg2lq/manage/basic/tags-relation/update',
+  all = '/xianfu/manage/basic/tags-relation/all',
+  create = '/xianfu/manage/basic/tags-relation/create',
+  delete = '/xianfu/manage/basic/tags-relation/delete',
+  detail = '/xianfu/manage/basic/tags-relation/detail/',
+  disable = '/xianfu/manage/basic/tags-relation/disable',
+  enable = '/xianfu/manage/basic/tags-relation/enable',
+  existName = '/xianfu/manage/basic/tags-relation/existName',
+  exportExcel = '/xianfu/manage/basic/tags-relation/exportExcel',
+  list = '/xianfu/manage/basic/tags-relation/query',
+  physicalDeletion = '/xianfu/manage/basic/tags-relation/physicalDeletion',
+  recovery = '/xianfu/manage/basic/tags-relation/recovery',
+  selectNodeAllPublic = '/xianfu/manage/basic/tags-relation/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/basic/tags-relation/selectNodePublic',
+  selectPublic = '/xianfu/manage/basic/tags-relation/selectPublic',
+  state = '/xianfu/manage/basic/tags-relation/state',
+  update = '/xianfu/manage/basic/tags-relation/update',
 }
 
 /**

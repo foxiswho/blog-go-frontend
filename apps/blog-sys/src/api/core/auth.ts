@@ -25,7 +25,7 @@ export namespace AuthApi {
  * 登录
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  return requestClient.post<AuthApi.LoginResult>('/pg2lq/auth/sys/login', {
+  return requestClient.post<AuthApi.LoginResult>('/xianfu/auth/sys/login', {
     account: data.username,
     ...data,
   });
@@ -36,7 +36,7 @@ export async function loginApi(data: AuthApi.LoginParams) {
  */
 export async function refreshTokenApi() {
   return baseRequestClient.post<AuthApi.RefreshTokenResult>(
-    '/pg2lq/auth/sys/refresh',
+    '/xianfu/auth/sys/refresh',
     {
       withCredentials: true,
     },
@@ -47,7 +47,7 @@ export async function refreshTokenApi() {
  * 退出登录
  */
 export async function logoutApi() {
-  return baseRequestClient.post('/pg2lq/auth/sys/logout', {
+  return baseRequestClient.post('/xianfu/auth/sys/logout', {
     withCredentials: true,
   });
 }

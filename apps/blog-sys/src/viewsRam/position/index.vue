@@ -66,7 +66,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(toRaw(params));
+    gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }

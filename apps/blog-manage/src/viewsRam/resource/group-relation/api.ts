@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/iam/resource-group-relation/create',
-  delete = '/pg2lq/manage/iam/resource-group-relation/delete',
-  detail = '/pg2lq/manage/iam/resource-group-relation/detail/',
-  disable = '/pg2lq/manage/iam/resource-group-relation/disable',
-  enable = '/pg2lq/manage/iam/resource-group-relation/enable',
-  existName = '/pg2lq/manage/iam/resource-group-relation/existName',
-  exportExcel = '/pg2lq/manage/iam/resource-group-relation/exportExcel',
-  list = '/pg2lq/manage/iam/resource-group-relation/query',
-  physicalDeletion = '/pg2lq/manage/iam/resource-group-relation/physicalDeletion',
-  recovery = '/pg2lq/manage/iam/resource-group-relation/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/iam/resource-group-relation/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/iam/resource-group-relation/selectNodePublic',
-  selectPublic = '/pg2lq/manage/iam/resource-group-relation/selectPublic',
-  state = '/pg2lq/manage/iam/resource-group-relation/state',
-  update = '/pg2lq/manage/iam/resource-group-relation/update',
-  selectedByRole = '/pg2lq/manage/iam/resource-group-relation/selectedByRole',
+  create = '/xianfu/manage/iam/resource-group-relation/create',
+  delete = '/xianfu/manage/iam/resource-group-relation/delete',
+  detail = '/xianfu/manage/iam/resource-group-relation/detail/',
+  disable = '/xianfu/manage/iam/resource-group-relation/disable',
+  enable = '/xianfu/manage/iam/resource-group-relation/enable',
+  existName = '/xianfu/manage/iam/resource-group-relation/existName',
+  exportExcel = '/xianfu/manage/iam/resource-group-relation/exportExcel',
+  list = '/xianfu/manage/iam/resource-group-relation/query',
+  physicalDeletion = '/xianfu/manage/iam/resource-group-relation/physicalDeletion',
+  recovery = '/xianfu/manage/iam/resource-group-relation/recovery',
+  selectNodeAllPublic = '/xianfu/manage/iam/resource-group-relation/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/iam/resource-group-relation/selectNodePublic',
+  selectPublic = '/xianfu/manage/iam/resource-group-relation/selectPublic',
+  state = '/xianfu/manage/iam/resource-group-relation/state',
+  update = '/xianfu/manage/iam/resource-group-relation/update',
+  selectedByRole = '/xianfu/manage/iam/resource-group-relation/selectedByRole',
 }
 
 /**

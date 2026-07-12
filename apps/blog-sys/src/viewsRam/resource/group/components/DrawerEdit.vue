@@ -9,6 +9,7 @@ import { usePgForm, useVbenForm } from '#/adapter';
 
 import { existName, saveOrUpdate, selectCategory } from '../api';
 import {RamResourceType, RamResourceTypeAttr} from "@pg/types";
+import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -19,6 +20,20 @@ const [Form, formApi] = usePgForm({
     ],
   },
   schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'terminalCode',
+      label: '接入类型',
+      component: 'ApiRadioGroup',
+      componentProps: {
+        api: typeCodePublic,
+        params: {typeCode:'terminalCode'},
+        autoSelect: 'first',
+        optionType: 'button',
+        buttonStyle: 'solid',
+      },
+      rules: 'required',
+    },
     {
       tabGroup: 'home',
       fieldName: 'parentNo',
@@ -39,6 +54,7 @@ const [Form, formApi] = usePgForm({
       fieldName: 'name',
       label: '名称',
       component: 'Input',
+      defaultValue: '',
       rules: 'required',
       componentProps: {
         placeholder: '请输入',
@@ -159,7 +175,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
       });
       const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
       if (values) {
-        formApi.setValues(values);
+        formApi.setValues({
+          ...values,
+        });
       }
 
       drawerApi.setState({ title: `分组：${isUpdate ? '编辑' : '新增'}` ,loading: false});

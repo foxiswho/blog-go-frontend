@@ -2,21 +2,21 @@ import {dialog, message} from '#/adapter';
 import {requestClient} from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/basic/country/create',
-  createUpdate = '/pg2lq/sys/basic/country/createUpdate',
-  delete = '/pg2lq/sys/basic/country/delete',
-  detail = '/pg2lq/sys/basic/country/detail/',
-  disable = '/pg2lq/sys/basic/country/disable',
-  enable = '/pg2lq/sys/basic/country/enable',
-  existName = '/pg2lq/sys/basic/country/existName',
-  exportExcel = '/pg2lq/sys/basic/country/exportExcel',
-  list = '/pg2lq/sys/basic/country/query',
-  physicalDeletion = '/pg2lq/sys/basic/country/physicalDeletion',
-  recovery = '/pg2lq/sys/basic/country/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/basic/country/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/country/selectNodePublic',
-  selectPublicCountryCode = '/pg2lq/sys/basic/country/selectPublicCountryCode',
-  selectNodePublicCountryCode = '/pg2lq/sys/basic/country/selectNodePublicCountryCode',
+  create = '/xianfu/sys/basic/country/create',
+  createUpdate = '/xianfu/sys/basic/country/createUpdate',
+  delete = '/xianfu/sys/basic/country/delete',
+  detail = '/xianfu/sys/basic/country/detail/',
+  disable = '/xianfu/sys/basic/country/disable',
+  enable = '/xianfu/sys/basic/country/enable',
+  existName = '/xianfu/sys/basic/country/existName',
+  exportExcel = '/xianfu/sys/basic/country/exportExcel',
+  list = '/xianfu/sys/basic/country/query',
+  physicalDeletion = '/xianfu/sys/basic/country/physicalDeletion',
+  recovery = '/xianfu/sys/basic/country/recovery',
+  selectNodeAllPublic = '/xianfu/sys/basic/country/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/basic/country/selectNodePublic',
+  selectPublicCountryCode = '/xianfu/sys/basic/country/selectPublicCountryCode',
+  selectNodePublicCountryCode = '/xianfu/sys/basic/country/selectNodePublicCountryCode',
 }
 
 /**

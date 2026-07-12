@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/basic/data-snapshot/create',
-  delete = '/pg2lq/sys/basic/data-snapshot/delete',
-  detail = '/pg2lq/sys/basic/data-snapshot/detail/',
-  disable = '/pg2lq/sys/basic/data-snapshot/disable',
-  enable = '/pg2lq/sys/basic/data-snapshot/enable',
-  existName = '/pg2lq/sys/basic/data-snapshot/existName',
-  exportExcel = '/pg2lq/sys/basic/data-snapshot/exportExcel',
-  list = '/pg2lq/sys/basic/data-snapshot/query',
-  physicalDeletion = '/pg2lq/sys/basic/data-snapshot/physicalDeletion',
-  recovery = '/pg2lq/sys/basic/data-snapshot/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/basic/data-snapshot/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/data-snapshot/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/data-snapshot/selectPublic',
-  state = '/pg2lq/sys/basic/data-snapshot/state',
-  update = '/pg2lq/sys/basic/data-snapshot/update',
+  create = '/xianfu/sys/basic/data-snapshot/create',
+  delete = '/xianfu/sys/basic/data-snapshot/delete',
+  detail = '/xianfu/sys/basic/data-snapshot/detail/',
+  disable = '/xianfu/sys/basic/data-snapshot/disable',
+  enable = '/xianfu/sys/basic/data-snapshot/enable',
+  existName = '/xianfu/sys/basic/data-snapshot/existName',
+  exportExcel = '/xianfu/sys/basic/data-snapshot/exportExcel',
+  list = '/xianfu/sys/basic/data-snapshot/query',
+  physicalDeletion = '/xianfu/sys/basic/data-snapshot/physicalDeletion',
+  recovery = '/xianfu/sys/basic/data-snapshot/recovery',
+  selectNodeAllPublic = '/xianfu/sys/basic/data-snapshot/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/basic/data-snapshot/selectNodePublic',
+  selectPublic = '/xianfu/sys/basic/data-snapshot/selectPublic',
+  state = '/xianfu/sys/basic/data-snapshot/state',
+  update = '/xianfu/sys/basic/data-snapshot/update',
 }
 
 /**

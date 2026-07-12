@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/basic/area/create',
-  delete = '/pg2lq/sys/basic/area/delete',
-  detail = '/pg2lq/sys/basic/area/detail/',
-  disable = '/pg2lq/sys/basic/area/disable',
-  enable = '/pg2lq/sys/basic/area/enable',
-  existName = '/pg2lq/sys/basic/area/existName',
-  existCode = '/pg2lq/sys/basic/area/existCode',
-  exportExcel = '/pg2lq/sys/basic/area/exportExcel',
-  list = '/pg2lq/sys/basic/area/query',
-  physicalDeletion = '/pg2lq/sys/basic/area/physicalDeletion',
-  recovery = '/pg2lq/sys/basic/area/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/basic/area/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/basic/area/selectNodePublic',
-  selectPublic = '/pg2lq/sys/basic/area/selectPublic',
-  state = '/pg2lq/sys/basic/area/state',
-  update = '/pg2lq/sys/basic/area/update',
+  create = '/xianfu/sys/basic/area/create',
+  delete = '/xianfu/sys/basic/area/delete',
+  detail = '/xianfu/sys/basic/area/detail/',
+  disable = '/xianfu/sys/basic/area/disable',
+  enable = '/xianfu/sys/basic/area/enable',
+  existName = '/xianfu/sys/basic/area/existName',
+  existCode = '/xianfu/sys/basic/area/existCode',
+  exportExcel = '/xianfu/sys/basic/area/exportExcel',
+  list = '/xianfu/sys/basic/area/query',
+  physicalDeletion = '/xianfu/sys/basic/area/physicalDeletion',
+  recovery = '/xianfu/sys/basic/area/recovery',
+  selectNodeAllPublic = '/xianfu/sys/basic/area/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/basic/area/selectNodePublic',
+  selectPublic = '/xianfu/sys/basic/area/selectPublic',
+  state = '/xianfu/sys/basic/area/state',
+  update = '/xianfu/sys/basic/area/update',
 }
 
 /**

@@ -17,15 +17,14 @@ import type {
   VxeGridProps,
 } from 'vxe-table';
 
-import DrawerEdit from './components/DrawerEdit.vue';
-import {columns, columnsRouter} from './data';
+import {columnsRouter} from './data';
 import {$t} from "@vben/locales";
 import {IFrameView} from "#/layouts";
 
 const accessStore = useAccessStore();
 
 function flattenAccessMenus(menus: MenuRecordRaw[]): any[] {
-  console.log('menus 22222',menus)
+  //console.log('menus 22222',menus)
   for (const menu of menus) {
     const hasChildren = menu.children && menu.children.length > 0;
     let typeMenu = hasChildren ? 'catalog' : 'menu';
@@ -60,13 +59,9 @@ function flattenAccessMenus(menus: MenuRecordRaw[]): any[] {
       flattenAccessMenus(menu.children!);
     }
   }
-  console.log('menus',menus)
+  //console.log('menus',menus)
   return menus;
 }
-
-const [Drawer, drawerApi] = useVbenDrawer({
-  connectedComponent: DrawerEdit,
-});
 
 const xGrid = ref<VxeGridInstance<RowVO>>();
 const gridOptions = reactive<VxeGridProps<RowVO>>({
@@ -112,7 +107,9 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
       // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
       query: () => {
         const data = flattenAccessMenus(accessStore.accessRoutes);
-        return Promise.resolve({ items: data });
+        // console.log('accessStore.accessRoutes',accessStore.accessRoutes)
+        // console.log('data',data)
+        return Promise.resolve({ data: data });
       },
     },
   },

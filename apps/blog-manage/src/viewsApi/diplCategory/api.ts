@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/api/dipl-category/create',
-  delete = '/pg2lq/manage/api/dipl-category/delete',
-  detail = '/pg2lq/manage/api/dipl-category/detail/',
-  disable = '/pg2lq/manage/api/dipl-category/disable',
-  enable = '/pg2lq/manage/api/dipl-category/enable',
-  existName = '/pg2lq/manage/api/dipl-category/existName',
-  exportExcel = '/pg2lq/manage/api/dipl-category/exportExcel',
-  list = '/pg2lq/manage/api/dipl-category/query',
-  physicalDeletion = '/pg2lq/manage/api/dipl-category/physicalDeletion',
-  recovery = '/pg2lq/manage/api/dipl-category/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/api/dipl-category/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/api/dipl-category/selectNodePublic',
-  selectPublic = '/pg2lq/manage/api/dipl-category/selectPublic',
-  state = '/pg2lq/manage/api/dipl-category/state',
-  update = '/pg2lq/manage/api/dipl-category/update',
+  create = '/xianfu/manage/api/dipl-category/create',
+  delete = '/xianfu/manage/api/dipl-category/delete',
+  detail = '/xianfu/manage/api/dipl-category/detail/',
+  disable = '/xianfu/manage/api/dipl-category/disable',
+  enable = '/xianfu/manage/api/dipl-category/enable',
+  existName = '/xianfu/manage/api/dipl-category/existName',
+  exportExcel = '/xianfu/manage/api/dipl-category/exportExcel',
+  list = '/xianfu/manage/api/dipl-category/query',
+  physicalDeletion = '/xianfu/manage/api/dipl-category/physicalDeletion',
+  recovery = '/xianfu/manage/api/dipl-category/recovery',
+  selectNodeAllPublic = '/xianfu/manage/api/dipl-category/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/api/dipl-category/selectNodePublic',
+  selectPublic = '/xianfu/manage/api/dipl-category/selectPublic',
+  state = '/xianfu/manage/api/dipl-category/state',
+  update = '/xianfu/manage/api/dipl-category/update',
 }
 
 /**

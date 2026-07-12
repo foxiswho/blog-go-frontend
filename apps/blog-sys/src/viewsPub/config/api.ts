@@ -3,7 +3,7 @@ import { useAccessStore } from "@vben/stores";
 import { requestClient } from '#/api/request';
 
 enum Api {
-  config = '/pg2lq/pub/config',
+  config = '/xianfu/pub/config',
 }
 
 /**

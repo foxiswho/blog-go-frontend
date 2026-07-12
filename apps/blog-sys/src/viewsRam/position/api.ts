@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/ram/position/create',
-  createUpdate = '/pg2lq/sys/ram/position/createUpdate',
-  delete = '/pg2lq/sys/ram/position/delete',
-  detail = '/pg2lq/sys/ram/position/detail/',
-  disable = '/pg2lq/sys/ram/position/disable',
-  enable = '/pg2lq/sys/ram/position/enable',
-  existName = '/pg2lq/sys/ram/position/existName',
-  exportExcel = '/pg2lq/sys/ram/position/exportExcel',
-  list = '/pg2lq/sys/ram/position/query',
-  physicalDeletion = '/pg2lq/sys/ram/position/physicalDeletion',
-  recovery = '/pg2lq/sys/ram/position/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/ram/position/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/ram/position/selectNodePublic',
-  selectPublic = '/pg2lq/sys/ram/position/selectPublic',
-  state = '/pg2lq/sys/ram/position/state',
-  update = '/pg2lq/sys/ram/position/update',
+  create = '/xianfu/sys/ram/position/create',
+  createUpdate = '/xianfu/sys/ram/position/createUpdate',
+  delete = '/xianfu/sys/ram/position/delete',
+  detail = '/xianfu/sys/ram/position/detail/',
+  disable = '/xianfu/sys/ram/position/disable',
+  enable = '/xianfu/sys/ram/position/enable',
+  existName = '/xianfu/sys/ram/position/existName',
+  exportExcel = '/xianfu/sys/ram/position/exportExcel',
+  list = '/xianfu/sys/ram/position/query',
+  physicalDeletion = '/xianfu/sys/ram/position/physicalDeletion',
+  recovery = '/xianfu/sys/ram/position/recovery',
+  selectNodeAllPublic = '/xianfu/sys/ram/position/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/ram/position/selectNodePublic',
+  selectPublic = '/xianfu/sys/ram/position/selectPublic',
+  state = '/xianfu/sys/ram/position/state',
+  update = '/xianfu/sys/ram/position/update',
 }
 
 /**

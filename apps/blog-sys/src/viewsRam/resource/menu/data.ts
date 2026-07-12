@@ -56,10 +56,10 @@ export const typeMenuOptions = () => {
 export const columns: VxeGridPropTypes.Columns = [
   // { type: 'seq', width: 70,fixed: 'left', },
   {
-    field: 'label',
+    field: 'name',
     title: '名称',
-    align: 'left',
     fixed: 'left',
+    align: 'left',
     treeNode: true,
     slots: { default: 'title' },
     minWidth: 250,
@@ -82,6 +82,17 @@ export const columns: VxeGridPropTypes.Columns = [
   },
   { field: 'path', title: '路由地址', width: 160 },
   { field: 'component', title: '页面组件', width: 160 },
+  {
+    field: 'terminalCode',
+    title: '终端类型',
+    width: 90,
+    visible: false,
+  },
+  {
+    field: 'terminalCodeName',
+    title: '终端类型',
+    width: 90,
+  },
   {
     field: 'state',
     title: '状态',
@@ -142,7 +153,7 @@ export const columnsRouter: VxeGridPropTypes.Columns = [
     width: 80,
   },
   {
-    field: 'extend.authCode',
+    field: 'authCode',
     title: '授权码',
     width: 200,
   },

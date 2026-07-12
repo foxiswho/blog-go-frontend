@@ -72,16 +72,18 @@ async function gridQuery(params: Record<string, any> = {}) {
     console.error('Error occurred while reloading:', error);
   }
 }
-
 /**
  * 刷新表格
  */
 async function onRefresh() {
-  const formValues = await gridApi.formApi.getValues();
-  gridApi.formApi.setLatestSubmissionValues(formValues);
-  gridQuery(formValues);
+  try {
+    const formValues = await gridApi.formApi.getValues();
+    gridApi.formApi.setLatestSubmissionValues(formValues);
+    gridQuery(formValues);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
-
 /**
  * 新增
  */

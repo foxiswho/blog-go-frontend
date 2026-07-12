@@ -3,7 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { toRaw } from 'vue';
 
-import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
+import { Page, useVbenDrawer,useVbenModal, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { dialog, message } from '#/adapter';
@@ -26,7 +26,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 
-const [ModalResourceGroup, modalApiResourceGroup] = useVbenDrawer({
+const [ModalResourceGroup, modalApiResourceGroup] = useVbenModal({
   connectedComponent: ResourceGroupList,
   destroyOnClose: true,
 });
@@ -234,8 +234,7 @@ const onAuth = (row: any) => {
     // 表单值
     values: row,
     isUpdate: true,
-  });
-  modalApiResourceGroup.open();
+  }).open();
 };
 </script>
 

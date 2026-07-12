@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/mc/logistics/create',
-  delete = '/pg2lq/sys/mc/logistics/delete',
-  detail = '/pg2lq/sys/mc/logistics/detail/',
-  disable = '/pg2lq/sys/mc/logistics/disable',
-  enable = '/pg2lq/sys/mc/logistics/enable',
-  existName = '/pg2lq/sys/mc/logistics/existName',
-  existCode = '/pg2lq/sys/mc/logistics/existCode',
-  exportExcel = '/pg2lq/sys/mc/logistics/exportExcel',
-  list = '/pg2lq/sys/mc/logistics/query',
-  physicalDeletion = '/pg2lq/sys/mc/logistics/physicalDeletion',
-  recovery = '/pg2lq/sys/mc/logistics/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/mc/logistics/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/mc/logistics/selectNodePublic',
-  selectPublic = '/pg2lq/sys/mc/logistics/selectPublic',
-  state = '/pg2lq/sys/mc/logistics/state',
-  update = '/pg2lq/sys/mc/logistics/update',
+  create = '/xianfu/sys/mc/logistics/create',
+  delete = '/xianfu/sys/mc/logistics/delete',
+  detail = '/xianfu/sys/mc/logistics/detail/',
+  disable = '/xianfu/sys/mc/logistics/disable',
+  enable = '/xianfu/sys/mc/logistics/enable',
+  existName = '/xianfu/sys/mc/logistics/existName',
+  existCode = '/xianfu/sys/mc/logistics/existCode',
+  exportExcel = '/xianfu/sys/mc/logistics/exportExcel',
+  list = '/xianfu/sys/mc/logistics/query',
+  physicalDeletion = '/xianfu/sys/mc/logistics/physicalDeletion',
+  recovery = '/xianfu/sys/mc/logistics/recovery',
+  selectNodeAllPublic = '/xianfu/sys/mc/logistics/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/mc/logistics/selectNodePublic',
+  selectPublic = '/xianfu/sys/mc/logistics/selectPublic',
+  state = '/xianfu/sys/mc/logistics/state',
+  update = '/xianfu/sys/mc/logistics/update',
 }
 
 /**

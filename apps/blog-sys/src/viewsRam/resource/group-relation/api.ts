@@ -2,22 +2,22 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/ram/resource-group-relation/create',
-  delete = '/pg2lq/sys/ram/resource-group-relation/delete',
-  detail = '/pg2lq/sys/ram/resource-group-relation/detail/',
-  disable = '/pg2lq/sys/ram/resource-group-relation/disable',
-  enable = '/pg2lq/sys/ram/resource-group-relation/enable',
-  existName = '/pg2lq/sys/ram/resource-group-relation/existName',
-  exportExcel = '/pg2lq/sys/ram/resource-group-relation/exportExcel',
-  list = '/pg2lq/sys/ram/resource-group-relation/query',
-  physicalDeletion = '/pg2lq/sys/ram/resource-group-relation/physicalDeletion',
-  recovery = '/pg2lq/sys/ram/resource-group-relation/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/ram/resource-group-relation/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/ram/resource-group-relation/selectNodePublic',
-  selectPublic = '/pg2lq/sys/ram/resource-group-relation/selectPublic',
-  state = '/pg2lq/sys/ram/resource-group-relation/state',
-  update = '/pg2lq/sys/ram/resource-group-relation/update',
-  selectedByRole = '/pg2lq/sys/ram/resource-group-relation/selectedByRole',
+  create = '/xianfu/sys/ram/resource-group-relation/create',
+  delete = '/xianfu/sys/ram/resource-group-relation/delete',
+  detail = '/xianfu/sys/ram/resource-group-relation/detail/',
+  disable = '/xianfu/sys/ram/resource-group-relation/disable',
+  enable = '/xianfu/sys/ram/resource-group-relation/enable',
+  existName = '/xianfu/sys/ram/resource-group-relation/existName',
+  exportExcel = '/xianfu/sys/ram/resource-group-relation/exportExcel',
+  list = '/xianfu/sys/ram/resource-group-relation/query',
+  physicalDeletion = '/xianfu/sys/ram/resource-group-relation/physicalDeletion',
+  recovery = '/xianfu/sys/ram/resource-group-relation/recovery',
+  selectNodeAllPublic = '/xianfu/sys/ram/resource-group-relation/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/ram/resource-group-relation/selectNodePublic',
+  selectPublic = '/xianfu/sys/ram/resource-group-relation/selectPublic',
+  state = '/xianfu/sys/ram/resource-group-relation/state',
+  update = '/xianfu/sys/ram/resource-group-relation/update',
+  selectedByRole = '/xianfu/sys/ram/resource-group-relation/selectedByRole',
 }
 
 /**
@@ -258,4 +258,11 @@ export const existName = (wd, id?) => {
     { wd, id },
     { errorMessageMode: 'message', successMessageMode: 'notification' },
   );
+};
+/**
+ *
+ * @param data
+ */
+export const updateByRole = (data?: any) => {
+  return requestClient.post(Api.updateByRole, data);
 };

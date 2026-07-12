@@ -2,18 +2,18 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  createUpdate = '/pg2lq/sys/ram/role/createUpdate',
-  delete = '/pg2lq/sys/ram/role/delete',
-  detail = '/pg2lq/sys/ram/role/detail/',
-  disable = '/pg2lq/sys/ram/role/disable',
-  enable = '/pg2lq/sys/ram/role/enable',
-  existName = '/pg2lq/sys/ram/role/existName',
-  exportExcel = '/pg2lq/sys/ram/role/exportExcel',
-  list = '/pg2lq/sys/ram/role/query',
-  physicalDeletion = '/pg2lq/sys/ram/role/physicalDeletion',
-  recovery = '/pg2lq/sys/ram/role/recovery',
-  selectNodeAllPublic = '/pg2lq/sys/ram/role/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/sys/ram/role/selectNodePublic',
+  createUpdate = '/xianfu/sys/ram/role/createUpdate',
+  delete = '/xianfu/sys/ram/role/delete',
+  detail = '/xianfu/sys/ram/role/detail/',
+  disable = '/xianfu/sys/ram/role/disable',
+  enable = '/xianfu/sys/ram/role/enable',
+  existName = '/xianfu/sys/ram/role/existName',
+  exportExcel = '/xianfu/sys/ram/role/exportExcel',
+  list = '/xianfu/sys/ram/role/query',
+  physicalDeletion = '/xianfu/sys/ram/role/physicalDeletion',
+  recovery = '/xianfu/sys/ram/role/recovery',
+  selectNodeAllPublic = '/xianfu/sys/ram/role/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/sys/ram/role/selectNodePublic',
 }
 
 /**

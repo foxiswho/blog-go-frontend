@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/manage/basic/tags-category/create',
-  delete = '/pg2lq/manage/basic/tags-category/delete',
-  detail = '/pg2lq/manage/basic/tags-category/detail/',
-  disable = '/pg2lq/manage/basic/tags-category/disable',
-  enable = '/pg2lq/manage/basic/tags-category/enable',
-  existName = '/pg2lq/manage/basic/tags-category/existName',
-  exportExcel = '/pg2lq/manage/basic/tags-category/exportExcel',
-  list = '/pg2lq/manage/basic/tags-category/query',
-  physicalDeletion = '/pg2lq/manage/basic/tags-category/physicalDeletion',
-  recovery = '/pg2lq/manage/basic/tags-category/recovery',
-  selectNodeAllPublic = '/pg2lq/manage/basic/tags-category/selectNodeAllPublic',
-  selectNodePublic = '/pg2lq/manage/basic/tags-category/selectNodePublic',
-  selectPublic = '/pg2lq/manage/basic/tags-category/selectPublic',
-  state = '/pg2lq/manage/basic/tags-category/state',
-  update = '/pg2lq/manage/basic/tags-category/update',
+  create = '/xianfu/manage/basic/tags-category/create',
+  delete = '/xianfu/manage/basic/tags-category/delete',
+  detail = '/xianfu/manage/basic/tags-category/detail/',
+  disable = '/xianfu/manage/basic/tags-category/disable',
+  enable = '/xianfu/manage/basic/tags-category/enable',
+  existName = '/xianfu/manage/basic/tags-category/existName',
+  exportExcel = '/xianfu/manage/basic/tags-category/exportExcel',
+  list = '/xianfu/manage/basic/tags-category/query',
+  physicalDeletion = '/xianfu/manage/basic/tags-category/physicalDeletion',
+  recovery = '/xianfu/manage/basic/tags-category/recovery',
+  selectNodeAllPublic = '/xianfu/manage/basic/tags-category/selectNodeAllPublic',
+  selectNodePublic = '/xianfu/manage/basic/tags-category/selectNodePublic',
+  selectPublic = '/xianfu/manage/basic/tags-category/selectPublic',
+  state = '/xianfu/manage/basic/tags-category/state',
+  update = '/xianfu/manage/basic/tags-category/update',
 }
 
 /**

@@ -106,7 +106,7 @@ const [FormGrid, formApiGrid] = useVbenForm({
   showCollapseButton: true,
   handleSubmit: async () => {
     const formValues = await formApiGrid.getValues();
-    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    formApiGrid.setLatestSubmissionValues(formValues);
     gridQuery(formValues);
   },
   handleReset: async () => {
@@ -454,7 +454,7 @@ async function gridQuery(params: Record<string, any> = {}) {
 async function gridQuerySubmit() {
   try {
     const formValues = await formApiGrid.getValues();
-    formApiGrid.setLatestSubmissionValues(toRaw(formValues));
+    formApiGrid.setLatestSubmissionValues(formValues);
     await gridQuery(formValues);
   } catch (error) {
     console.error('Error occurred while reloading:', error);

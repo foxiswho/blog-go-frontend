@@ -2,20 +2,20 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/pg2lq/sys/tc/tenant/create',
-  createUpdate = '/pg2lq/sys/tc/tenant/createUpdate',
-  delete = '/pg2lq/sys/tc/tenant/delete',
-  detail = '/pg2lq/sys/tc/tenant/detail/',
-  disable = '/pg2lq/sys/tc/tenant/disable',
-  enable = '/pg2lq/sys/tc/tenant/enable',
-  existName = '/pg2lq/sys/tc/tenant/existName',
-  existCode = '/pg2lq/sys/tc/tenant/existCode',
-  exportExcel = '/pg2lq/sys/tc/tenant/exportExcel',
-  list = '/pg2lq/sys/tc/tenant/query',
-  physicalDeletion = '/pg2lq/sys/tc/tenant/physicalDeletion',
-  recovery = '/pg2lq/sys/tc/tenant/recovery',
-  selectNodeAll = '/pg2lq/sys/tc/tenant/selectNodeAll',
-  selectNodeAllPublic = '/pg2lq/sys/tc/tenant/selectNodeAllPublic',
+  create = '/xianfu/sys/tc/tenant/create',
+  createUpdate = '/xianfu/sys/tc/tenant/createUpdate',
+  delete = '/xianfu/sys/tc/tenant/delete',
+  detail = '/xianfu/sys/tc/tenant/detail/',
+  disable = '/xianfu/sys/tc/tenant/disable',
+  enable = '/xianfu/sys/tc/tenant/enable',
+  existName = '/xianfu/sys/tc/tenant/existName',
+  existCode = '/xianfu/sys/tc/tenant/existCode',
+  exportExcel = '/xianfu/sys/tc/tenant/exportExcel',
+  list = '/xianfu/sys/tc/tenant/query',
+  physicalDeletion = '/xianfu/sys/tc/tenant/physicalDeletion',
+  recovery = '/xianfu/sys/tc/tenant/recovery',
+  selectNodeAll = '/xianfu/sys/tc/tenant/selectNodeAll',
+  selectNodeAllPublic = '/xianfu/sys/tc/tenant/selectNodeAllPublic',
 }
 
 /**

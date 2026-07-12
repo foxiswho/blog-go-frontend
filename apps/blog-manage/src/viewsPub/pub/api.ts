@@ -2,8 +2,8 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  updatePassword = '/pg2lq/manage/public/password',
-  envInfoPublic = '/pg2lq/manage/public/envInfoPublic',
+  updatePassword = '/xianfu/manage/public/password',
+  envInfoPublic = '/xianfu/manage/public/envInfoPublic',
 }
 
 /**
