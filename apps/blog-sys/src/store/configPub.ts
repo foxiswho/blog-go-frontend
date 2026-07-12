@@ -76,6 +76,7 @@ export const useConfigPubStore = defineStore('configPubState', {
       this.tokenJti = tokenJti;
     },
     setData(item:any) {
+      console.log('setData',item);
       this.loadOnce = true;
       this.loginEncrypt = item.loginEncrypt;
       if(item.login) {
@@ -84,15 +85,15 @@ export const useConfigPubStore = defineStore('configPubState', {
           this.loginPubNo = item.login.no;
         }
       }
-      if(item.menu) {
-        if(item.menu.otherAuth) {
-          this.routerOtherAuth = item.menu.otherAuth;
+      if(item.menuRouter) {
+        if(item.menuRouter.otherAuth) {
+          this.routerOtherAuth = item.menuRouter.otherAuth;
         }
-        if (item.menu.dataCodes) {
-          this.dataCodes = item.menu.dataCodes;
+        if (item.menuRouter.dataCodes) {
+          this.dataCodes = item.menuRouter.dataCodes;
         }
-        if (item.menu.data) {
-          this.routerList = item.menus.data;
+        if (item.menuRouter.data) {
+          this.routerList = item.menuRouter.data;
         }
       }
       this.menuAuth = true;

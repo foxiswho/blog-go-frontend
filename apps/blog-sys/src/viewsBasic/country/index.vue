@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { toRaw } from 'vue';
-
 import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
@@ -34,6 +32,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
     columns,
     height: 'auto',
     keepSource: true,
+    checkboxConfig: {
+      labelField: 'id',
+      reserve: true,
+      highlight: true,
+      range: true,
+    },
     pagerConfig: {
       pageSize: 20,
       pageSizes: [10, 20, 50, 100, 500, 1000],
@@ -61,23 +65,29 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
   } as VxeTableGridOptions,
 });
+
 /**
  * 重新查询
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(toRaw(params));
+    gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
 }
+
 /**
  * 刷新表格
  */
 async function onRefresh() {
-  const formValues = await gridApi.formApi.getValues();
-  gridApi.formApi.setLatestSubmissionValues(formValues);
-  gridQuery(formValues);
+  try {
+    const formValues = await gridApi.formApi.getValues();
+    gridApi.formApi.setLatestSubmissionValues(formValues);
+    gridQuery(formValues);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
 
 /**
@@ -89,7 +99,6 @@ function onCreate() {
 
 /**
  * 编辑
- * @param row 行数据
  */
 function onEdit(row: any) {
   drawerApi.setData({ values: row, isUpdate: true }).open();
@@ -97,7 +106,6 @@ function onEdit(row: any) {
 
 /**
  * 删除
- * @param row 行数据
  */
 function onDelete(row: any) {
   deleteIds([row.id]).then(() => {
@@ -223,7 +231,7 @@ function onPhysicalDeletion() {
 </script>
 
 <template>
-  <Page auto-content-height>
+  <Page auto-content-height content-class="p-2">
     <Drawer @ok="onRefresh" />
     <Grid>
       <template #toolbar-actions>
@@ -271,16 +279,12 @@ function onPhysicalDeletion() {
         <VbenTableAction
           :actions="[
             {
-              tooltip: {
-                content: '编辑',
-              },
+              tooltip: { content: '编辑' },
               icon: 'lucide:edit',
               onClick: () => onEdit(row),
             },
             {
-              tooltip: {
-                content: '删除',
-              },
+              tooltip: { content: '删除' },
               icon: 'lucide:trash-2',
               danger: true,
               popConfirm: {

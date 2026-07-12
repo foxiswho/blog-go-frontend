@@ -323,7 +323,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }
@@ -353,7 +352,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }
@@ -383,7 +381,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }
@@ -439,7 +436,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }
@@ -553,7 +549,7 @@ const [FormDrawer, formDrawerApi] = useVbenDrawer({
         <!--        </vxe-button>-->
       </template>
     </vxe-grid>
-    <FormDrawer />
+    <FormDrawer @ok="reloadTable"/>
   </div>
 </template>
 

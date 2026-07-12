@@ -299,15 +299,6 @@ export const uploadUpByFileOwner = (data?) => {
   data = data || {};
   return requestClient.post(Api.updateByFileOwner, { data: data });
 };
-/**
- * key 详情
- * @param data {
- *   mark : '标记'
- * }
- */
-export const updateDetail = (key:string) => {
-  return requestClient.post(Api.updateDetail, { fileOwner:key });
-};
 
 /**
  * 设置文件拥有者
@@ -373,3 +364,12 @@ export const uploadFnByMarkdown = (data:any, setting?: {
   };
     return requestClient.post(Api.upload+'-more', data,config);
 }
+/**
+ * key 详情
+ * @param data {
+ *   mark : '标记'
+ * }
+ */
+export const updateDetail = (key:string) => {
+  return requestClient.post(Api.updateDetail, { fileOwner:key });
+};

@@ -3,10 +3,9 @@ import type { VxeGridPropTypes } from 'vxe-table';
 
 import _XEUtils_ from 'xe-utils';
 
-import { confirmSwitch } from '#/adapter/vxe-table';
-import { YesNoOptionsFormatter } from '@pg/types/src/basic/yes-no';
-
 import { setStateEnableDisable } from './api';
+
+import { YesNoOptionsFormatter } from '@pg/types/src/basic/yes-no';
 
 /**
  * 搜索表单 Schema
@@ -39,48 +38,43 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
-/**
- * 表格列配置
- */
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', width: 40 },
+  { type: 'checkbox', title: 'ID', width: 120 },
   { field: 'name', title: '名称' },
   { field: 'nameFl', title: '英文', minWidth: 120 },
   { field: 'code', title: '编码', width: 160 },
   { field: 'continent', title: '所属洲', width: 160, visible: false },
   { field: 'iso3', title: 'ISO三字代码', width: 160 },
   { field: 'countryCode', title: '国际区号', width: 160 },
-  {
-    field: 'phoneUse',
-    title: '区号使用',
-    width: 160,
+  { field: 'phoneUse', title: '区号使用', width: 160,
     formatter: YesNoOptionsFormatter,
   },
-  {
-    field: 'domainSuffix',
-    title: '域名后缀',
-    width: 80,
-    visible: false,
-  },
+  { field: 'domainSuffix', title: '域名后缀', width: 80, visible:false },
   {
     field: 'state',
     title: '状态',
+    // slots: { default: 'state' },
     width: 90,
     cellRender: {
-      name: 'CellSwitchPg',
-      attrs: {
-        beforeChange: async (
-          newStatus: number | string,
-          record: any,
-          $table: any,
-        ) => {
-          try {
-            await confirmSwitch(record.name, newStatus);
-            await setStateEnableDisable(record.id, newStatus);
-            return true;
-          } catch {
-            return false;
-          }
+      name: 'PgState',
+      events: {
+        // 状态更新
+        click: ($table, record, e) => {
+          const sourceValue = record.state;
+          const newStatus = e.value === 1 ? 1 : 2;
+          setStateEnableDisable(record.id, newStatus)
+            .then(() => {
+              record.state = newStatus;
+              if ($table) {
+                $table.isUpdateByRow(record);
+              }
+            })
+            .catch(() => {
+              record.state = sourceValue;
+              if ($table) {
+                $table.isUpdateByRow(record);
+              }
+            });
         },
       },
     },

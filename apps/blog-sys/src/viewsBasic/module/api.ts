@@ -30,6 +30,14 @@ enum Api {
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
 }
+/**
+ * 列表
+ * @constructor
+ * @param data
+ */
+export async function queryAll(data?: any) {
+  return requestClient.post(Api.queryAll, data);
+}
 
 /**
  * 公共列表展示

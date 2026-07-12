@@ -51,28 +51,14 @@ export const selectNodeAllPublic = (data?: any) => {
  * 公共树展示
  * @param data
  */
-export const typeCodePublic = async (param) => {
-  let typeCode ='';
-  if (param && param?.typeCode) {
-    typeCode= param.typeCode;
-  } else if (typeof param === 'string') {
-    typeCode = param;
+export const typeCodePublic = async (data) => {
+  let code = '';
+  if (data && data?.typeCode) {
+    code = data?.typeCode;
+  } else if (typeof data === 'string') {
+    code = data;
   }
-  return requestClient.get(Api.typeCodePublic+'/'+typeCode);
-};
-
-/**
- * 公共树展示
- * @param data
- */
-export const typeCodePublicPost = async (param) => {
-  let data = {typeCode:''};
-  if (param && param?.typeCode) {
-    data= param;
-  } else if (typeof param === 'string') {
-    data.typeCode = param;
-  }
-  return requestClient.post(Api.typeCodePublic, data);
+  return requestClient.get(`${Api.typeCodePublic}/${code}`);
 };
 
 /**

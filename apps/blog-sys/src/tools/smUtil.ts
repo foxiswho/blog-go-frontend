@@ -1,8 +1,5 @@
 import { sm2 } from 'sm-crypto';
-
 import { message } from '#/adapter/naive';
-import { usePubPreStore } from '#/store';
-import { publicPrivateKey } from '#/viewsRam/accountSessionAccessKey/api';
 
 /**
  * SM2 加密（Hex 格式，与 Java Hutool 互通）
@@ -34,25 +31,6 @@ export function sm2DecryptHex(cipherText: string, privateKey: string): string {
 
 export class SmUtil {
   publicKey: string | null | undefined;
-
-  /**
-   * 获取密钥
-   */
-  fetchPublicKey() {
-    publicPrivateKey({ type: 'code' })
-      .then((res) => {
-        this.publicKey = res.publicKey;
-        if (res.publicKey) {
-          //存储公钥
-          const pubPreStore = usePubPreStore();
-          pubPreStore.setLoginPub(res.publicKey);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-    return this.publicKey;
-  }
 
   setPublicKey(publicKey: string): void {
     this.publicKey = publicKey;
