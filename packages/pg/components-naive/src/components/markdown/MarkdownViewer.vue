@@ -11,6 +11,7 @@ import {
 import { preferences } from '@vben/preferences';
 
 import Preview from 'vditor';
+import 'vditor/dist/index.css';
 
 import { getTheme } from './getTheme';
 import { onMountedOrActivated } from './onMountedOrActivated';

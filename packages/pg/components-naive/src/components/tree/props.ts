@@ -85,6 +85,10 @@ export const pgTreeSelectProps = {
     default: false,
     type: Boolean,
   },
+  minHeight: {
+    default: '',
+    type: String,
+  }
 };
 export interface ContextMenuItem {
   click: (rightClickItem: any) => void;

@@ -20,7 +20,7 @@ const props = defineProps({
 const emit = defineEmits([
   'ok',
   'overload',
-  'update:checked-keys',
+  'update:checkedKeys',
   'update:selected-keys',
   'result:data',
 ]);
@@ -31,6 +31,12 @@ const isFirstLoaded = ref<boolean>(false);
 const loading = ref(false);
 const checkedAll = ref(false);
 const selectedKeys = ref([]);
+const minHeightComputed = computed(() => {
+  if(props.minHeight) {
+    return props.minHeight;
+  }
+  return `calc(100vh - 141px)`;
+});
 
 const pattern = ref('');
 const showDropdownRef = ref(false);
@@ -226,7 +232,7 @@ const handlerReload = () => {
 };
 function OnUpdateCheckedKeys(keys, meta) {
   props.props.checkedKeys = keys;
-  emit('update:checked-keys', {
+  emit('update:checkedKeys', {
     keys,
     meta,
   });
@@ -276,11 +282,10 @@ function defaultAllHandle() {
 
 <template>
   <div
-    v-if="props.headerShow"
-    :style="{ minHeight: `calc(100vh - 141px)` }"
+    :style="{ minHeight: minHeightComputed }"
     class="bg-background relative h-full overflow-hidden"
   >
-    <div class="flex h-[34px] items-center">
+    <div v-if="props.headerShow" class="flex h-[34px] items-center">
       <n-input
         v-model:value="pattern"
         clearable
