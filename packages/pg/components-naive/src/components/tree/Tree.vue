@@ -23,6 +23,7 @@ const emit = defineEmits([
   'update:checkedKeys',
   'update:selected-keys',
   'result:data',
+  'result:source',
 ]);
 
 const treeData = ref<Recordable<any>[]>([]);
@@ -37,6 +38,7 @@ const minHeightComputed = computed(() => {
   }
   return `calc(100vh - 141px)`;
 });
+const classComputed = computed(() => props.class);
 
 const pattern = ref('');
 const showDropdownRef = ref(false);
@@ -161,14 +163,16 @@ async function fetch() {
   } catch (error) {
     console.error(error);
   }
+  emit('result:source', result);
   // console.log('result=>',result)
   if (!result) return;
   if (props.isNodeAll) {
     result = await afterFetchDefaultNodeAll(result);
-  } else if (afterFetch && isFunction(afterFetch)) {
-    result = await afterFetch(result);
   } else {
     result = await afterFetchDefault(result);
+  }
+  if (afterFetch && isFunction(afterFetch)) {
+    result = await afterFetch(result);
   }
   // console.log('result',result)
   loading.value = false;
@@ -198,8 +202,9 @@ watch(
 );
 watch(
   () => props.reload,
-  () => {
-    if (props.reload) {
+  (val,old) => {
+    console.log('props.reload',val,old);
+    if (val!=old) {
       handlerReload();
     }
   },
@@ -283,6 +288,7 @@ function defaultAllHandle() {
 <template>
   <div
     :style="{ minHeight: minHeightComputed }"
+    :class="classComputed"
     class="bg-background relative h-full overflow-hidden"
   >
     <div v-if="props.headerShow" class="flex h-[34px] items-center">

@@ -58,8 +58,8 @@ export const pgTreeSelectProps = {
   },
   // 刷新 重载
   reload: {
-    default: false,
-    type: Boolean,
+    default: 0,
+    type: Number,
   },
   // 返回值
   resultField: {
@@ -86,6 +86,10 @@ export const pgTreeSelectProps = {
     type: Boolean,
   },
   minHeight: {
+    default: '',
+    type: String,
+  },
+  class: {
     default: '',
     type: String,
   }
