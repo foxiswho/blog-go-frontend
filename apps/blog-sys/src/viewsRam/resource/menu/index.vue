@@ -106,11 +106,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
  * 重新加载
  */
 function refreshGrid() {
-  gridApi.query();
+  gridApi.query({});
 }
 </script>
 <template>
-  <Page auto-content-height>
+  <Page auto-content-height content-class="p-2">
     <Grid>
       <template #toolbar-tools>
         <VbenButton type="primary" @click="onCreate">
@@ -176,7 +176,7 @@ function refreshGrid() {
         />
       </template>
     </Grid>
-    <Drawer @success="refreshGrid" />
+    <Drawer @ok="refreshGrid" />
   </Page>
 </template>
 

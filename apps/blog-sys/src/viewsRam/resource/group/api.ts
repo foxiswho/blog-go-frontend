@@ -48,6 +48,13 @@ export const selectPublic = (data?: any) => {
 export const selectCategory = (data?: any) => {
   return requestClient.post(Api.selectCategory, data);
 };
+/**
+ * 公共分类
+ * @param data
+ */
+export const queryAllCategory = (data?: any) => {
+  return requestClient.post(Api.queryAllCategory, data);
+};
 
 /**
  * 公共分类

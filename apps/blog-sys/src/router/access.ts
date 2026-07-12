@@ -15,6 +15,20 @@ import {useConfigPubStore} from "#/store";
 
 const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
 
+/** 当所有子级 hideInMenu 为 true 时，父级也隐藏 */
+function propagateHideInMenu(routes: any[]): any[] {
+  return routes.map((route) => {
+    if (route.children && route.children.length > 0) {
+      const children = propagateHideInMenu(route.children);
+      if (children.every((child: any) => child.meta?.hideInMenu === true)) {
+        return { ...route, children, meta: { ...route.meta, hideInMenu: true } };
+      }
+      return { ...route, children };
+    }
+    return route;
+  });
+}
+
 async function generateAccess(options: GenerateMenuAndRoutesOptions) {
   const pageMap: ComponentRecordType = import.meta.glob('../views/**/*.vue');
   const configPubStore = useConfigPubStore();
@@ -66,6 +80,8 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
 
         return route;
       });
+
+      authRoutes = propagateHideInMenu(authRoutes);
     }
   } catch {
     // ignore

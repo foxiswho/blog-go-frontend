@@ -1,14 +1,17 @@
 <script lang="ts" setup>
-import { h } from 'vue';
+import {h, watch, ref} from 'vue';
 
-import { useVbenModal } from '@vben/common-ui';
+import { useVbenDrawer } from '@vben/common-ui';
+
+import { PgTreeSelect } from '@pg/components-n';
 import { VbenButton } from '@vben/common-ui';
 
-import { usePgForm, useVbenForm } from '#/adapter';
+import { usePgForm } from '#/adapter';
 
-import {existName, createUpdateByCategory, selectNodeAllPublic, selectCategory} from '../api';
+import { existName, createUpdateByCategory, selectCategory } from '#/viewsRam/resource/group/api';
 import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
-const emit = defineEmits(['ok',]);
+import {TypeAttr} from "@pg/types";
+const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
@@ -31,21 +34,6 @@ const [Form, formApi] = usePgForm({
         buttonStyle: 'solid',
       },
       rules: 'required',
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'parentNo',
-      label: '上级',
-      defaultValue: '',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: selectCategory,
-        params: {},
-        props: {
-          placeholder: '如果为空,则是一级',
-          filterable: true,
-        },
-      },
     },
     {
       tabGroup: 'home',
@@ -72,15 +60,12 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'typeAttr',
       label: '属性',
-      defaultValue: 'menu',
+      defaultValue: 'categoryLast',
       component: 'Input',
       componentProps: {
         placeholder: '请选择',
         type: 'button',
-        options: [
-          { label: '菜单', value: 'menu' },
-          { label: '资源', value: 'resource' },
-        ],
+        options: TypeAttr,
       },
       dependencies: {
         show: false,
@@ -90,10 +75,27 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
+      fieldName: 'parentNo',
+      label: '上级',
+      defaultValue: '',
+      component: 'PgTreeSelect',
+      componentProps: {
+        api: selectCategory,
+        params: { by: 'no' },
+        filterQueryAsync: true,
+        props: {
+          filterable: true,
+          placeholder: '如果为空,则是一级',
+        },
+      },
+      // rules: 'required',
+    },
+    {
+      tabGroup: 'home',
       fieldName: 'name',
       label: '名称',
       component: 'Input',
-      defaultValue: '',
+      rules: 'required',
       componentProps: {
         placeholder: '请输入',
         onBlur: async (e) => {
@@ -103,7 +105,6 @@ const [Form, formApi] = usePgForm({
           }
         },
       },
-      rules: 'required',
       suffix: () =>
         h(
           VbenButton,
@@ -122,6 +123,7 @@ const [Form, formApi] = usePgForm({
       fieldName: 'nameFl',
       label: '名称英文',
       component: 'Input',
+      defaultValue: '',
       componentProps: {
         placeholder: '请输入',
       },
@@ -129,7 +131,8 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '资源标识',
+      label: '码值',
+      defaultValue: '系统自动建立',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',
@@ -138,15 +141,7 @@ const [Form, formApi] = usePgForm({
           if (!values.nameFl) {
             formApi.setFieldValue('nameFl', e.target.value);
           }
-          if (!values.path) {
-            formApi.setFieldValue('path', e.target.value);
-          }
         },
-      },
-      dependencies: {
-        show: false,
-        // 随意一个字段改变时，都会触发
-        triggerFields: ['description'],
       },
     },
     {
@@ -154,40 +149,6 @@ const [Form, formApi] = usePgForm({
       fieldName: 'nameFull',
       label: '全称',
       component: 'Input',
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'path',
-      label: '路径',
-      component: 'Input',
-      dependencies: {
-        show: false,
-        // 随意一个字段改变时，都会触发
-        triggerFields: ['description'],
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'method',
-      label: '方法',
-      defaultValue: 'POST',
-      component: 'Input',
-      componentProps: {
-        placeholder: '请选择',
-        type: 'button',
-        options: [
-          { label: 'GET', value: 'GET' },
-          { label: 'POST', value: 'POST' },
-          { label: 'DELETE', value: 'DELETE' },
-          { label: 'PUT', value: 'PUT' },
-          { label: 'ALL', value: 'ALL' },
-        ],
-      },
-      dependencies: {
-        show: false,
-        // 随意一个字段改变时，都会触发
-        triggerFields: ['description'],
-      },
     },
     {
       tabGroup: 'home',
@@ -212,29 +173,35 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
-const [Modal, modalApi] = useVbenModal({
+const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
-    modalApi.close();
+    drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      const { values, isUpdate,parent } = modalApi.getData<Record<string, any>>();
-      if (values) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
+      const { values, isUpdate, parent } = drawerApi.getData<Record<string, any>>();
+      if (values && Object.keys(values).length > 0) {
         formApi.setValues({
           ...values,
         });
       }
-      if(parent) {
-        formApi.setFieldValue('parentNo', parent.no);
+      if (parent) {
+        formApi.setValues({
+          parentNo:parent.no,
+          terminalCode:parent.terminalCode,
+        });
       }
 
-      modalApi.setState({ title: `分类：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `资源组分类：${isUpdate ? '编辑' : '新增'}` ,loading: false});
     }
   },
   title: '：',
@@ -243,26 +210,35 @@ const [Modal, modalApi] = useVbenModal({
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  drawerApi.lock();
   try {
-    // console.log('values',values)
-    const { isUpdate } = modalApi.getData<Record<string, any>>();
-    values['typeSys'] = 'general';
-    values['typeAttr'] = 'categoryLast';
-    values['typeCategory'] = 'group';
-    createUpdateByCategory(values).then((d) => {
-      setTimeout(() => {
-        modalApi.close();
-        emit('ok',values);
-      }, 500);
-    });
+    drawerApi.setState({ loading: true, confirmLoading: true });
+    const { isUpdate } = drawerApi.getData<Record<string, any>>();
+    createUpdateByCategory(values)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          drawerApi.setState({ loading: false });
+          drawerApi.close();
+        }, 500);
+      });
   } catch (error) {
     console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>
 <template>
-  <Modal>
-    <Form />
-  </Modal>
+  <Drawer>
+    <Form>
+    </Form>
+  </Drawer>
 </template>

@@ -12,7 +12,7 @@ import { confirmSwitch } from '#/adapter/vxe-table';
 import { setStateEnableDisable } from './api';
 
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', title: 'ID', width: 120 },
+  { type: 'checkbox', width: 34 },
   { field: 'name', title: '名称', minWidth: 160 },
   { field: 'path', title: '路径', minWidth: 160 },
   {

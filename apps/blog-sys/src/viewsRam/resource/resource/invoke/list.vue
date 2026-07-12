@@ -1,281 +1,146 @@
 <script setup lang="ts">
-import type { RowVO } from '@pg/types';
+import type { Recordable } from '@vben/types';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, ref } from 'vue';
 
-import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
+import { useVbenModal} from '@vben/common-ui';
 
 import { PgTree } from '@pg/components-n';
-import {
-  type VxeGridInstance,
-  type VxeGridListeners,
-  type VxeGridProps,
-  VXETable,
-} from 'vxe-table';
 
 import { message } from '#/adapter';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  selectCategory as selectNodeAllPublic,
+} from '#/viewsRam/resource/group/api';
 
-import { deleteIds, List, selectCategoryPublic } from '../api';
+import { List } from '../api';
 import { columns } from './data';
+
 const emit = defineEmits(['ok']);
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
-const tabSelectActive = ref('system');
+const reloadTreeState = ref(0);
+const leftCheckedKeys = ref<any[]>([]);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-const formParam = { parentNo: '' };
+const leftCheckedKeysComputed = computed(() => leftCheckedKeys.value);
+// 当前树节点 key，作为查询条件透传给接口
+const parentNo = ref('');
+const wd = ref('');
+const wdComputed = computed(() => wd.value);
 
-const treeChang = (record) => {
+const treeChang = (record: any) => {
   currenRecord.value = true;
   currenData.value = record;
-  // console.log('record', record);
-  formParam.parentNo =record.key;
-  reloadTable();
+  parentNo.value = record.key;
+  gridQuery();
 };
 /**
  * 重新加载
  */
 function reloadTree() {
-  reloadTreeState.value = true;
+  reloadTreeState.value++;
 }
 /**
  * 树重载
  * @param e
  */
-const treeOverload = (e) => {
+const treeOverload = (_e: any) => {
   currenRecord.value = false;
   currenData.value = {};
-  formParam.parentNo = '';
-  reloadTable();
+  parentNo.value = '';
+  gridQuery();
 };
-/**
- * 树 搜索尾部菜单
- */
-const menuDropdownOptions = [];
 
-const xGrid = ref<VxeGridInstance<RowVO>>();
-const gridOptions = reactive<VxeGridProps<RowVO>>({
-  stripe: true, // 斑马纹
-  border: true,
-  showHeaderOverflow: true,
-  showOverflow: true,
-  keepSource: true,
-  id: 'full_role',
-  // height: '99%',
-  minHeight: 800,
-  rowConfig: {
-    keyField: 'id',
-    isHover: true,
-  },
-  columnConfig: {
-    resizable: true,
-  },
-  printConfig: {
-    columns: [
-      { field: 'name' },
-      { field: 'nameFl' },
-      { field: 'code' },
-      { field: 'state' },
-      { field: 'createAt' },
-    ],
-  },
-  sortConfig: {
-    trigger: 'cell',
-    remote: true,
-  },
-  filterConfig: {
-    remote: true,
-  },
-  pagerConfig: {
-    enabled: true,
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100, 500, 1000],
-  },
-  formConfig: {
-    titleWidth: 100,
-    titleAlign: 'right',
-    items: [
+const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    commonConfig: {
+      labelWidth: 42,
+    },
+    schema: [
       {
-        field: 'wd',
-        title: '关键词',
-        span: 12,
-        itemRender: {
-          name: '$input',
-          props: { placeholder: '请输入', clearable: true },
+        component: 'Input',
+        fieldName: 'wd',
+        label: '关键词',
+        defaultValue: wdComputed.value,
+        componentProps: {
+          placeholder: '请输入',
+          clearable: true,
         },
       },
       {
-        field: 'state',
-        title: '状态',
-        span: 12,
-        folding: false,
-        itemRender: {
-          name: '$select',
+        component: 'Select',
+        fieldName: 'state',
+        label: '状态',
+        componentProps: {
+          clearable: true,
           options: [
             { label: '停用', value: '2' },
             { label: '有效', value: '1' },
             { label: '弃置', value: '12' },
             { label: '取消', value: '11' },
           ],
-          props: { clearable: true },
-        },
-      },
-      {
-        span: 24,
-        align: 'center',
-        collapseNode: true,
-        itemRender: {
-          name: '$buttons',
-          children: [
-            { props: { type: 'submit', content: '搜索', status: 'primary' } },
-            { props: { type: 'reset', content: '重置' } },
-          ],
         },
       },
     ],
+    submitOnChange: false,
   },
-  toolbarConfig: {
-    refresh: true, // 显示刷新按钮
-    import: false, // 显示导入按钮
-    export: false, // 显示导出按钮
-    print: false, // 显示打印按钮
-    zoom: true, // 显示全屏按钮
-    custom: true, // 显示自定义列按钮
-  },
-  proxyConfig: {
-    seq: true, // 启用动态序号代理，每一页的序号会根据当前页数变化
-    sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
-    filter: true, // 启用筛选代理，当点击筛选时会自动触发 query 行为
-    form: true, // 启用表单代理，当点击表单提交按钮时会自动触发 reload 行为
-    response: {
-      // 对应响应结果 Promise<{ result: [], page: { total: 100 } }>
-      result: 'data', // 配置响应结果列表字段
-      total: 'total', // 配置响应结果总页数字段
+  gridOptions: {
+    columns,
+    height: 'auto',
+    keepSource: true,
+    pagerConfig: {
+      pageSize: 100,
+      pageSizes: [50, 100, 500, 1000],
     },
-    // 只接收Promise，具体实现自由发挥
-    ajax: {
-      // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
-      query: ({ page, sorts, filters, form }) => {
-        const queryParams: any = Object.assign({}, form);
-        // 处理排序条件
-        const firstSort = sorts[0];
-        if (firstSort) {
-          queryParams.sort = firstSort.field;
-          queryParams.order = firstSort.order;
-        }
-        // 处理筛选条件
-        filters.forEach(({ field, values }) => {
-          queryParams[field] = values.join(',');
-        });
-        queryParams.pageSize = page.pageSize;
-        queryParams.pageNum = page.currentPage;
-        if (formParam) {
-          for (const key in formParam) {
-            queryParams[key] = formParam[key];
-          }
-        }
-        return List(queryParams);
+    proxyConfig: {
+      ajax: {
+        query: async ({ page }, formValues) => {
+          return await List({
+            pageSize: page.pageSize,
+            pageNum: page.currentPage,
+            parentNo: parentNo.value,
+            ...formValues,
+          });
+        },
       },
     },
-  },
-  columns,
-  checkboxConfig: {
-    labelField: 'id',
-    reserve: true,
-    highlight: true,
-    range: true,
-  },
+    rowConfig: {
+      keyField: 'id',
+      isHover: true,
+    },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      zoom: true,
+    },
+  } as any,
 });
 
-const gridEvent: VxeGridListeners<RowVO> = {
-  proxyQuery() {
-    console.log('数据代理查询事件');
-  },
-  proxyDelete() {
-    console.log('数据代理删除事件');
-  },
-  proxySave() {
-    console.log('数据代理保存事件');
-  },
-  toolbarButtonClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-      }
-    }
-  },
-  toolbarToolClick({ code }) {
-    const $grid = xGrid.value;
-  },
-};
-
-const hasActiveEditRow = (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    return $grid.isEditByRow(row);
-  }
-  return false;
-};
-
-const clearRowEvent = () => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.clearEdit();
-  }
-};
-const saveRowEvent = async (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    await $grid.clearEdit();
-    gridOptions.loading = true;
-    // 模拟异步保存
-    setTimeout(() => {
-      gridOptions.loading = false;
-      VXETable.modal.message({
-        content: `${JSON.stringify(row)}`,
-        status: 'success',
-      });
-    }, 300);
-  }
-};
 /**
- * 删除 指定行数据
- * @param row
+ * 重新查询
  */
-const removeRowEvent = async (row: RowVO) => {
-  const type = await VXETable.modal.confirm('您确定要删除该数据?');
-  const $grid = xGrid.value;
-  if ($grid && type === 'confirm') {
-    deleteIds([row.id]);
-    await $grid.remove(row);
-  }
-};
-
-onMounted(() => {});
-
-/**
- * 重新加载
- */
-function reloadTable() {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.commitProxy('query');
+async function gridQuery(params: Record<string, any> = {}) {
+  try {
+    gridApi.query(params);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
   }
 }
 
-function treeChangOverload() {
-  reloadTable();
-  treeOverload();
-}
-
 /**
- * 树右键菜单
- * @param option
+ * 刷新表格
  */
-const rightClickMenuOptions = ({ option }) => {
-  return [];
-};
+async function onRefresh() {
+  try {
+    const formValues = await gridApi.formApi.getValues();
+    gridApi.formApi.setLatestSubmissionValues(formValues);
+    gridQuery(formValues);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
+}
 
 const [Modal, modalApi] = useVbenModal({
   onCancel() {
@@ -283,7 +148,8 @@ const [Modal, modalApi] = useVbenModal({
   },
   onConfirm: async () => {
     // 获取选中数据
-    const $grid = xGrid.value;
+    const $grid = gridApi.grid;
+    if (!$grid) return false;
     const checkboxRecords = $grid.getCheckboxRecords();
     if (checkboxRecords.length <= 0) {
       message.warning('你没有选择任何数据');
@@ -296,49 +162,72 @@ const [Modal, modalApi] = useVbenModal({
   },
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
-      modalApi.setState({ title: `选择：资源` });
+      let title ='';
+      const { parent, row } =modalApi.getData<Record<string, any>>();
+      // console.log('onOpenChange=',parent, row);
+      if(parent && Object.keys(parent).length > 0) {
+        currenData.value = parent;
+        wd.value = parent.name;
+        leftCheckedKeys.value = [parent.no];
+        parentNo.value = parent.no;
+        // leftCheckedKeys.value = ["202607061553546108582534"];
+        title = ' [ '+parent.name+' ]';
+        if(row) {
+          title =title + ' '+ row.name;
+        }
+      }
+
+      modalApi.setState({ title: `选择：资源`+title });
     }
   },
   title: '：',
 });
+function treeAfterFetch(data:any) {
+  console.log('treeAfterFetch',data);
+  if(data) {
+    for(var i in data) {
+      if(!data[i].parentId) {
+        data[i].label = data[i].label + (data[i]?.data&&data[i]?.data?.terminalCode?(' [ '+data[i]?.data?.terminalCode+' ]'):'');
+      }
+    }
+  }
+  return data;
+}
 </script>
 
 <template>
   <Modal class="w-[900px]">
-    <div>
-      <div>
-        <n-tabs v-model:value="tabSelectActive" type="segment">
-          <n-tab name="system"> 系统 </n-tab>
-          <n-tab name="tenant"> 租户 </n-tab>
-        </n-tabs>
-      </div>
-      <NLayout class="h-full p-2" has-sider>
-        <NLayoutSider class="min-w-[160px]" width="160">
+    <div class="flex size-full">
+      <NCard
+        class="min-w-[290px]"
+        style="width: unset"
+        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+      >
           <PgTree
-            :api="selectCategoryPublic"
-            :menu-dropdown-options="menuDropdownOptions"
+            :api="selectNodeAllPublic"
+            :after-fetch="treeAfterFetch"
             :reload="reloadTreeComputed"
-            :right-click-menu="true"
-            :right-click-menu-options="rightClickMenuOptions"
+            :props="{
+              blockLine: true,
+            showLine: true,
+            cascade: false,
+            checkable: false,
+            selectable: true,
+            defaultExpandAll: true,
+            selectedKeys: leftCheckedKeysComputed,
+          }"
             @ok="treeChang"
             @overload="treeOverload"
           />
-        </NLayoutSider>
-        <NLayout class="w-[calc(100%-160px)]">
-          <NLayoutContent>
-            <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
+        </NCard>
+      <div class="w-[calc(100%-290px)] ml-2 pl-2 bg-card rounded-md">
+            <Grid>
               <template #nameAll="{ row }">
-                <div>
-                  {{row.name}}
-                </div>
-                <div>
-                  {{row.path}}
-                </div>
+                <div>{{ row.name }}</div>
+                <div>{{ row.path }}</div>
               </template>
-            </vxe-grid>
-          </NLayoutContent>
-        </NLayout>
-      </NLayout>
+            </Grid>
+      </div>
     </div>
   </Modal>
 </template>

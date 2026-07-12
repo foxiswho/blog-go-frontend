@@ -73,6 +73,10 @@ function setupAccessGuard(router: Router) {
             preferences.app.defaultHomePath,
         );
       }
+      if(!configPubStore.isLoadOnce()) {
+        // 加载配置信息
+        configInitializer(configPubStore);
+      }
       return true;
     }
 
@@ -97,6 +101,11 @@ function setupAccessGuard(router: Router) {
           // 携带当前跳转的页面，登录后重新跳转该页面
           replace: true,
         };
+      }
+
+      if(!configPubStore.isLoadOnce()) {
+        // 加载配置信息
+        configInitializer(configPubStore);
       }
       return to;
     }

@@ -264,5 +264,8 @@ export const existName = (wd, id?) => {
  * @param data
  */
 export const updateByRole = (data?: any) => {
-  return requestClient.post(Api.updateByRole, data);
+  return requestClient.post(Api.updateByRole, data, {
+    errorMessageMode: 'message',
+    successMessageMode: 'notification',
+  });
 };

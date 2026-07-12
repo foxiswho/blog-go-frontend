@@ -7,7 +7,7 @@ import { $t } from '@vben/locales';
 import { usePgForm } from '#/adapter';
 
 import { updatePassword } from '../api';
-import {useConfigPubStore, usePubPreStore} from '#/store';
+import {useConfigPubStore} from '#/store';
 import { SmUtil } from '#/tools/smUtil';
 
 const configPubStore = useConfigPubStore();
@@ -112,6 +112,7 @@ async function onSubmit() {
       data.passwordNew = sm.encryptHex(data.passwordNew);
       data['encrypt'] = 'encrypt';
     }
+    data['confirmPassword'] = '1111111';
     updatePassword(data).then((d) => {
       setTimeout(() => {
         emit('ok', values);

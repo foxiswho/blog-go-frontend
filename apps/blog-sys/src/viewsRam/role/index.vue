@@ -2,7 +2,6 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { toRaw } from 'vue';
-
 import { Page, useVbenDrawer,useVbenModal, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
@@ -65,7 +64,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: true,
       zoom: true,
     },
-  } as VxeTableGridOptions,
+  } as any,
 });
 
 /**
@@ -83,9 +82,13 @@ async function gridQuery(params: Record<string, any> = {}) {
  * 刷新表格
  */
 async function onRefresh() {
-  const formValues = await gridApi.formApi.getValues();
-  gridApi.formApi.setLatestSubmissionValues(formValues);
-  gridQuery(formValues);
+  try {
+    const formValues = await gridApi.formApi.getValues();
+    gridApi.formApi.setLatestSubmissionValues(formValues);
+    gridQuery(formValues);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
 
 /**
@@ -197,7 +200,7 @@ function onRecovery() {
   batchSelectRecovery(ids, () => {
     onRefresh();
     $grid.setAllCheckboxRow(false);
-  }, dialog);
+  });
 }
 
 /**
@@ -226,7 +229,7 @@ function onPhysicalDeletion() {
   batchSelectPhysicalDeletion(ids, () => {
     onRefresh();
     $grid.setAllCheckboxRow(false);
-  }, dialog);
+  });
 }
 
 const onAuth = (row: any) => {
@@ -239,7 +242,7 @@ const onAuth = (row: any) => {
 </script>
 
 <template>
-  <Page auto-content-height>
+  <Page auto-content-height content-class="p-2">
     <Drawer @ok="onRefresh" />
     <ModalResourceGroup />
     <Grid>
@@ -277,7 +280,6 @@ const onAuth = (row: any) => {
         </VbenButton>
         <VbenButton
           class="ml-2 pg-button-size-small"
-          size="small"
           danger
           @click="onPhysicalDeletion"
         >
@@ -288,6 +290,7 @@ const onAuth = (row: any) => {
         <VbenTableAction
           :actions="[
             {
+              ifShow: row.code!='administrator',
               text: '授权',
               onClick: () => onAuth(row),
             },

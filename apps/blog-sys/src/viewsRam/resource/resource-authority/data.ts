@@ -24,6 +24,7 @@ export const columns: VxeGridPropTypes.Columns = [
     title: '方法',
     width: 80,
     formatter: HttpMethodFormatter,
+    visible: false,
   },
   { field: 'code', title: '资源标识', width: 100, visible: false },
   {
@@ -49,7 +50,7 @@ export const columns: VxeGridPropTypes.Columns = [
       return _XEUtils_.toDateString(cellValue, 'yyyy-MM-dd');
     },
   },
-  { title: '操作', width: 160, field: 'right', slots: { default: 'operate' } },
+  { title: '操作', width: 60, field: 'right', slots: { default: 'operate' } },
 ];
 
 export const formSchema = [

@@ -12,7 +12,7 @@ import { selectNodeAllPublic } from '../api';
 const emit = defineEmits(['ok']);
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
+const reloadTreeState = ref(0);
 const treeCheckedKeys = ref([]);
 const checkedData = ref([]);
 const reloadTreeComputed = computed(() => reloadTreeState.value);

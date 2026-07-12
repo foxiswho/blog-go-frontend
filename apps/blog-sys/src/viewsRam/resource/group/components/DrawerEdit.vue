@@ -23,7 +23,7 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'terminalCode',
-      label: '接入类型',
+      label: '终端类型',
       component: 'ApiRadioGroup',
       componentProps: {
         api: typeCodePublic,

@@ -11,10 +11,11 @@ import { decodePaseto } from "@pg/utils";
 import { defineStore } from 'pinia';
 
 import { notification } from '#/adapter/naive';
-import {getAccessCodesApi, getUserInfoApi, getUserInfoApiPublic, loginApi, logoutApi} from '#/api';
+import { getUserInfoApiPublic, loginApi, logoutApi} from '#/api';
 import { $t } from '#/locales';
 import { useConfigPubStore } from "#/store/configPub";
 import { SmUtil } from '#/tools/smUtil';
+
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -38,9 +39,6 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loginLoading.value = true;
       //
-      console.info("isLoginEncrypt=",configPubStore.isLoginEncrypt())
-      console.info("getLoginPub=",configPubStore.getLoginPub())
-      //
       if (
         configPubStore.isLoginEncrypt() &&
         configPubStore.getLoginPub() &&
@@ -50,16 +48,18 @@ export const useAuthStore = defineStore('auth', () => {
         params.password = sm.encryptHex(params.password);
         params['encrypt'] = 'encrypt';
       }
+      params['account'] = params['username'];
       //
-      const { accessToken, authCode } = await loginApi(params);
+      const { accessToken, authCode, refreshToken } = await loginApi(params);
       const { payload } = decodePaseto(accessToken);
 
       // 如果成功获取到 accessToken
       if (accessToken) {
         // 将 accessToken 存储到 accessStore 中
         accessStore.setAccessToken(accessToken);
-        //accessStore.setAccessToken2(payload.jti);
-
+        accessStore.setRefreshToken(refreshToken);
+        configPubStore.setTenantId(payload.tno)
+        configPubStore.setTokenJti(payload.jti)
         // 获取用户信息并存储到 accessStore 中
         // const [fetchUserInfoResult, accessCodes] = await Promise.all([
         //   fetchUserInfo(),

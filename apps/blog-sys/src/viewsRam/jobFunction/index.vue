@@ -59,7 +59,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: true,
       zoom: true,
     },
-  } as VxeTableGridOptions,
+  } as any,
 });
 
 /**
@@ -77,9 +77,13 @@ async function gridQuery(params: Record<string, any> = {}) {
  * 刷新表格
  */
 async function onRefresh() {
-  const formValues = await gridApi.formApi.getValues();
-  gridApi.formApi.setLatestSubmissionValues(formValues);
-  gridQuery(formValues);
+  try {
+    const formValues = await gridApi.formApi.getValues();
+    gridApi.formApi.setLatestSubmissionValues(formValues);
+    gridQuery(formValues);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
 
 /**
@@ -225,8 +229,8 @@ function onPhysicalDeletion() {
 </script>
 
 <template>
-  <Page auto-content-height>
-    <Drawer @ok="onRefresh" />
+  <Page auto-content-height content-class="p-2">
+    <Drawer @ok="onRefresh"/>
     <Grid>
       <template #toolbar-actions>
         <VbenButton
@@ -286,6 +290,8 @@ function onPhysicalDeletion() {
               icon: 'lucide:trash-2',
               danger: true,
               popConfirm: {
+                okText: '确认',
+                cancelText: '取消',
                 title: `确定删除 [${row.name}] 吗？`,
                 confirm: () => onDelete(row),
               },

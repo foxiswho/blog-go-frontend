@@ -71,6 +71,31 @@ const [Form, formApi] = usePgForm({
           }
         },
       },
+      description: () =>
+        h('div',[
+          h(
+            VbenButton,
+            {
+              class:'pg-button-size-small',
+              onClick: async (e) => {
+                await formApi.setFieldValue('code', 'administrator');
+                await formApi.setFieldValue('name', '管理员');
+              },
+            },
+            () => h('span', { class: 'font-normal' }, '超管'),
+          ),
+          h(
+            VbenButton,
+            {
+              class:'pg-button-size-small ml-2',
+              onClick: async (e) => {
+                await formApi.setFieldValue('code', '系统自动建立');
+              },
+            },
+            () => h('span', { class: 'font-normal' }, '系统自动建立'),
+          ),
+          h('div',()=>'超管[码值][administrator]新增成功后，不能修改，只能删除')
+        ]),
     },
     {
       tabGroup: 'other',

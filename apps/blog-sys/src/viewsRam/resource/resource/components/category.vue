@@ -7,6 +7,7 @@ import { VbenButton } from '@vben/common-ui';
 import { usePgForm, useVbenForm } from '#/adapter';
 
 import { existName, createUpdateByCategory, selectNodeAllPublic, selectCategory } from '../api';
+import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
 const emit = defineEmits(['ok',]);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -17,6 +18,20 @@ const [Form, formApi] = usePgForm({
     ],
   },
   schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'terminalCode',
+      label: '终端类型',
+      component: 'ApiRadioGroup',
+      componentProps: {
+        api: typeCodePublic,
+        params: {typeCode:'terminalCode'},
+        autoSelect: 'first',
+        optionType: 'button',
+        buttonStyle: 'solid',
+      },
+      rules: 'required',
+    },
     {
       tabGroup: 'home',
       fieldName: 'parentNo',
@@ -30,11 +45,6 @@ const [Form, formApi] = usePgForm({
           placeholder: '如果为空,则是一级',
           filterable: true,
         },
-      },
-      dependencies: {
-        show: false,
-        // 随意一个字段改变时，都会触发
-        triggerFields: ['description'],
       },
     },
     {

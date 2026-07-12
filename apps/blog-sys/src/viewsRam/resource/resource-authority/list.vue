@@ -29,7 +29,7 @@ import { columns } from './data';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
+const reloadTreeState = ref(0);
 const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
 const formParam = { parentId: '' };
@@ -45,7 +45,7 @@ const treeChang = (record) => {
  * 重新加载
  */
 function reloadTree() {
-  reloadTreeState.value = true;
+  reloadTreeState.value++;
 }
 /**
  * 树重载

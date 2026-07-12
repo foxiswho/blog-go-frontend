@@ -17,7 +17,7 @@ import {
   SexOptionsFormatter,
 } from '@pg/types';
 
-import { dialog, message, useVbenForm } from '#/adapter';
+import { message } from '#/adapter';
 import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 import { typeCodePublic } from '#/viewsBasic/data-dict/dict/api';
 import { selectNodeAllPublic } from '#/viewsRam/department/api';
@@ -37,7 +37,7 @@ import { columns } from './data';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
+const reloadTreeState = ref(0);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
 
 const treeChang = (record: any) => {
@@ -50,7 +50,7 @@ const treeChang = (record: any) => {
  * 重新加载
  */
 function reloadTree() {
-  reloadTreeState.value = true;
+  reloadTreeState.value++;
 }
 /**
  * 树重载
@@ -168,7 +168,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: true,
       zoom: true,
     },
-  } as VxeTableGridOptions,
+  } as any,
 });
 /**
  * 重新查询
@@ -193,9 +193,13 @@ async function gridQuerySubmit() {
  * 刷新表格
  */
 async function onRefresh() {
-  const formValues = await gridApi.formApi.getValues();
-  gridApi.formApi.setLatestSubmissionValues(formValues);
-  gridQuery(formValues);
+  try {
+    const formValues = await gridApi.formApi.getValues();
+    gridApi.formApi.setLatestSubmissionValues(formValues);
+    gridQuery(formValues);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
 
 /**

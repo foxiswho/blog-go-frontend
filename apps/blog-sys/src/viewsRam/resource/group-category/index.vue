@@ -10,12 +10,12 @@ import { VbenTableAction } from '#/adapter/vxe-table';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { $t } from '#/locales';
 
-import { deleteIds, queryAll } from './api';
-import DrawerEdit from './components/DrawerEdit.vue';
+import { deleteIds, queryAllCategory } from '../group/api';
+import Form from './components/DrawerEdit.vue';
 import { columns } from './data';
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  connectedComponent: DrawerEdit,
+  connectedComponent: Form,
   destroyOnClose: true,
 });
 
@@ -79,7 +79,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     proxyConfig: {
       ajax: {
         query: async (_params) => {
-          return await queryAll({});
+          return await queryAllCategory({});
         },
       },
     },
@@ -96,7 +96,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       expandAll: true,
       showLine: true,
     },
-  } as any,
+  } as VxeTableGridOptions,
 });
 
 /**
@@ -108,9 +108,13 @@ function refreshGrid() {
 </script>
 <template>
   <Page auto-content-height content-class="p-2">
-    <Grid table-title="部门列表">
-      <template #toolbar-tools>
-        <VbenButton type="primary" @click="onCreate">
+    <Grid>
+      <template #toolbar-actions>
+        <VbenButton
+          type="primary"
+          class="pg-button-size-small"
+          @click="onCreate"
+        >
           <Plus class="size-5" />
           新增
         </VbenButton>

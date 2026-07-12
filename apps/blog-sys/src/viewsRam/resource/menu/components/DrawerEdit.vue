@@ -568,7 +568,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
         });
       }
       if (parent) {
-        formApi.setFieldValue('parentNo', parent.no);
+        let data = {
+          parentNo: parent.no,
+        };
+        if(parent.terminalCode) {
+          data['terminalCode'] = parent.terminalCode;
+        }
+        formApi.setValues(data);
       }
 
       drawerApi.setState({
@@ -622,9 +628,13 @@ function okSelectRouter(row) {
   const values = formApi.getValues<Omit<Record<string, any>,'id'>>();
   if(values) {
     if(!values.name) {
-      formApi.setFieldValue('name', row.name);
+      formApi.setFieldValue('name', row.label);
     }
-    formApi.setFieldValue('metaTitle', row.name);
+    if(row?.meta && row?.meta?.title) {
+      formApi.setFieldValue('metaTitle', row.meta.title);
+    } else if (row.label){
+      formApi.setFieldValue('metaTitle', row.label);
+    }
     if(row.typeMenu!='link' && row.typeMenu!='embedded'){
       formApi.setFieldValue('component', row.component2);
     }

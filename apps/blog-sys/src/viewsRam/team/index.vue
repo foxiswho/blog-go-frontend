@@ -1,13 +1,11 @@
-<script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+<script setup lang="ts">
 
-import { toRaw } from 'vue';
+import {onMounted, reactive, ref} from 'vue';
 
 import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
-
-import { message } from '#/adapter';
-import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
+import {message} from '#/adapter';
+import {useVbenVxeGrid} from '#/adapter/vxe-table';
 
 import {
   batchSelectDisable,
@@ -17,8 +15,8 @@ import {
   deleteIds,
   List,
 } from './api';
-import { columns, useGridFormSchema } from './data';
 import DrawerEditTpl from './components/DrawerEdit.vue';
+import {columns, useGridFormSchema} from './data';
 
 const [Drawer, drawerApi] = useVbenDrawer({
   connectedComponent: DrawerEditTpl,
@@ -40,7 +38,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
     proxyConfig: {
       ajax: {
-        query: async ({ page }, formValues) => {
+        query: async ({page}, formValues) => {
           return await List({
             pageSize: page.pageSize,
             pageNum: page.currentPage,
@@ -59,7 +57,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: true,
       zoom: true,
     },
-  } as VxeTableGridOptions,
+  } as any,
 });
 
 /**
@@ -72,6 +70,7 @@ async function gridQuery(params: Record<string, any> = {}) {
     console.error('Error occurred while reloading:', error);
   }
 }
+
 /**
  * 刷新表格
  */
@@ -84,11 +83,12 @@ async function onRefresh() {
     console.error('Error occurred while reloading:', error);
   }
 }
+
 /**
  * 新增
  */
 function onCreate() {
-  drawerApi.setData({ values: {}, isUpdate: false }).open();
+  drawerApi.setData({values: {}, isUpdate: false}).open();
 }
 
 /**
@@ -96,7 +96,7 @@ function onCreate() {
  * @param row 行数据
  */
 function onEdit(row: any) {
-  drawerApi.setData({ values: row, isUpdate: true }).open();
+  drawerApi.setData({values: row, isUpdate: true}).open();
 }
 
 /**
@@ -227,8 +227,8 @@ function onPhysicalDeletion() {
 </script>
 
 <template>
-  <Page auto-content-height>
-    <Drawer @ok="onRefresh" />
+  <Page auto-content-height content-class="p-2">
+    <Drawer @ok="onRefresh"/>
     <Grid>
       <template #toolbar-actions>
         <VbenButton
@@ -236,7 +236,7 @@ function onPhysicalDeletion() {
           class="pg-button-size-small"
           @click="onCreate"
         >
-          <Plus class="size-5" />
+          <Plus class="size-5"/>
           新增
         </VbenButton>
       </template>
@@ -264,7 +264,6 @@ function onPhysicalDeletion() {
         </VbenButton>
         <VbenButton
           class="ml-2 pg-button-size-small"
-          size="small"
           danger
           @click="onPhysicalDeletion"
         >
@@ -288,6 +287,8 @@ function onPhysicalDeletion() {
               icon: 'lucide:trash-2',
               danger: true,
               popConfirm: {
+                okText: '确认',
+                cancelText: '取消',
                 title: `确定删除 [${row.name}] 吗？`,
                 confirm: () => onDelete(row),
               },
@@ -299,3 +300,5 @@ function onPhysicalDeletion() {
     </Grid>
   </Page>
 </template>
+
+<style scoped></style>

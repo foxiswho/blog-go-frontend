@@ -47,6 +47,7 @@ const [Form, formApi] = usePgForm({
           filterable: true,
         },
       },
+      rules: 'required',
     },
     {
       tabGroup: 'home',

@@ -25,7 +25,7 @@ const checkedData = ref([]);
 const treeCheckedKeys = ref([]);
 const currenData = ref<Recordable<any>>({});
 const parentData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
+const reloadTreeState = ref(0);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
 const formParam = { typeValue: '0',typeCategory:'group' };
 
@@ -39,7 +39,7 @@ const treeChang = (record) => {
  * 重新加载
  */
 function reloadTree() {
-  reloadTreeState.value = true;
+  reloadTreeState.value++;
 }
 /**
  * 树重载
@@ -102,11 +102,15 @@ const [Modal, modalApi] = useVbenModal({
     updateByRole({
       typeValue: parentData.value.no,
       nos:ids,
+    }).then((d) => {
+      setTimeout(()=>{
+        emit('ok', checkedData.value);
+        modalApi.setData({ rows: checkedData.value });
+        modalApi.close();
+      },1500);
     });
 
-    emit('ok', checkedData.value);
-    modalApi.setData({ rows: checkedData.value });
-    modalApi.close();
+
     return true;
   },
   onOpenChange(isOpen: boolean) {
