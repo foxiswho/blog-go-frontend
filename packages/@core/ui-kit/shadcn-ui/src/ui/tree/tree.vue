@@ -21,6 +21,7 @@ const props = withDefaults(defineProps<TreeProps>(), treePropsDefaults());
 const emits = defineEmits<{
   expand: [value: FlattenedItem<Recordable<any>>];
   select: [value: FlattenedItem<Recordable<any>>];
+  selectAll: any;
 }>();
 
 interface InnerFlattenItem<T = Recordable<any>, P = number | string> {
@@ -213,8 +214,16 @@ const selectAllStatus = computed<'indeterminate' | boolean>(() => {
 function onSelectAllChange(checked: 'indeterminate' | boolean) {
   if (checked === true) {
     checkAll();
+    emits('selectAll',{
+      allChildren:modelValue.value,
+      data:treeValue.value,
+    })
   } else {
     unCheckAll();
+    emits('selectAll',{
+      allChildren:modelValue.value,
+      data:treeValue.value,
+    })
   }
 }
 

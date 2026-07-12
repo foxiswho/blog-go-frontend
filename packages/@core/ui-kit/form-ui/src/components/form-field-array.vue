@@ -3,7 +3,7 @@ import type { FormSchema } from '../types';
 
 import { computed } from 'vue';
 
-import { Plus, X } from '@vben-core/icons';
+import { Copy, Plus, X } from '@vben-core/icons';
 import {
   VbenButton,
   VbenIconButton,
@@ -89,6 +89,17 @@ function removeRow(index: number) {
   remove(index);
 }
 
+function copyRow(index: number) {
+  if (props.disabled || !canAdd.value) {
+    return;
+  }
+  const row = fields.value[index];
+  if (!row) {
+    return;
+  }
+  push({ ...row.value });
+}
+
 /**
  * 把列定义转换为子单元格 FormField 所需的 props。
  * - fieldName 替换为嵌套路径 `name[index].fieldName`，让校验与取值落在数组元素上
@@ -125,7 +136,7 @@ function cellProps(col: FormSchema, index: number) {
             <VbenRenderContent :content="col.label" />
           </th>
           <th
-            class="text-muted-foreground w-16 px-2 py-2 text-left text-sm font-normal"
+            class="text-muted-foreground w-24 px-2 py-2 text-left text-sm font-normal"
           >
             {{ actionText }}
           </th>
@@ -144,13 +155,22 @@ function cellProps(col: FormSchema, index: number) {
             <FormField v-bind="cellProps(col, index)" />
           </td>
           <td class="px-2 py-3">
-            <VbenIconButton
-              :disabled="disabled || !canRemove"
-              :on-click="() => removeRow(index)"
-              class="text-muted-foreground hover:text-destructive"
-            >
-              <X class="size-4" />
-            </VbenIconButton>
+            <div class="flex items-center gap-1">
+              <VbenIconButton
+                :disabled="disabled || !canAdd"
+                :on-click="() => copyRow(index)"
+                class="text-muted-foreground hover:text-foreground"
+              >
+                <Copy class="size-4" />
+              </VbenIconButton>
+              <VbenIconButton
+                :disabled="disabled || !canRemove"
+                :on-click="() => removeRow(index)"
+                class="text-muted-foreground hover:text-destructive"
+              >
+                <X class="size-4" />
+              </VbenIconButton>
+            </div>
           </td>
         </tr>
       </tbody>
