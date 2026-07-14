@@ -20,6 +20,7 @@ enum Api {
   selectNodeAll = '/xianfu/sys/ram/resource-group/selectNodeAll',
   selectNodePublic = '/xianfu/sys/ram/resource-group/selectNodePublic',
   selectPublic = '/xianfu/sys/ram/resource-group/selectPublic',
+  queryAllCategory = '/xianfu/sys/ram/resource-group/queryAllCategory',
   state = '/xianfu/sys/ram/resource-group/state',
   update = '/xianfu/sys/ram/resource-group/update',
 }

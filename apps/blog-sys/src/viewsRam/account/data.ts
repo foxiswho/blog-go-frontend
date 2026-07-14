@@ -7,7 +7,7 @@ import { existName, setStateEnableDisable } from './api';
 import {confirmSwitch} from "#/adapter/vxe-table";
 
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', title: 'ID', width: 40 },
+  { type: 'checkbox', width: 34 },
   { field: 'name', title: '名称', visible: false },
   { field: 'account', title: '账号', visible: false },
   { field: 'accountAll', title: '账号', slots: { default: 'accountAll' } },
