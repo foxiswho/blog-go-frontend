@@ -5,7 +5,7 @@ import {onMounted, reactive, ref} from 'vue';
 import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 import {message} from '#/adapter';
-import {useVbenVxeGrid} from '#/adapter/vxe-table';
+import {useVbenVxeGrid,VbenTableAction} from '#/adapter/vxe-table';
 
 import {
   batchSelectDisable,

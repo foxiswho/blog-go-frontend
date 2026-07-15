@@ -65,6 +65,15 @@ const routes: RouteRecordRaw[] = [
           title: '职务管理',
           icon: 'mdi:account-circle',
         },
+        name: 'ram-jobFunction',
+        path: '/lq2/ram/jobFunction',
+        component: () => import('#/viewsRam/jobFunction/index.vue'),
+      },
+      {
+        meta: {
+          title: '职位管理',
+          icon: 'mdi:account-circle',
+        },
         name: 'ram-position',
         path: '/lq2/ram/position',
         component: () => import('#/viewsRam/position/index.vue'),
