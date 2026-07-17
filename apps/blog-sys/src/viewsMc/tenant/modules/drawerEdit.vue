@@ -198,7 +198,9 @@ function onSubmit(values: Record<string, any>) {
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate)
+    saveOrUpdate({
+      ...values,
+    }, isUpdate)
       .then((d) => {
         setTimeout(() => {
           emit('ok', values);

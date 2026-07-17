@@ -3,6 +3,7 @@ import { requestClient } from '#/api/request';
 
 enum Api {
   create = '/xianfu/sys/tc/tenant/create',
+  update = '/xianfu/sys/tc/tenant/update',
   createUpdate = '/xianfu/sys/tc/tenant/createUpdate',
   delete = '/xianfu/sys/tc/tenant/delete',
   detail = '/xianfu/sys/tc/tenant/detail/',

@@ -122,7 +122,7 @@ const [Form, formApi] = usePgForm({
     },
     {
       tabGroup: 'home',
-      fieldName: 'countryId',
+      fieldName: 'countryNo',
       label: '国家',
       component: 'Input',
     },
