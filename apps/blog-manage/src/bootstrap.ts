@@ -2,31 +2,33 @@ import { createApp, watchEffect } from 'vue';
 
 import { registerAccessDirective } from '@vben/access';
 import { registerLoadingDirective } from '@vben/common-ui';
+import { providePluginsOptions } from '@vben/plugins';
 import { preferences } from '@vben/preferences';
 import { initStores } from '@vben/stores';
 import '@vben/styles';
 import '@vben/styles/naive';
 
-import formCreate from '@form-create/naive-ui';
-import { useRenderer } from '@pg/table-vxe';
-import naive from 'naive-ui';
+import { useTitle } from '@vueuse/core';
 
 import { $t, setupI18n } from '#/locales';
+import { router } from './router';
 
 import { initComponentAdapter } from './adapter/component';
-import { initSetupVbenForm, initSetupPgForm } from './adapter/form';
+import { initSetupPgForm, initSetupVbenForm, useVbenForm } from './adapter/form';
+import App from './app.vue';
+// import { initTimezone } from './timezone-init';
+
+// 离线图标注册：编译时从 @iconify/json 提取数据，运行时不再远程拉取
+import '#/icons/setup';
+import naive from 'naive-ui';
 // 完整导入 UI 组件库
 import VxeUI from 'vxe-pc-ui';
-
-import 'vxe-pc-ui/lib/style.css';
 // 完整导入 表格库
 import VxeUITable from 'vxe-table';
 
-import App from './app.vue';
-import { router } from './router';
-
+import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
-import { useTitle } from '@vueuse/core';
+import './style/style.css';
 
 async function bootstrap(namespace: string) {
   // 初始化组件适配器
@@ -36,20 +38,25 @@ async function bootstrap(namespace: string) {
   await initSetupVbenForm();
   await initSetupPgForm();
 
-  // // 设置弹窗的默认配置
+  // 注入插件全局配置
+  providePluginsOptions({
+    form: { useVbenForm },
+  });
+
+  // 设置弹窗的默认配置
   // setDefaultModalProps({
   //   fullscreenButton: false,
   // });
-  // // 设置抽屉的默认配置
+  // 设置抽屉的默认配置
   // setDefaultDrawerProps({
-  //   // zIndex: 2000,
+  //   zIndex: 1020,
   // });
 
   const app = createApp(App);
 
   // 注册v-loading指令
   registerLoadingDirective(app, {
-    loading: 'loading', // 在这里可以自定义指令名称,也可以明确提供false表示不注册这个指令
+    loading: 'loading', // 在这里可以自定义指令名称，也可以明确提供false表示不注册这个指令
     spinning: 'spinning',
   });
 
@@ -60,6 +67,9 @@ async function bootstrap(namespace: string) {
   // 配置 pinia-tore
   await initStores(app, { namespace });
 
+  // 初始化时区HANDLER
+  // initTimezone();
+
   // 安装权限指令
   registerAccessDirective(app);
 
@@ -68,7 +78,6 @@ async function bootstrap(namespace: string) {
   initTippy(app);
 
   // 表单设计器
-  app.use(formCreate);
   app.use(VxeUI);
   app.use(VxeUITable);
   // 配置路由及路由守卫
@@ -88,7 +97,6 @@ async function bootstrap(namespace: string) {
     }
   });
 
-  useRenderer();
   app.mount('#app');
 }
 

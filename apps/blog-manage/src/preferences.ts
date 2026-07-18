@@ -8,17 +8,27 @@ import { defineOverridesPreferences } from '@vben/preferences';
 export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
+    // 是否开启检查更新
+    enableCheckUpdates: true,
+    // 检查更新的时间间隔，单位为分钟
+    checkUpdatesInterval: 1,
+    accessMode: 'frontend',
     name: import.meta.env.VITE_APP_TITLE,
-    defaultAvatar: '/static/avatar-v1.webp',
+    defaultAvatar: '/static/logo.png',
     /** 登录注册页面布局 */
     authPageLayout: 'panel-center',
-    logo: {
-      enable: true,
-      source: '/static/logo-v1.webp',
-    },
+    // 是否开启refreshToken
+    enableRefreshToken: true,
+    // 登录认证过期,打开登录弹窗
+    loginExpiredMode: 'modal',
+  },
+  logo: {
+    enable: true,
+    source: '/static/logo.png',
   },
   theme: {
     mode: 'light',
+    fontSize: 14,
   },
   tabbar: {
     /** 标签页风格 */
@@ -42,11 +52,25 @@ export const overridesPreferences = defineOverridesPreferences({
     /** 是否显示主题切换部件 */
     themeToggle: false,
   },
+  shortcutKeys:{
+    /** 是否启用快捷键-全局 */
+    enable: true,
+    /** 是否启用全局关闭窗口快捷键 */
+    globalEscape: true,
+    /** 是否启用全局锁屏快捷键 */
+    globalLockScreen: false,
+    /** 是否启用全局注销快捷键 */
+    globalLogout: false,
+    /** 是否启用全局偏好设置快捷键 */
+    globalPreferences: false,
+    /** 是否启用全局搜索快捷键 */
+    globalSearch: false,
+  },
   copyright: {
     /** 版权公司名 */
-    companyName: '仙域科技',
+    companyName: '仙府',
     /** 版权公司名链接 */
-    companySiteLink: '仙域科技',
+    companySiteLink: '',
     /** 版权日期 */
     date: '2025',
     /** 版权是否可见 */

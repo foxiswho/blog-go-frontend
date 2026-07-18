@@ -35,16 +35,11 @@ const formSchema = computed((): VbenFormSchema[] => {
         .min(1, { message: $t('authentication.selectAccount') })
         .optional()
         .default('admin'),
-    },
-    {
-      component: 'VbenInput',
-      defaultValue: '1000',
-      componentProps: {
-        placeholder: '请输入编号',
+      dependencies: {
+        show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['password'],
       },
-      fieldName: 'orgCode',
-      label: '商户编号',
-      rules: z.string().min(1, { message: '商户编号必填' }),
     },
     {
       component: 'VbenInput',
@@ -53,17 +48,17 @@ const formSchema = computed((): VbenFormSchema[] => {
       },
       dependencies: {
         trigger(values, form) {
-          if (values.selectAccount) {
-            const findUser = MOCK_USER_OPTIONS.find(
-              (item) => item.value === values.selectAccount,
-            );
-            if (findUser) {
-              form.setValues({
-                password: 'foxwho.com',
-                username: findUser.value,
-              });
-            }
-          }
+          // if (values.selectAccount) {
+          //   const findUser = MOCK_USER_OPTIONS.find(
+          //     (item) => item.value === values.selectAccount,
+          //   );
+          //   if (findUser) {
+          //     form.setValues({
+          //       password: 'foxwho.com',
+          //       username: findUser.value,
+          //     });
+          //   }
+          // }
         },
         triggerFields: ['selectAccount'],
       },
@@ -93,6 +88,11 @@ const formSchema = computed((): VbenFormSchema[] => {
 
 <template>
   <AuthenticationLogin
+    :show-qrcode-login="false"
+    :show-code-login="false"
+    :show-forget-password="false"
+    :show-register="false"
+    :show-third-party-login="false"
     :form-schema="formSchema"
     :loading="authStore.loginLoading"
     @submit="authStore.authLogin"
