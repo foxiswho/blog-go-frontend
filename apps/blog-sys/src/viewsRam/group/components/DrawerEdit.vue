@@ -116,9 +116,15 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
-      if (values) {
-        formApi.setValues(values);
+      const { values, isUpdate,copy } = drawerApi.getData<Record<string, any>>();
+      if (values && Object.keys(values).length > 0) {
+        formApi.setValues({...values,});
+      } else if (copy && Object.keys(copy).length > 0) {
+        formApi.setValues({
+          ...copy,
+          id:'0',
+          code:'系统自动建立',
+        });
       }
 
       drawerApi.setState({ title: `分组：${isUpdate ? '编辑' : '新增'}` ,loading: false});

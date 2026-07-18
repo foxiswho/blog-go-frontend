@@ -35,13 +35,23 @@ const [Form, formApi] = useVbenForm({
       label: '上级',
       component: 'PgTreeSelect',
       componentProps: {
-        api: selectCategory,
-        params: { typeAttr: 'categoryLast' },
+        // api: selectCategory,
+        // params: { typeAttr: 'categoryLast' },
         convertNode: true,
         props: {
           placeholder: '如果为空,则是一级',
           filterable: true,
         },
+      },
+      dependencies: {
+        show: (values)=> values.terminalCode,
+        triggerFields: ['terminalCode'],
+        componentProps(values) {
+          return {
+            api: selectCategory,
+            params: {typeAttr: 'categoryLast',terminalCode:values.terminalCode},
+          };
+        }
       },
       formItemClass: 'col-span-2',
       rules: 'required',
@@ -281,13 +291,16 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate, parent } =
+      const { values, isUpdate, parent,terminalCode } =
         drawerApi.getData<Record<string, any>>();
       let data = {};
       if (values) {
         data = {
           ...values,
         };
+      }
+      if(terminalCode) {
+        data['terminalCode'] = terminalCode;
       }
       if (parent) {
         data.parentNo = parent.no;
@@ -298,17 +311,17 @@ const [Drawer, drawerApi] = useVbenDrawer({
         title = title + parent.name;
       }
       data.items =[
-        { name: '部门:新增和更新', code: 'sys:department:createUpdate', path: '/ajs/sys/ram/department/createUpdate', method: 'POST' },
-        { name: '部门:删除', code: 'sys:department:delete', path: '/ajs/sys/ram/department/delete', method: 'POST' },
-        { name: '部门:详情', code: 'sys:department:detail', path: '/ajs/sys/ram/department/detail/{id}', method: 'GET' },
-        { name: '部门:禁用', code: 'sys:department:disable', path: '/ajs/sys/ram/department/disable', method: 'POST' },
-        { name: '部门:启用', code: 'sys:department:enable', path: '/ajs/sys/ram/department/enable', method: 'POST' },
-        { name: '部门:码值是否存在', code: 'sys:department:existCode', path: '/ajs/sys/ram/department/existCode', method: 'POST' },
-        { name: '部门:名称是否存在', code: 'sys:department:existName', path: '/ajs/sys/ram/department/existCode', method: 'POST' },
-        { name: '部门:物理删除', code: 'sys:department:physicalDeletion', path: '/ajs/sys/ram/department/physicalDeletion', method: 'POST' },
-        { name: '部门:列表', code: 'sys:department:query', path: '/ajs/sys/ram/department/query', method: 'POST' },
-        { name: '部门:列表-全部', code: 'sys:department:queryAll', path: '/ajs/sys/ram/department/queryAll', method: 'POST' },
-        { name: '部门:select树', code: 'sys:department:selectNodeAll', path: '/ajs/sys/ram/department/selectNodeAll', method: 'POST' }
+        { name: '部门:新增和更新', code: 'sys:department:createUpdate', path: '/xianfu/sys/ram/department/createUpdate', method: 'POST' },
+        { name: '部门:删除', code: 'sys:department:delete', path: '/xianfu/sys/ram/department/delete', method: 'POST' },
+        { name: '部门:详情', code: 'sys:department:detail', path: '/xianfu/sys/ram/department/detail/{id}', method: 'GET' },
+        { name: '部门:禁用', code: 'sys:department:disable', path: '/xianfu/sys/ram/department/disable', method: 'POST' },
+        { name: '部门:启用', code: 'sys:department:enable', path: '/xianfu/sys/ram/department/enable', method: 'POST' },
+        { name: '部门:码值是否存在', code: 'sys:department:existCode', path: '/xianfu/sys/ram/department/existCode', method: 'POST' },
+        { name: '部门:名称是否存在', code: 'sys:department:existName', path: '/xianfu/sys/ram/department/existCode', method: 'POST' },
+        { name: '部门:删除', code: 'sys:department:physicalDeletion', path: '/xianfu/sys/ram/department/physicalDeletion', method: 'POST' },
+        { name: '部门:列表', code: 'sys:department:query', path: '/xianfu/sys/ram/department/query', method: 'POST' },
+        { name: '部门:列表-全部', code: 'sys:department:queryAll', path: '/xianfu/sys/ram/department/queryAll', method: 'POST' },
+        { name: '部门:select树', code: 'sys:department:selectNodeAll', path: '/xianfu/sys/ram/department/selectNodeAll', method: 'POST' }
       ];
       formApi.setValues(data);
 

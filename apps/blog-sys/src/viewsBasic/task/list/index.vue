@@ -20,7 +20,7 @@ import {
   batchSelectDisable,
   batchSelectEnable,
   batchSelectRecovery,
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   deleteIds,
   List,
 } from './api';
@@ -29,7 +29,7 @@ import { columns } from './data';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
+const reloadTreeState = ref(0);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
 const formParam = { categoryId: '' };
 
@@ -44,7 +44,7 @@ const treeChang = (record) => {
  * 重新加载
  */
 function reloadTree() {
-  reloadTreeState.value = true;
+  reloadTreeState.value++;
 }
 /**
  * 树重载
@@ -160,7 +160,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
           { code: 'delete', name: '删除' },
           { code: 'recovery', name: '删除恢复' },
           { code: 'mark_cancel', name: '标记[删除/取消]' },
-          { code: 'physicalDeletion', name: '批量物理删除' },
+          { code: 'physicalDeletion', name: '批量删除' },
         ],
       },
     ],
@@ -253,7 +253,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
     const $grid = xGrid.value;
     if ($grid) {
       switch (code) {
-        // 批量 物理删除
+        // 批量 删除
         case 'physicalDeletion': {
           const checkboxRecords = $grid.getCheckboxRecords();
           if (checkboxRecords.length <= 0) {
@@ -269,7 +269,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
             message.warning('你没有选择任何数据');
             return;
           }
-          batchSelectPhysicalDeletion(ids, () => {
+          batchSelectDelete(ids, () => {
             reloadTable();
             $grid.setAllCheckboxRow(false);
           });
@@ -423,7 +423,7 @@ const saveRowEvent = async (row: RowVO) => {
  */
 const removeRowEvent = async (row: RowVO) => {
   const $grid = xGrid.value;
-  batchSelectPhysicalDeletion([row.id], () => {
+  batchSelectDelete([row.id], () => {
     $grid.remove(row);
   });
 };
@@ -494,7 +494,7 @@ const rightClickMenuOptions = ({ option }) => {
           </vxe-grid>
         </NLayoutContent>
       </NLayout>
-      <FormDrawer />
+      <FormDrawer @ok="reloadTable"/>
     </NLayout>
   </div>
 </template>

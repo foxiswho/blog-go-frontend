@@ -207,6 +207,7 @@ const [Modal, modalApi] = useVbenModal({
           <div>账号:{{ row.account }}</div>
           <div>邮箱:{{ row.mail }}</div>
           <div>编号:{{ row.no }}</div>
+          <div>码值:{{ row.code }}</div>
         </template>
         <template #nameAll="{ row }">
           <div class="text-xs">

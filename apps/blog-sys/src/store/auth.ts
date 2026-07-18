@@ -71,13 +71,13 @@ export const useAuthStore = defineStore('auth', () => {
         //
         const infoPublic = await fetchUserInfoPublic();
         // console.log('InfoPublic',infoPublic)
-        if(infoPublic?.menu) {
-          configPubStore.setRouterOtherAuth(infoPublic.menu.otherAuth);
+        if(infoPublic?.menuRouter) {
+          configPubStore.setRouterOtherAuth(infoPublic.menuRouter.otherAuth);
           // 菜单
-          configPubStore.setRouterList(infoPublic.menu.data);
+          configPubStore.setRouterList(infoPublic.menuRouter.data);
           // 按钮权限码
-          if (infoPublic.menu?.dataCodes){
-            accessStore.setAccessCodes(infoPublic.menu?.dataCodes);
+          if (infoPublic.menuRouter?.dataCodes){
+            accessStore.setAccessCodes(infoPublic.menuRouter?.dataCodes);
           }
         }
         userInfo = infoPublic.info;
@@ -134,22 +134,10 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUserInfo() {
     // const userInfo = await getUserInfoApi();
     const infoPublic = await getUserInfoApiPublic();
+    console.log('fetchUserInfo=',infoPublic)
     userStore.setUserInfo(infoPublic.info);
-    if(infoPublic?.info?.roles) {
-      userStore.setUserInfo(infoPublic?.info?.roles);
-    }
     if(infoPublic?.menuRouter) {
-      if(infoPublic.menuRouter?.otherAuth){
-        configPubStore.setRouterOtherAuth(infoPublic.menuRouter.otherAuth);
-      }
-      // 菜单
-      if(infoPublic.menuRouter?.data){
-        configPubStore.setRouterList(infoPublic.menuRouter.data);
-      }
-      // 按钮权限码
-      if (infoPublic.menuRouter?.dataCodes){
-        accessStore.setAccessCodes(infoPublic.menuRouter?.dataCodes);
-      }
+      configPubStore.setData(infoPublic.menuRouter);
     }
     return infoPublic.info;
   }

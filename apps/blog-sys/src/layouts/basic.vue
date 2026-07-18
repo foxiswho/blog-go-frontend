@@ -234,7 +234,6 @@ watch(
         :menus
         :text="userStore.userInfo?.realName"
         :description="userStore.userInfo?.account"
-        tag-text="Pro"
         @logout="handleLogout"
         @clear-preferences-and-logout="handleLogout"
       />

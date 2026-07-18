@@ -210,13 +210,13 @@ async function onSubmit() {
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    saveOrUpdate(values, isUpdate).then((d) => {
-      setTimeout(() => {
-        emit('ok', values);
-        drawerApi.setState({ loading: false });
-        drawerApi.close();
-      }, 500);
-    });
+    saveOrUpdate(values, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', {...values,});
+          drawerApi.close();
+        }, 500);
+      });
   } catch (error) {
     console.error(error);
   } finally {

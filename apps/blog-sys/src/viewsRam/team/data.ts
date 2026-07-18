@@ -41,7 +41,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
  */
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', width: 34 },
-  { field: 'name', title: '名称' },
+  { field: 'name', title: '名称', minWidth: 200 },
   { field: 'code', title: '码值', width: 210 },
   {
     field: 'state',

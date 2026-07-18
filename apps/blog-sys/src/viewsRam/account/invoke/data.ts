@@ -8,7 +8,7 @@ import {
 } from '@pg/types';
 
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', title: 'ID', width: 40 },
+  { type: 'checkbox', width: 34 },
   { field: 'name', title: '名称', visible: false },
   { field: 'account', title: '账号', visible: false },
   { field: 'accountAll', title: '账号', slots: { default: 'accountAll' } },
@@ -17,7 +17,8 @@ export const columns: VxeGridPropTypes.Columns = [
   { field: 'jobAll', title: '职位', slots: { default: 'jobAll' } },
   { field: 'mail', title: '邮箱', width: 160, visible: false },
   { field: 'phone', title: '手机号', width: 160, visible: false },
-  { field: 'no', title: '码值', width: 160, visible: false },
+  { field: 'code', title: '码值', width: 160, visible: false },
+  { field: 'no', title: '编号', width: 160, visible: false },
   { field: 'realName', title: '真实姓名', width: 160, visible: false },
   { field: 'registerTime', title: '注册时间', width: 160, visible: false },
   { field: 'loginTime', title: '登陆时间', width: 160, visible: false },
@@ -59,7 +60,7 @@ export const columns: VxeGridPropTypes.Columns = [
 ];
 
 export const columnsShort: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', title: 'ID', width: 34 },
+  { type: 'checkbox', width: 34 },
   { field: 'name', title: '名称', visible: true, minWidth:160 },
   { field: 'account', title: '账号', visible: true, minWidth:160 },
   { field: 'accountAll', title: '账号', slots: { default: 'accountAll' }, visible: false },
@@ -67,6 +68,7 @@ export const columnsShort: VxeGridPropTypes.Columns = [
   { field: 'mail', title: '邮箱', minWidth: 160, visible: true },
   { field: 'phone', title: '手机号', minWidth: 160, visible: true },
   { field: 'no', title: '编号', width: 160, visible: true },
+  { field: 'code', title: '码值', width: 160, visible: true },
   { field: 'realName', title: '真实姓名', width: 160, visible: true },
   { field: 'registerTime', title: '注册时间', width: 160, visible: true },
   { field: 'loginTime', title: '登陆时间', width: 160, visible: true },

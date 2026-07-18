@@ -8,7 +8,7 @@ import { setStateEnableDisable } from './api';
 
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', width: 34 },
-  { field: 'name', title: '名称', sortable: true },
+  { field: 'name', title: '名称', minWidth: 200, sortable: true },
   { field: 'code', title: '码值', width: 160 },
   {
     field: 'terminalCode',

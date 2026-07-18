@@ -124,7 +124,7 @@ const [Form, formApi] = usePgForm({
     {
       tabGroup: 'home',
       fieldName: 'code',
-      label: '编号',
+      label: '码值',
       rules: 'required',
       component: 'Input',
       suffix: () =>

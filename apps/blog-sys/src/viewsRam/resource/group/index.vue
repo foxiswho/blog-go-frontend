@@ -10,6 +10,7 @@ import { Plus } from '@vben/icons';
 
 import { PgTree } from '@pg/components-n';
 import { stateYesNoOption } from '@pg/types';
+import { useDataDictionaryStore } from '#/store';
 
 import { dialog, message } from '#/adapter';
 import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
@@ -17,7 +18,7 @@ import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 import {
   batchSelectDisable,
   batchSelectEnable,
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   batchSelectRecovery,
   deleteIds,
   List,
@@ -28,16 +29,25 @@ import Category from './components/category.vue';
 import Edit from './components/DrawerEdit.vue';
 import DrawerEditBatchTpl from './components/DrawerEditBatch.vue';
 import { columns } from './data';
+import {MdiTickCircle} from "@pg/icons";
 
+// 数据字典
+const dataDictionaryStore = useDataDictionaryStore();
+// 数据字典-加载
+dataDictionaryStore.requestAllSet(['terminalCode']);
+//
+const terminalCode = ref<string>('system');
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(0);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
+const selectTitle = ref<string>('');
 
 const treeChang = (record: any) => {
   currenRecord.value = true;
-  currenData.value = record;
+  currenData.value = record.data;
   gridApi.formApi.setFieldValue('parentNo', record.key);
+  selectTitle.value = `${currenData.value.name}`;
   onRefresh();
 };
 /**
@@ -68,7 +78,25 @@ const [FormModal, formModalApi] = useVbenModal({
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
+    commonConfig: {
+      labelWidth: 50,
+      // 所有表单项
+      componentProps: {
+        class: 'w-full',
+      },
+    },
     schema: [
+      {
+        fieldName: 'terminalCode',
+        label: 'terminalCode',
+        defaultValue: 'system',
+        component: 'Input',
+        componentProps: {},
+        dependencies: {
+          show: false,
+          triggerFields: ['wd'],
+        },
+      },
       {
         fieldName: 'parentNo',
         label: '隐藏',
@@ -127,6 +155,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       zoom: true,
       search: true,
     },
+    layouts: [
+      ['Top', 'Form'],
+      ['Toolbar','Table', 'Pager'],
+      ['Bottom']
+    ],
   } as VxeTableGridOptions,
 });
 /**
@@ -134,7 +167,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(params);
+    await gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -145,9 +178,13 @@ async function gridQuery(params: Record<string, any> = {}) {
  */
 async function onRefresh() {
   try {
-    const formValues = await gridApi.formApi.getValues();
-    gridApi.formApi.setLatestSubmissionValues(formValues);
-    gridQuery(formValues);
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -160,8 +197,9 @@ function onCreate() {
   formDrawerApi
     .setData({
       values: {},
-      parent: currenData.value?.data,
+      parent: currenData.value,
       isUpdate: false,
+      terminalCode: terminalCode.value,
     })
     .open();
 }
@@ -172,8 +210,9 @@ function onCreateBatch() {
   drawerApiBatch
     .setData({
       values: {},
-      parent: currenData.value?.data,
+      parent: currenData.value,
       isUpdate: false,
+      terminalCode: terminalCode.value,
     })
     .open();
 }
@@ -184,6 +223,13 @@ function onCreateBatch() {
  */
 function onEdit(row: any) {
   formDrawerApi.setData({ values: row, isUpdate: true }).open();
+}
+/**
+ * 复制
+ * @param row 行数据
+ */
+function onCopy(row: any) {
+  formDrawerApi.setData({ values: null,copy:row, isUpdate: false }).open();
 }
 
 /**
@@ -287,9 +333,9 @@ function onRecovery() {
 }
 
 /**
- * 物理删除
+ * 删除
  */
-function onPhysicalDeletion() {
+function onBatchDelete() {
   const $grid = gridApi.grid;
   if (!$grid) return;
   const checkboxRecords = $grid.getCheckboxRecords();
@@ -299,17 +345,13 @@ function onPhysicalDeletion() {
   }
   const ids: any[] = [];
   checkboxRecords.forEach((item: any) => {
-    if (item.state > 10) {
-      ids.push(item.id);
-    } else {
-      $grid.setCheckboxRow(item, false);
-    }
+    ids.push(item.id);
   });
   if (ids.length <= 0) {
     message.warning('你没有选择任何数据');
     return;
   }
-  batchSelectPhysicalDeletion(
+  batchSelectDelete(
     ids,
     () => {
       onRefresh();
@@ -328,6 +370,17 @@ function treeAfterFetch(data:any) {
   }
   return data;
 }
+
+async function onUpdateValue(tabName: string) {
+  console.log('onBeforeLeave=',tabName);
+  if(terminalCode.value!=tabName) {
+    terminalCode.value = tabName;
+    gridApi.formApi.setFieldValue('terminalCode', tabName);
+    reloadTreeState.value++;
+    selectTitle.value = '';
+    onRefresh();
+  }
+}
 </script>
 
 <template>
@@ -339,7 +392,9 @@ function treeAfterFetch(data:any) {
         content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
       >
         <PgTree
+          :key="reloadTreeState"
           :api="selectCategory"
+          :params="{terminalCode:terminalCode}"
           :after-fetch="treeAfterFetch"
           :is-node-all="true"
           :reload="reloadTreeComputed"
@@ -349,6 +404,29 @@ function treeAfterFetch(data:any) {
       </NCard>
       <div class="w-[calc(100%-290px)] ml-2 pl-2 bg-card rounded-md">
         <Grid>
+          <template #top>
+            <n-tabs
+              type="card"
+              size="small"
+              animated
+              style="margin-top: -2px;"
+              class="ajsMenu"
+              @update:value="onUpdateValue"
+            >
+              <template #prefix>
+                终端类型
+              </template>
+              <template #suffix>
+                <div v-show="selectTitle" class="ml-2 flex items-center">
+                  <MdiTickCircle class="size-7 text-green-500" />
+                  <n-tag type="success" class="ml-2">
+                    {{ selectTitle }}
+                  </n-tag>
+                </div>
+              </template>
+              <n-tab v-for="item in dataDictionaryStore.get('terminalCode')" :name="item.value" :tab="item.label" />
+            </n-tabs>
+          </template>
           <template #toolbar-actions>
             <VbenButton
               type="primary"
@@ -380,25 +458,32 @@ function treeAfterFetch(data:any) {
             >
               批量停用
             </VbenButton>
-            <VbenButton
+            <!-- <VbenButton
               class="ml-2 pg-button-size-small"
               size="sm"
               @click="onRecovery"
             >
               删除恢复
-            </VbenButton>
+            </VbenButton>-->
             <VbenButton
               class="ml-2 pg-button-size-small"
               size="sm"
               danger
-              @click="onPhysicalDeletion"
+              @click="onBatchDelete"
             >
-              物理删除
+              删除
             </VbenButton>
           </template>
           <template #operate="{ row }">
             <VbenTableAction
               :actions="[
+                {
+                  tooltip: {
+                    content: '复制',
+                  },
+                  icon: 'lucide:copy',
+                  onClick: () => onCopy(row),
+                },
                 {
                   tooltip: {
                     content: '编辑',
@@ -434,5 +519,12 @@ function treeAfterFetch(data:any) {
 :deep(.n-tree) {
   max-height: calc(100vh - 200px);
   overflow-y: auto;
+}
+:deep(.ajsMenu.n-tabs .n-tabs-nav > .n-tabs-nav-scroll-wrapper) {
+  flex: 0 0 auto;
+}
+:deep(.ajsMenu.n-tabs .n-tabs-nav > .n-tabs-nav__suffix) {
+  flex: 1 1 auto;
+  padding-left: 0;
 }
 </style>

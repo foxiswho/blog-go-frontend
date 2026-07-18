@@ -2,7 +2,7 @@
 import type { VbenFormSchema } from '@vben/common-ui';
 import type { BasicOption } from '@vben/types';
 
-import { computed, markRaw } from 'vue';
+import { computed, markRaw, onMounted } from 'vue';
 
 import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -43,6 +43,11 @@ const formSchema = computed((): VbenFormSchema[] => {
         .min(1, { message: $t('authentication.selectAccount') })
         .optional()
         .default('system'),
+      dependencies: {
+        show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['password'],
+      },
     },
     {
       component: 'VbenInput',
@@ -51,17 +56,17 @@ const formSchema = computed((): VbenFormSchema[] => {
       },
       dependencies: {
         trigger(values, form) {
-          if (values.selectAccount) {
-            const findUser = MOCK_USER_OPTIONS.find(
-              (item) => item.value === values.selectAccount,
-            );
-            if (findUser) {
-              form.setValues({
-                password: 'foxwho.com',
-                username: findUser.value,
-              });
-            }
-          }
+          // if (values.selectAccount) {
+          //   const findUser = MOCK_USER_OPTIONS.find(
+          //     (item) => item.value === values.selectAccount,
+          //   );
+          //   if (findUser) {
+          //     form.setValues({
+          //       password: 'foxwho.com',
+          //       username: findUser.value,
+          //     });
+          //   }
+          // }
         },
         triggerFields: ['selectAccount'],
       },

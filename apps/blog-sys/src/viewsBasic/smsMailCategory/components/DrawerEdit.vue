@@ -1,0 +1,214 @@
+<script lang="ts" setup>
+import { h } from 'vue';
+
+import { useVbenDrawer, VbenButton } from '@vben/common-ui';
+
+import { PgTreeSelect } from '@pg/components-n';
+
+import { usePgForm } from '#/adapter';
+
+import {
+  existCode,
+  existName,
+  saveOrUpdate,
+  selectNodeAll,
+  selectNodeAllPublic,
+  selectPublic,
+} from '../api';
+
+const emit = defineEmits(['ok']);
+const [Form, formApi] = usePgForm({
+  tabs: {
+    active: 'home',
+    group: [
+      { value: 'home', label: '基本' },
+      { value: 'other', label: '其他' },
+    ],
+  },
+  schema: [
+    {
+      tabGroup: 'home',
+      fieldName: 'parentNo',
+      label: '上级',
+      defaultValue: '',
+      component: 'PgTreeSelect',
+      componentProps: {
+        api: selectNodeAll,
+        params: { by: 'no' },
+        filterQueryAsync: true,
+        props: {
+          placeholder: '如果为空,则是一级',
+          filterable: true,
+        },
+      },
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'name',
+      label: '名称',
+      component: 'Input',
+      rules: 'required',
+      componentProps: {
+        placeholder: '请输入',
+        onBlur: async (e) => {
+          const values = await formApi.getValues();
+          if (!values.nameFull) {
+            formApi.setFieldValue('nameFull', e.target.value);
+          }
+        },
+      },
+      suffix: () =>
+        h(
+          VbenButton,
+          {
+            class:'pg-button-size-small',
+            onClick: async (e) => {
+              const values = await formApi.getValues();
+              existName(values.name, values.id);
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '查重'),
+        ),
+    },
+    {
+      tabGroup: 'other',
+      fieldName: 'nameFl',
+      label: '名称英文',
+      component: 'Input',
+      defaultValue: '',
+      componentProps: {
+        placeholder: '请输入',
+      },
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'code',
+      label: '码值',
+      defaultValue: '系统自动建立',
+      rules: 'required',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入',
+        onBlur: async (e) => {
+          const values = await formApi.getValues();
+          if (!values.nameFl) {
+            formApi.setFieldValue('nameFl', e.target.value);
+          }
+        },
+      },
+      suffix: () =>
+        h(
+          VbenButton,
+          {
+            class:'pg-button-size-small',
+            onClick: async (e) => {
+              const values = await formApi.getValues();
+              existCode(values.code, values.id);
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '查重'),
+        ),
+    },
+    {
+      tabGroup: 'other',
+      fieldName: 'nameFull',
+      label: '全称',
+      component: 'Input',
+    },
+    {
+      tabGroup: 'home',
+      fieldName: 'description',
+      label: '描述',
+      component: 'Textarea',
+      componentProps: {
+        type: 'textarea',
+        placeholder: '描述',
+      },
+    },
+    {
+      fieldName: 'id',
+      label: 'id',
+      defaultValue: '0',
+      component: 'Input',
+      componentProps: {},
+      dependencies: {
+        show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['description'],
+      },
+    },
+  ],
+  showDefaultActions: false,
+});
+const [Drawer, drawerApi] = useVbenDrawer({
+  onCancel() {
+    drawerApi.close();
+  },
+  onConfirm: onSubmit,
+  onOpenChange(isOpen: boolean) {
+    if (isOpen) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
+      const { values, isUpdate, parent } = drawerApi.getData<Record<string, any>>();
+      if (values) {
+        formApi.setValues({
+          ...values,
+        });
+      }
+      console.log('parent',parent)
+      if (parent) {
+        formApi.setFieldValue('parentNo', parent.no);
+      }
+
+      drawerApi.setState({ title: `分类：${isUpdate ? '编辑' : '新增'}` ,loading: false});
+    }
+  },
+  title: '：',
+});
+
+/**
+ * 提交
+ */
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  drawerApi.lock();
+  try {
+    drawerApi.setState({
+      loading: true,
+      confirmLoading: true,
+    });
+    const { isUpdate } = drawerApi.getData<Record<string, any>>();
+    // console.log('values',values)
+    saveOrUpdate(values, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          drawerApi.setState({
+            loading: false,
+            confirmLoading: false,
+          });
+          drawerApi.close();
+        }, 2500);
+      });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
+  }
+}
+</script>
+<template>
+  <Drawer>
+    <Form>
+    </Form>
+  </Drawer>
+</template>

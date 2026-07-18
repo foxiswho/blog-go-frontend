@@ -12,6 +12,7 @@ enum Api {
   existCode = '/xianfu/sys/basic/module/existCode',
   exportExcel = '/xianfu/sys/basic/module/exportExcel',
   list = '/xianfu/sys/basic/module/query',
+  queryAll = '/xianfu/sys/basic/module/queryAll',
   physicalDeletion = '/xianfu/sys/basic/module/physicalDeletion',
   recovery = '/xianfu/sys/basic/module/recovery',
   selectNodeAll = '/xianfu/sys/basic/module/selectNodeAll',
@@ -109,7 +110,7 @@ export const deleteIds = (params: any) => {
  * 批量选中-删除
  * @param params
  */
-export const batchSelectDelete = (params, handleSuccess) => {
+export const batchSelectDelete = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认删除',
     content: '是否删除选中数据',
@@ -136,7 +137,7 @@ export const batchSelectDelete = (params, handleSuccess) => {
  * 批量选中-启用
  * @param params
  */
-export const batchSelectEnable = (params, handleSuccess) => {
+export const batchSelectEnable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置有效',
     content: '是否[批量有效]选中数据',
@@ -163,7 +164,7 @@ export const batchSelectEnable = (params, handleSuccess) => {
  * 批量选中-禁用
  * @param params
  */
-export const batchSelectDisable = (params, handleSuccess) => {
+export const batchSelectDisable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置停用',
     content: '是否[批量停用]选中数据',

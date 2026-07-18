@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RowVO } from '@pg/types';
+import type { Recordable } from '@vben/types';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
@@ -14,12 +14,19 @@ import {
 } from 'vxe-table';
 
 import { message } from '#/adapter';
+import { useDataDictionaryStore } from '#/store';
 
 import { selectNodeAllPublic } from '../../group/api';
 import { selectedByRole,updateByRole } from '../api';
 
 const emit = defineEmits(['ok']);
 
+// 数据字典
+const dataDictionaryStore = useDataDictionaryStore();
+// 数据字典-加载
+dataDictionaryStore.requestAllSet(['terminalCode']);
+//
+const terminalCode = ref<string>('system');
 const currenRecord = ref(false);
 const checkedData = ref([]);
 const treeCheckedKeys = ref([]);
@@ -139,12 +146,33 @@ const [Modal, modalApi] = useVbenModal({
   title: '：',
 });
 const treeCheckedKeysComputed = computed(() => treeCheckedKeys.value);
+async function onUpdateValue(tabName: string) {
+  console.log('onBeforeLeave=',tabName);
+  if(terminalCode.value!=tabName) {
+    terminalCode.value = tabName;
+    reloadTreeState.value++;
+  }
+}
 </script>
 
 <template>
   <Modal class="w-[1100px]">
+    <n-tabs
+      type="card"
+      size="small"
+      animated
+      style="margin-top: -2px;"
+      class="ajsMenu"
+      @update:value="onUpdateValue"
+    >
+      <template #prefix>
+        终端类型
+      </template>
+      <n-tab v-for="item in dataDictionaryStore.get('terminalCode')" :name="item.value" :tab="item.label" />
+    </n-tabs>
     <PgTree
       :api="selectNodeAllPublic"
+      :params="{terminalCode:terminalCode}"
       :props="{
               blockLine: true,
               showLine: true,

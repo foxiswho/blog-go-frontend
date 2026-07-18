@@ -6,9 +6,10 @@ import { useVbenDrawer, VbenButton } from '@vben/common-ui';
 import { HttpMethod, RamResourceType, RamResourceTypeAttr } from '@pg/types';
 
 import { usePgForm } from '#/adapter';
-
-import { existName, saveOrUpdate, selectCategory } from '../api';
 import {typeCodePublic} from "#/viewsBasic/data-dict/dict/api";
+import { selectCategory } from '#/viewsRam/resource/group/api';
+
+import { existName, saveOrUpdate } from '../api';
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -39,13 +40,23 @@ const [Form, formApi] = usePgForm({
       label: '上级',
       component: 'PgTreeSelect',
       componentProps: {
-        api: selectCategory,
-        params: {typeAttr:'categoryLast'},
+        // api: selectCategory,
+        // params: {typeAttr:'categoryLast'},
         convertNode: true,
         props: {
           placeholder: '如果为空,则是一级',
           filterable: true,
         },
+      },
+      dependencies: {
+        show: (values)=> values.terminalCode,
+        triggerFields: ['terminalCode'],
+        componentProps(values) {
+          return {
+            api: selectCategory,
+            params: {typeAttr: 'categoryLast',terminalCode:values.terminalCode},
+          };
+        }
       },
       rules: 'required',
     },
@@ -196,9 +207,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate, parent } =
+      const { values, isUpdate, parent,copy,terminalCode } =
         drawerApi.getData<Record<string, any>>();
-      if (values) {
+      if (values && Object.keys(values).length > 0) {
         let data = {
           ...values,
         };
@@ -206,8 +217,23 @@ const [Drawer, drawerApi] = useVbenDrawer({
           data.parentNo = parent.no;
         }
         formApi.setValues(data);
+      } else if ( copy && Object.keys(copy).length > 0) {
+        let data = {
+          ...copy,
+          id:'0',
+          code:'系统自动建立',
+        };
+        formApi.setValues(data);
+      } else if (parent && Object.keys(parent).length > 0) {
+        console.log('parent',parent);
+        let data = {parentNo:parent.no}
+        if(terminalCode) {
+          data['terminalCode'] = terminalCode;
+        }
+        formApi.setValues(data);
+      } else if (terminalCode) {
+        formApi.setValues({terminalCode:terminalCode});
       }
-
       drawerApi.setState({ title: `资源：${isUpdate ? '编辑' : '新增'}` ,loading: false});
     }
   },

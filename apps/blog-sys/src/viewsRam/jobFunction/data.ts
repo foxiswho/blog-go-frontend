@@ -39,8 +39,8 @@ export function useGridFormSchema(): VbenFormSchema[] {
  * 表格列配置
  */
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox', title: '', width: 40 },
-  { field: 'name', title: '名称', sortable: true },
+  { type: 'checkbox', width: 34 },
+  { field: 'name', title: '名称', minWidth: 200, sortable: true },
   { field: 'code', title: '码值', width: 200 },
   {
     field: 'state',

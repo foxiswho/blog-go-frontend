@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, h } from 'vue';
+import { computed, h, ref } from 'vue';
 
 import {useVbenDrawer, useVbenModal, z} from '@vben/common-ui';
 import { VbenButton } from '@vben/common-ui';
@@ -10,11 +10,14 @@ import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { useVbenForm } from '#/adapter';
 import { typeCodePublic } from '#/viewsBasic/data-dict/dict/api';
 import ResourceList from "#/viewsRam/resource/resource/invoke/list.vue";
-import ModalLocalRouterTpl from "./ModalLocalRouter.vue";
 
 import { existName, saveOrUpdate, selectNodeAll } from '../api';
 import { SystemMenuApi } from '../type';
+import ModalLocalRouterTpl from "./ModalLocalRouter.vue";
+
+const terminalCode = ref('system');
 const emit = defineEmits(['ok']);
+
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isHorizontal = computed(() => breakpoints.greaterOrEqual('md').value);
 const [FormModalResource, formModalApiResource] = useVbenModal({
@@ -34,6 +37,7 @@ const [Form, formApi] = useVbenForm({
     {
       fieldName: 'terminalCode',
       label: '终端类型',
+      defaultValue: 'system',
       component: 'ApiRadioGroup',
       componentProps: {
         api: typeCodePublic,
@@ -41,6 +45,13 @@ const [Form, formApi] = useVbenForm({
         autoSelect: 'first',
         optionType: 'button',
         buttonStyle: 'solid',
+        onChange: (opt,two) => {
+          console.log('opt=', opt);
+          console.log('opt.value=', opt.target?.value);
+          if (opt.target?.value) {
+            terminalCode.value = opt.target.value;
+          }
+        },
       },
       formItemClass: 'col-span-2 md:col-span-2',
       rules: 'required',
@@ -53,7 +64,6 @@ const [Form, formApi] = useVbenForm({
         params: { typeCode: 'typeMenu' },
         autoSelect: 'first',
         optionType: 'button',
-
         buttonStyle: 'solid',
       },
       defaultValue: 'menu',
@@ -97,13 +107,27 @@ const [Form, formApi] = useVbenForm({
       defaultValue: '',
       component: 'PgTreeSelect',
       componentProps: {
-        api: selectNodeAll,
-        params: {},
+        // api: selectNodeAll,
+        // params: {
+        //   terminalCode:terminalCodeComputed.value,
+        // },
         props: {
           placeholder: '如果为空,则是一级',
           filterable: true,
         },
       },
+      dependencies: {
+        show: (values)=> values.terminalCode,
+        triggerFields: ['terminalCode'],
+        componentProps(values) {
+          return {
+            api: selectNodeAll,
+            params: {
+              terminalCode: values.terminalCode,
+            },
+          }
+        }
+      }
     },
     {
       fieldName: 'metaTitle',
@@ -560,9 +584,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate, parent } =
+      const { values, isUpdate, parent,copy,copyToChild } =
         drawerApi.getData<Record<string, any>>();
-      if (values) {
+      if (values && Object.keys(values).length > 0) {
         formApi.setValues({
           ...values,
         });
@@ -572,8 +596,21 @@ const [Drawer, drawerApi] = useVbenDrawer({
           parentNo: parent.no,
         };
         if(parent.terminalCode) {
-          data['terminalCode'] = parent.terminalCode;
+          data.terminalCode = parent.terminalCode;
         }
+        formApi.setValues(data);
+      }
+      // 复制自己到子类
+      if(copy && !isUpdate &&Object.keys(copy).length>0) {
+        let data = {
+          ...copy,
+          id:'0',
+        };
+        console.log('copy.copyToChild=',copyToChild)
+        if(copyToChild) {
+          data['parentNo'] = copy.no;
+        }
+        console.log('copy.data=',data)
         formApi.setValues(data);
       }
 

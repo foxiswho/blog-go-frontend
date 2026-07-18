@@ -41,6 +41,7 @@ import {
   PgTreeSelect,
   PgUploadGroupOwner,
   PgMarkdown,
+  PgMarkdownViewer,
 } from '@pg/components-n';
 import {getNanoidNo} from "@pg/utils";
 
@@ -158,6 +159,7 @@ export type ComponentType =
   | 'NSelect'
   | 'PgUploadGroupOwner'
   | 'PgMarkdown'
+  | 'PgMarkdownViewer'
   | 'Radio'
   | 'RadioGroup'
   | 'Rate'
@@ -314,6 +316,7 @@ async function initComponentAdapter() {
     IconPicker: withDefaultPlaceholder(IconPicker, 'select', {
       iconSlot: 'suffix',
       inputComponent: NInput,
+      modelValueProp: 'value',
     }),
     Input: withDefaultPlaceholder(NInput, 'input'),
     InputNumber: withDefaultPlaceholder(NInputNumber, 'input', {
@@ -378,6 +381,7 @@ async function initComponentAdapter() {
         },
       ],
     }),
+    PgMarkdownViewer: PgMarkdownViewer,
     PgMarkdown: withDefaultPlaceholder(PgMarkdown, 'input', {
       params:{
         fileOwner: 'context-auto-'+getNanoidNo(32),

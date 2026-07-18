@@ -19,7 +19,7 @@ import { selectNodeAllPublic } from '#/viewsRam/resource/menu/api';
 import ResourceGroupTree from '../group/invoke/tree.vue';
 import ResourceList from '../resource/invoke/list.vue';
 import {
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   deleteIds,
   List,
   updateByMenu,
@@ -256,7 +256,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
     const $grid = xGrid.value;
     if ($grid) {
       switch (code) {
-        // 批量 物理删除
+        // 批量 删除
         case 'physicalDeletion': {
           const checkboxRecords = $grid.getCheckboxRecords();
           if (checkboxRecords.length <= 0) {
@@ -272,7 +272,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
             message.warning('你没有选择任何数据');
             return;
           }
-          batchSelectPhysicalDeletion(ids, () => {
+          batchSelectDelete(ids, () => {
             reloadTable();
             $grid.setAllCheckboxRow(false);
           });
@@ -355,7 +355,7 @@ const saveRowEvent = async (row: RowVO) => {
  */
 const removeRowEvent = async (row: RowVO) => {
   const $grid = xGrid.value;
-  batchSelectPhysicalDeletion([row.id], () => {
+  batchSelectDelete([row.id], () => {
     $grid.remove(row);
   });
 };

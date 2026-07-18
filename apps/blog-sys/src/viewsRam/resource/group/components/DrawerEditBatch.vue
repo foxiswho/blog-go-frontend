@@ -219,12 +219,15 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate, parent } =
+      const { values, isUpdate, parent,terminalCode } =
         drawerApi.getData<Record<string, any>>();
       if (values) {
         let data = {
           ...values,
         };
+        if(terminalCode) {
+          data['terminalCode'] = terminalCode;
+        }
         if (parent) {
           data.parentNo = parent.no;
           data.terminalCode = parent.terminalCode;

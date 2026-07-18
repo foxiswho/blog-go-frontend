@@ -79,6 +79,7 @@ const [Form, formApi] = usePgForm({
       fieldName: 'code',
       label: '码值',
       defaultValue: '系统自动建立',
+      rules: 'required',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',

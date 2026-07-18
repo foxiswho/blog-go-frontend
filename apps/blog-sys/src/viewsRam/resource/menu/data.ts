@@ -5,16 +5,16 @@ import _XEUtils_ from 'xe-utils';
 
 import { confirmSwitch } from '#/adapter/vxe-table';
 import { useDataDictionaryStore } from '#/store';
-import { typeCodePublic } from '#/viewsBasic/data-dict/dict/api';
 
 import { setStateEnableDisable } from './api';
 // 数据字典
 const dataDictionaryStore = useDataDictionaryStore();
-dataDictionaryStore.requestSet(typeCodePublic, { typeCode: 'typeMenu' });
+dataDictionaryStore.requestSet('typeMenu');
 //
 export const typeMenuOptions = () => {
   const dataNew: any[] = [];
   const typeMenu = dataDictionaryStore.get('typeMenu');
+  console.log('typeMenu=',typeMenu);
   typeMenu.forEach((item) => {
     const obj = {
       color: undefined,

@@ -17,6 +17,7 @@ enum Api {
   selectPublic = '/xianfu/sys/ram/resource-group-relation/selectPublic',
   state = '/xianfu/sys/ram/resource-group-relation/state',
   update = '/xianfu/sys/ram/resource-group-relation/update',
+  updateByRole = '/xianfu/sys/ram/resource-group-relation/updateByRole',
   selectedByRole = '/xianfu/sys/ram/resource-group-relation/selectedByRole',
 }
 
@@ -99,7 +100,7 @@ export const deleteIds = (params: any) => {
  * 批量选中-删除
  * @param params
  */
-export const batchSelectDelete = (params, handleSuccess) => {
+export const batchSelectDelete = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认删除',
     content: '是否删除选中数据',
@@ -126,7 +127,7 @@ export const batchSelectDelete = (params, handleSuccess) => {
  * 批量选中-启用
  * @param params
  */
-export const batchSelectEnable = (params, handleSuccess) => {
+export const batchSelectEnable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置有效',
     content: '是否[批量有效]选中数据',
@@ -153,7 +154,7 @@ export const batchSelectEnable = (params, handleSuccess) => {
  * 批量选中-禁用
  * @param params
  */
-export const batchSelectDisable = (params, handleSuccess) => {
+export const batchSelectDisable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置停用',
     content: '是否[批量停用]选中数据',

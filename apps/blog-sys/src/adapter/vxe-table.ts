@@ -23,12 +23,14 @@ import { useVbenForm } from './form';
 import { $t } from '#/locales';
 import { updateDetail } from '#/viewsBasic/attachment/api';
 import {stateYesNoOptionFormatter} from "@pg/types";
+import {ROLE_ADMINISTRATOR} from "@pg/constants";
 
 setupVbenVxeTable({
   configVxeTable: (vxeUI) => {
     vxeUI.setConfig({
       grid: {
-        align: 'center',
+        align: 'left',
+        headerAlign: 'center',
         border: false,
         columnConfig: {
           resizable: true,
@@ -433,9 +435,10 @@ export const useVbenVxeGrid = <T extends Record<string, any>>(
  */
 export const VbenTableAction = defineComponent(
   (props: TableActionProps, { attrs, slots }) => {
-    const { hasAccessByCodes } = useAccess();
+    const { hasAccessByCodes,hasAccessByRoles } = useAccess();
     function hasPermission(auth?: string | string[]) {
       if (!auth) return true;
+      if (hasAccessByRoles([ROLE_ADMINISTRATOR])) return true;
       return hasAccessByCodes(Array.isArray(auth) ? auth : [auth]);
     }
     return () =>

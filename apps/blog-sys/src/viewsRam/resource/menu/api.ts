@@ -11,8 +11,8 @@ enum Api {
   existName = '/xianfu/sys/ram/menu/existName',
   exportExcel = '/xianfu/sys/ram/menu/exportExcel',
   list = '/xianfu/sys/ram/menu/query',
-  physicalDeletion = '/xianfu/sys/ram/menu/physicalDeletion',
   queryAll = '/xianfu/sys/ram/menu/queryAll',
+  physicalDeletion = '/xianfu/sys/ram/menu/physicalDeletion',
   recovery = '/xianfu/sys/ram/menu/recovery',
   selectNodeAll = '/xianfu/sys/ram/menu/selectNodeAll',
   selectNodeAllPublic = '/xianfu/sys/ram/menu/selectNodeAllPublic',
@@ -92,7 +92,7 @@ export const deleteIds = (params: any) => {
  * 批量选中-删除
  * @param params
  */
-export const batchSelectDelete = (params, handleSuccess) => {
+export const batchSelectDelete = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认删除',
     content: '是否删除选中数据',
@@ -119,7 +119,7 @@ export const batchSelectDelete = (params, handleSuccess) => {
  * 批量选中-启用
  * @param params
  */
-export const batchSelectEnable = (params, handleSuccess) => {
+export const batchSelectEnable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置有效',
     content: '是否[批量有效]选中数据',
@@ -146,7 +146,7 @@ export const batchSelectEnable = (params, handleSuccess) => {
  * 批量选中-禁用
  * @param params
  */
-export const batchSelectDisable = (params, handleSuccess) => {
+export const batchSelectDisable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置停用',
     content: '是否[批量停用]选中数据',

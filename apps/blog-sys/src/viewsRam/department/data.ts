@@ -8,7 +8,7 @@ import {confirmSwitch} from "#/adapter/vxe-table";
 
 export const columns: VxeGridPropTypes.Columns = [
   // { type: 'checkbox', title: 'ID', width: 120 },
-  { field: 'name', title: '名称', treeNode:true, align: 'left' },
+  { field: 'name', title: '名称', minWidth: 200, treeNode:true, align: 'left' },
   { field: 'code', title: '码值', width: 200 },
   {
     field: 'state',

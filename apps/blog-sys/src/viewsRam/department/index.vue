@@ -1,14 +1,10 @@
 <script lang="ts" setup>
-import type {
-  VxeTableGridOptions,
-} from '#/adapter/vxe-table';
 
 import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { VbenTableAction } from '#/adapter/vxe-table';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { $t } from '#/locales';
 
 import { deleteIds, queryAll } from './api';
 import DrawerEdit from './components/DrawerEdit.vue';
@@ -17,6 +13,38 @@ import { columns } from './data';
 const [Drawer, drawerApi] = useVbenDrawer({
   connectedComponent: DrawerEdit,
   destroyOnClose: true,
+});
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {},
+  gridOptions: {
+    columns,
+    height: 'auto',
+    keepSource: true,
+    pagerConfig: {
+      enabled: false,
+    },
+    proxyConfig: {
+      ajax: {
+        query: async (_params) => {
+          return await queryAll({});
+        },
+      },
+    },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      zoom: true,
+    },
+    treeConfig: {
+      parentField: 'parentNo',
+      rowField: 'no',
+      transform: true,
+      expandAll: true,
+      showLine: true,
+    },
+  } as any,
 });
 
 /**
@@ -60,50 +88,40 @@ function onCreate() {
 function onDelete(row: any) {
   deleteIds([row.id])
     .then(() => {
-      refreshGrid();
+      onRefresh();
     })
     .catch(() => {
-      refreshGrid();
+      onRefresh();
     });
 }
-
-const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {},
-  gridOptions: {
-    columns,
-    height: 'auto',
-    keepSource: true,
-    pagerConfig: {
-      enabled: false,
-    },
-    proxyConfig: {
-      ajax: {
-        query: async (_params) => {
-          return await queryAll({});
-        },
-      },
-    },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      zoom: true,
-    },
-    treeConfig: {
-      parentField: 'parentNo',
-      rowField: 'no',
-      transform: true,
-      expandAll: true,
-      showLine: true,
-    },
-  } as any,
-});
-
+/**
+ * 重新查询
+ */
+async function gridQuery(params: Record<string, any> = {}) {
+  try {
+    await gridApi.query(params);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
+}
 /**
  * 刷新表格
  */
-function refreshGrid() {
-  gridApi.query();
+async function onRefresh() {
+  try {
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
+    setTimeout(() => {
+      gridApi.grid.setAllTreeExpand(true);
+    }, 900);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
 </script>
 <template>
@@ -148,6 +166,6 @@ function refreshGrid() {
         />
       </template>
     </Grid>
-    <Drawer @ok="refreshGrid" />
+    <Drawer @ok="onRefresh" />
   </Page>
 </template>

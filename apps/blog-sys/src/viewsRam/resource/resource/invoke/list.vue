@@ -123,7 +123,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(params);
+    await gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -134,9 +134,13 @@ async function gridQuery(params: Record<string, any> = {}) {
  */
 async function onRefresh() {
   try {
-    const formValues = await gridApi.formApi.getValues();
-    gridApi.formApi.setLatestSubmissionValues(formValues);
-    gridQuery(formValues);
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -221,7 +225,7 @@ function treeAfterFetch(data:any) {
           />
         </NCard>
       <div class="w-[calc(100%-290px)] ml-2 pl-2 bg-card rounded-md">
-            <Grid>
+            <Grid key="resource-invoke-list">
               <template #nameAll="{ row }">
                 <div>{{ row.name }}</div>
                 <div>{{ row.path }}</div>

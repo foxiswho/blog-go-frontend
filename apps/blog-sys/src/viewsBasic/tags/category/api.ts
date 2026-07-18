@@ -2,21 +2,21 @@ import { dialog, message } from '#/adapter';
 import { requestClient } from '#/api/request';
 
 enum Api {
-  create = '/xianfu/manage/basic/tags-category/create',
-  delete = '/xianfu/manage/basic/tags-category/delete',
-  detail = '/xianfu/manage/basic/tags-category/detail/',
-  disable = '/xianfu/manage/basic/tags-category/disable',
-  enable = '/xianfu/manage/basic/tags-category/enable',
-  existName = '/xianfu/manage/basic/tags-category/existName',
-  exportExcel = '/xianfu/manage/basic/tags-category/exportExcel',
-  list = '/xianfu/manage/basic/tags-category/query',
-  physicalDeletion = '/xianfu/manage/basic/tags-category/physicalDeletion',
-  recovery = '/xianfu/manage/basic/tags-category/recovery',
-  selectNodeAllPublic = '/xianfu/manage/basic/tags-category/selectNodeAllPublic',
-  selectNodePublic = '/xianfu/manage/basic/tags-category/selectNodePublic',
-  selectPublic = '/xianfu/manage/basic/tags-category/selectPublic',
-  state = '/xianfu/manage/basic/tags-category/state',
-  update = '/xianfu/manage/basic/tags-category/update',
+  create = '/pg2lq/manage/basic/tags-category/create',
+  delete = '/pg2lq/manage/basic/tags-category/delete',
+  detail = '/pg2lq/manage/basic/tags-category/detail/',
+  disable = '/pg2lq/manage/basic/tags-category/disable',
+  enable = '/pg2lq/manage/basic/tags-category/enable',
+  existName = '/pg2lq/manage/basic/tags-category/existName',
+  exportExcel = '/pg2lq/manage/basic/tags-category/exportExcel',
+  list = '/pg2lq/manage/basic/tags-category/query',
+  physicalDeletion = '/pg2lq/manage/basic/tags-category/physicalDeletion',
+  recovery = '/pg2lq/manage/basic/tags-category/recovery',
+  selectNodeAllPublic = '/pg2lq/manage/basic/tags-category/selectNodeAllPublic',
+  selectNodePublic = '/pg2lq/manage/basic/tags-category/selectNodePublic',
+  selectPublic = '/pg2lq/manage/basic/tags-category/selectPublic',
+  state = '/pg2lq/manage/basic/tags-category/state',
+  update = '/pg2lq/manage/basic/tags-category/update',
 }
 
 /**
@@ -91,7 +91,7 @@ export const deleteIds = (params: any) => {
  * 批量选中-删除
  * @param params
  */
-export const batchSelectDelete = (params, handleSuccess) => {
+export const batchSelectDelete = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认删除',
     content: '是否删除选中数据',
@@ -118,7 +118,7 @@ export const batchSelectDelete = (params, handleSuccess) => {
  * 批量选中-启用
  * @param params
  */
-export const batchSelectEnable = (params, handleSuccess) => {
+export const batchSelectEnable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置有效',
     content: '是否[批量有效]选中数据',
@@ -145,7 +145,7 @@ export const batchSelectEnable = (params, handleSuccess) => {
  * 批量选中-禁用
  * @param params
  */
-export const batchSelectDisable = (params, handleSuccess) => {
+export const batchSelectDisable = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置停用',
     content: '是否[批量停用]选中数据',
@@ -172,7 +172,7 @@ export const batchSelectDisable = (params, handleSuccess) => {
  * 批量选中-恢复
  * @param params
  */
-export const batchSelectRecovery = (params, handleSuccess) => {
+export const batchSelectRecovery = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认设置恢复',
     content: '是否[批量恢复]选中数据',
@@ -199,7 +199,7 @@ export const batchSelectRecovery = (params, handleSuccess) => {
  * 批量选中-物理删除
  * @param params
  */
-export const batchSelectPhysicalDeletion = (params, handleSuccess) => {
+export const batchSelectPhysicalDeletion = (params:any, handleSuccess:any) => {
   dialog.warning({
     title: '确认物理删除',
     content: '是否[物理删除]选中数据，操作后数据不可恢复',

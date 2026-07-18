@@ -8,15 +8,23 @@ import { defineOverridesPreferences } from '@vben/preferences';
 export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
+    // 是否开启检查更新
+    enableCheckUpdates: true,
+    // 检查更新的时间间隔，单位为分钟
+    checkUpdatesInterval: 1,
     accessMode: 'frontend',
     name: import.meta.env.VITE_APP_TITLE,
-    defaultAvatar: '/static/avatar-v1.webp',
+    defaultAvatar: '/static/logo.png',
     /** 登录注册页面布局 */
     authPageLayout: 'panel-center',
+    // 是否开启refreshToken
+    enableRefreshToken: true,
+    // 登录认证过期,打开登录弹窗
+    loginExpiredMode: 'modal',
   },
   logo: {
     enable: true,
-    source: '/static/logo-v1.webp',
+    source: '/static/logo.png',
   },
   theme: {
     mode: 'light',
@@ -60,9 +68,9 @@ export const overridesPreferences = defineOverridesPreferences({
   },
   copyright: {
     /** 版权公司名 */
-    companyName: '仙域科技',
+    companyName: '仙府',
     /** 版权公司名链接 */
-    companySiteLink: '仙域科技',
+    companySiteLink: '',
     /** 版权日期 */
     date: '2025',
     /** 版权是否可见 */

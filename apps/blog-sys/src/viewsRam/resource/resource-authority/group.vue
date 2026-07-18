@@ -5,13 +5,14 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref } from 'vue';
 
-import { Page, useVbenDrawer, useVbenModal, VbenButton } from '@vben/common-ui';
+import { Page, useVbenModal, VbenButton } from '@vben/common-ui';
 
 import { PgTree } from '@pg/components-n';
 import { stateYesNoOption } from '@pg/types';
 
-import { dialog, message } from '#/adapter';
+import { message } from '#/adapter';
 import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
+import { useDataDictionaryStore } from '#/store';
 import {
   selectNodeAllPublic,
 } from '#/viewsRam/resource/group/api';
@@ -19,27 +20,34 @@ import { selectNodeAllPublic as selectNodeAllPublicMenu } from '#/viewsRam/resou
 
 import ResourceList from '../resource/invoke/list.vue';
 import {
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   createByGroup,
   createByMenu,
   deleteIds,
   ListByGroup,
 } from './api';
-
 import { columns } from './data';
+import {MdiTickCircle} from "@pg/icons";
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>(null);
 const currenParentData = ref<Recordable<any>>(null);
 const reloadTreeState = ref(0);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
+const reloadTreeStateRight = ref(0);
+const reloadTreeComputedRight = computed(() => reloadTreeStateRight.value);
 const checkedData = ref<any[]>([]);
-const leftCheckedKeys = ref<any[]>([]);
 const treeCheckedKeys = ref<any[]>([]);
 const dataAll = ref<any[]>([]);
+const terminalCode = ref<string>('system');
+const treeKey = ref(0);
 const menuTreeKey = ref(0);
 const treeCheckedKeysComputed = computed(() => treeCheckedKeys.value);
-const leftCheckedKeysComputed = computed(() => leftCheckedKeys.value);
+const selectTitle = ref<string>('');
+// 数据字典
+const dataDictionaryStore = useDataDictionaryStore();
+// 数据字典-加载
+dataDictionaryStore.requestAllSet(['terminalCode']);
 
 const treeChang = (record: any) => {
   console.log('treeChang=',record);
@@ -55,6 +63,7 @@ const treeChang = (record: any) => {
       }
     }
   }
+  selectTitle.value = `${currenData.value.name}`;
 };
 /**
  * 重新加载
@@ -87,7 +96,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       {
         fieldName: 'typeValue',
         label: '隐藏',
-        defaultValue: null,
+        defaultValue: '0',
         component: 'Input',
         componentProps: {},
         dependencies: {
@@ -95,6 +104,17 @@ const [Grid, gridApi] = useVbenVxeGrid({
           triggerFields: ['wd'],
         },
       },
+      // {
+      //   fieldName: 'terminalCode',
+      //   label: '隐藏',
+      //   defaultValue: terminalCode.value,
+      //   component: 'Input',
+      //   componentProps: {},
+      //   dependencies: {
+      //     show: false,
+      //     triggerFields: ['wd'],
+      //   },
+      // },
       {
         fieldName: 'typeCategory',
         label: '隐藏',
@@ -172,7 +192,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(params);
+    await gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -183,9 +203,13 @@ async function gridQuery(params: Record<string, any> = {}) {
  */
 async function onRefresh() {
   try {
-    const formValues = await gridApi.formApi.getValues();
-    gridApi.formApi.setLatestSubmissionValues(formValues);
-    gridQuery(formValues);
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -204,7 +228,7 @@ function onDelete(row: any) {
 /**
  * 批量删除
  */
-function onPhysicalDeletion() {
+function onBatchDelete() {
   const $grid = gridApi.grid;
   if (!$grid) return;
   const checkboxRecords = $grid.getCheckboxRecords();
@@ -221,7 +245,7 @@ function onPhysicalDeletion() {
     message.warning('你没有选择任何数据');
     return;
   }
-  batchSelectPhysicalDeletion(
+  batchSelectDelete(
     ids,
     () => {
       onRefresh();
@@ -309,32 +333,76 @@ function treeAfterFetch(data:any) {
   }
   return data;
 }
+async function onUpdateValue(tabName: string) {
+  console.log('onBeforeLeave=',tabName);
+  if(terminalCode.value!=tabName) {
+    treeKey.value++;
+    reloadTreeState.value++;
+    terminalCode.value = tabName;
+    //
+    reloadTreeStateRight.value++;
+    //
+    currenRecord.value = false;
+    currenData.value = {};
+    gridApi.formApi.setFieldValue('typeValue', '0');
+    setTimeout(() => {
+      onRefresh();
+    }, 10);
+    selectTitle.value = '';
+  }
+}
 </script>
 
 <template>
   <Page auto-content-height content-class="p-2">
-    <div class="flex size-full">
-      <NCard
-        class="min-w-[290px]"
-        style="width: unset"
-        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
-      >
+<div class="flex flex-col size-full">
+      <div class="flex-shrink-0 bg-card rounded-md pl-2" style="margin-top: -2px;">
+        <n-tabs
+type="card" animated style="margin-top: -2px;"
+class="ajsMenu"
+                @update:value="onUpdateValue"
+        >
+          <template #prefix>
+            终端类型
+          </template>
+          <template #suffix>
+            <div v-show="selectTitle" class="ml-2 flex items-center">
+              <MdiTickCircle class="size-7 text-green-500" />
+              <n-tag type="success" class="ml-2">
+                {{ selectTitle }}
+              </n-tag>
+            </div>
+          </template>
+          <n-tab v-for="item in dataDictionaryStore.get('terminalCode')" :name="item.value" :tab="item.label" />
+        </n-tabs>
+      </div>
+      <div class="flex flex-1 min-h-0 overflow-hidden">
+        <NCard
+          class="min-w-[290px]"
+          style="width: unset;margin-top: -1px;"
+          content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+        >
         <PgTree
+          :key="treeKey"
           :api="selectNodeAllPublic"
+          :params="{terminalCode}"
           :after-fetch="treeAfterFetch"
           :is-node-all="true"
           :reload="reloadTreeComputed"
+          :props="{
+            defaultExpandAll: true,
+          }"
           class="pg-tree"
           @ok="treeChang"
           @overload="treeOverload"
           @result:source="onResultSource"
         />
       </NCard>
-      <div class="w-[calc(100%-600px)] ml-2 pl-2 bg-card rounded-md">
+      <div class="w-[calc(100%-600px)] ml-1 pl-2 bg-card rounded-md">
         <Grid>
           <template #toolbar-actions>
             <VbenButton
-              :disabled="currenRecord?false:true"
+              :disabled="currenRecord ? false : true"
               type="primary"
               class="pg-button-size-small"
               @click="onSelectResource"
@@ -344,7 +412,7 @@ function treeAfterFetch(data:any) {
             <VbenButton
               class="ml-2 pg-button-size-small"
               danger
-              @click="onPhysicalDeletion"
+              @click="onBatchDelete"
             >
               批量删除
             </VbenButton>
@@ -378,7 +446,7 @@ function treeAfterFetch(data:any) {
         </Grid>
       </div>
       <NCard
-        class="min-w-[300px] ml-2"
+        class="min-w-[300px] ml-1"
         style="width: unset"
         content-style="padding-left:10px;padding-right:10px;padding-top:10px;overflow:hidden;"
       >
@@ -391,7 +459,9 @@ function treeAfterFetch(data:any) {
         <PgTree
           :key="menuTreeKey"
           :api="selectNodeAllPublicMenu"
+          :params="{terminalCode}"
           :after-fetch="treeAfterFetch"
+          :reload="reloadTreeComputedRight"
           :is-node-all="true"
           :right-click-menu="false"
           :props="{
@@ -410,16 +480,24 @@ function treeAfterFetch(data:any) {
       </NCard>
     </div>
     <FormModalResource @ok="selectResourceOk" />
-  </Page>
+  </div>
+</Page>
 </template>
 
 <style scoped>
 :deep(.pg-tree .n-tree) {
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 220px);
   overflow-y: auto;
 }
 :deep(.pg-tree2 .n-tree) {
-  max-height: calc(100vh - 290px);
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
+}
+:deep(.ajsMenu.n-tabs .n-tabs-nav > .n-tabs-nav-scroll-wrapper) {
+  flex: 0 0 auto;
+}
+:deep(.ajsMenu.n-tabs .n-tabs-nav > .n-tabs-nav__suffix) {
+  flex: 1 1 auto;
+  padding-left: 0;
 }
 </style>

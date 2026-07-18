@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {computed, h, onMounted, watch} from 'vue';
+import { computed, h, onMounted, watch } from 'vue';
 
 import { VbenButton } from '@vben/common-ui';
 
@@ -7,7 +7,13 @@ import { PgTreeSelect } from '@pg/components-n';
 
 import { usePgForm } from '#/adapter';
 
-import { existName, saveOrUpdate, selectPublic,selectNodeAllPublic } from '../api';
+import {
+  existName,
+  saveOrUpdate,
+  selectPublic,
+  selectNodeAllPublic,
+  existCode,
+} from '../api';
 
 const props = defineProps({
   data: {
@@ -23,6 +29,7 @@ const props = defineProps({
 const emit = defineEmits(['ok']);
 
 const getValue = computed(() => {
+  // console.log('getValue', props.data)
   return props.data.data;
 });
 
@@ -37,10 +44,17 @@ const [Form, formApi] = usePgForm({
   schema: [
     {
       tabGroup: 'home',
-      fieldName: 'parentNo',
+      fieldName: 'parentId',
       label: '上级',
       component: 'TreeSelect',
-      defaultValue: '3',
+      componentProps: {
+        api: selectNodeAllPublic,
+        params: {},
+        props: {
+          placeholder: '如果为空,则是一级',
+          filterable: true,
+        },
+      },
     },
     {
       tabGroup: 'home',
@@ -84,6 +98,7 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'code',
       label: '编码',
+      rules: 'required',
       component: 'Input',
       componentProps: {
         placeholder: '请输入',
@@ -94,6 +109,18 @@ const [Form, formApi] = usePgForm({
           }
         },
       },
+      suffix: () =>
+        h(
+          VbenButton,
+          {
+            class:'pg-button-size-small',
+            onClick: async (e) => {
+              const values = await formApi.getValues();
+              existCode(values.code, values.id);
+            },
+          },
+          () => h('span', { class: 'font-normal' }, '查重'),
+        ),
     },
     {
       tabGroup: 'other',
@@ -112,11 +139,10 @@ const [Form, formApi] = usePgForm({
       },
     },
     {
+      tabGroup: 'home',
       fieldName: 'id',
       label: 'id',
       component: 'Input',
-      defaultValue: '0',
-      componentProps: {},
       dependencies: {
         show: false,
         // 随意一个字段改变时，都会触发
@@ -149,11 +175,11 @@ watch(
  */
 function onSubmit(values: Record<string, any>) {
   try {
-    // console.log('values', values);
+    console.log('values', values);
     saveOrUpdate(values, props.isUpdate).then((d) => {
       setTimeout(() => {
         emit('ok', values);
-      }, 500);
+      }, 1500);
     });
   } catch (error) {
     console.error(error);
@@ -161,7 +187,9 @@ function onSubmit(values: Record<string, any>) {
 }
 
 onMounted(() => {
-  formApi.setValues(getValue.value);
+  formApi.setValues({
+    ...getValue.value,
+  });
   //formApi.setValues({name:"sssss"});
   // console.log('getValues',formApi.getValues())
   // console.log('ddd',getValue.value)
@@ -169,8 +197,13 @@ onMounted(() => {
 </script>
 <template>
   <Form>
-    <template #parentNo="slotProps">
-      <PgTreeSelect :api="selectNodeAllPublic" :params="{ by: 'no' }" :convertNode="true" v-bind="slotProps" class="w-full"/>
+    <template #parentId="slotProps">
+      <PgTreeSelect
+        :api="selectNodeAllPublic"
+        :convertNode="true"
+        v-bind="slotProps"
+        class="w-full"
+      />
     </template>
   </Form>
 </template>

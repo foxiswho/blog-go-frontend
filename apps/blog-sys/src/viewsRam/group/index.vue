@@ -12,7 +12,7 @@ import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 import {
   batchSelectDisable,
   batchSelectEnable,
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   batchSelectRecovery,
   deleteIds,
   List,
@@ -66,7 +66,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(params);
+    await gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -76,9 +76,13 @@ async function gridQuery(params: Record<string, any> = {}) {
  */
 async function onRefresh() {
   try {
-    const formValues = await gridApi.formApi.getValues();
-    gridApi.formApi.setLatestSubmissionValues(formValues);
-    gridQuery(formValues);
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -87,8 +91,12 @@ async function onRefresh() {
 /**
  * 新增
  */
-function onCreate() {
-  drawerApi.setData({ values: {}, isUpdate: false }).open();
+function onCreate(row:any={}) {
+  drawerApi.setData({
+    values: {},
+    isUpdate: false,
+    copy: Object.assign({}, row),
+  }).open();
 }
 
 /**
@@ -197,9 +205,9 @@ function onRecovery() {
 }
 
 /**
- * 物理删除
+ * 删除
  */
-function onPhysicalDeletion() {
+function onBatchDelete() {
   const $grid = gridApi.grid;
   if (!$grid) return;
   const checkboxRecords = $grid.getCheckboxRecords();
@@ -209,17 +217,13 @@ function onPhysicalDeletion() {
   }
   const ids: any[] = [];
   checkboxRecords.forEach((item: any) => {
-    if (item.state > 10) {
-      ids.push(item.id);
-    } else {
-      $grid.setCheckboxRow(item, false);
-    }
+    ids.push(item.id);
   });
   if (ids.length <= 0) {
     message.warning('你没有选择任何数据');
     return;
   }
-  batchSelectPhysicalDeletion(ids, () => {
+  batchSelectDelete(ids, () => {
     onRefresh();
     $grid.setAllCheckboxRow(false);
   });
@@ -255,25 +259,32 @@ function onPhysicalDeletion() {
         >
           批量停用
         </VbenButton>
-        <VbenButton
+        <!-- <VbenButton
           class="ml-2 pg-button-size-small"
           size="sm"
           @click="onRecovery"
         >
           删除恢复
-        </VbenButton>
+        </VbenButton> -->
         <VbenButton
           class="ml-2 pg-button-size-small"
           size="small"
           danger
-          @click="onPhysicalDeletion"
+          @click="onBatchDelete"
         >
-          物理删除
+          删除
         </VbenButton>
       </template>
       <template #operate="{ row }">
         <VbenTableAction
           :actions="[
+            {
+              tooltip: {
+                content: '复制',
+              },
+              icon: 'lucide:copy',
+              onClick: () => onCreate(row),
+            },
             {
               tooltip: {
                 content: '编辑',

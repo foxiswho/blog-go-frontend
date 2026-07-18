@@ -25,7 +25,7 @@ import { selectNodeAllPublic } from '#/viewsRam/department/api';
 import {
   batchSelectDisable,
   batchSelectEnable,
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   batchSelectRecovery,
   deleteIds,
   List,
@@ -44,7 +44,7 @@ const treeChang = (record: any) => {
   currenRecord.value = true;
   currenData.value = record;
   gridApi.formApi.setFieldValue('departments', [record.key]);
-  gridQuerySubmit();
+  onRefresh();
 };
 /**
  * 重新加载
@@ -58,7 +58,7 @@ function reloadTree() {
  */
 const treeOverload = (_e: any) => {
   gridApi.formApi.setFieldValue('departments', []);
-  gridQuerySubmit();
+  onRefresh();
 };
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: DrawerEditTpl,
@@ -175,16 +175,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(params);
-  } catch (error) {
-    console.error('Error occurred while reloading:', error);
-  }
-}
-async function gridQuerySubmit() {
-  try {
-    const formValues = await gridApi.formApi.getValues();
-    gridApi.formApi.setLatestSubmissionValues(formValues);
-    await gridQuery(formValues);
+    await gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -194,9 +185,13 @@ async function gridQuerySubmit() {
  */
 async function onRefresh() {
   try {
-    const formValues = await gridApi.formApi.getValues();
-    gridApi.formApi.setLatestSubmissionValues(formValues);
-    gridQuery(formValues);
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -325,9 +320,9 @@ function onRecovery() {
 }
 
 /**
- * 物理删除
+ * 删除
  */
-function onPhysicalDeletion() {
+function onBatchDelete() {
   const $grid = gridApi.grid;
   if (!$grid) return;
   const checkboxRecords = $grid.getCheckboxRecords();
@@ -337,17 +332,13 @@ function onPhysicalDeletion() {
   }
   const ids: any[] = [];
   checkboxRecords.forEach((item: any) => {
-    if (item.state > 10) {
-      ids.push(item.id);
-    } else {
-      $grid.setCheckboxRow(item, false);
-    }
+    ids.push(item.id);
   });
   if (ids.length <= 0) {
     message.warning('你没有选择任何数据');
     return;
   }
-  batchSelectPhysicalDeletion(
+  batchSelectDelete(
     ids,
     () => {
       onRefresh();
@@ -429,26 +420,27 @@ function handleAccount(row: any) {
             >
               批量停用
             </VbenButton>
-            <VbenButton
+            <!-- <VbenButton
               class="ml-2 pg-button-size-small"
               size="sm"
               @click="onRecovery"
             >
               删除恢复
-            </VbenButton>
+            </VbenButton>-->
             <VbenButton
               class="ml-2 pg-button-size-small"
               size="sm"
               danger
-              @click="onPhysicalDeletion"
+              @click="onBatchDelete"
             >
-              物理删除
+              删除
             </VbenButton>
           </template>
           <template #accountAll="{ row }">
             <div>账号:{{ row.account }}</div>
             <div>邮箱:{{ row.mail }}</div>
-            <div>编号:{{ row.code }}</div>
+            <div>码值:{{ row.code }}</div>
+            <div>编号:{{ row.no }}</div>
           </template>
           <template #nameAll="{ row }">
             <div class="text-xs">

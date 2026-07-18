@@ -16,7 +16,7 @@ import {
 import {
   batchSelectDisable,
   batchSelectEnable,
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   batchSelectRecovery,
   deleteIds,
   List,
@@ -145,7 +145,7 @@ const gridOptions = reactive<VxeGridProps<RowVO>>({
           // {code: 'myInsert', name: '插入'},
           // {code: 'mySave', name: '保存'},
           { code: 'myPrint', name: '打印' },
-          { code: 'physicalDeletion', name: '物理删除' },
+          { code: 'physicalDeletion', name: '删除' },
         ],
       },
     ],
@@ -323,7 +323,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }
@@ -353,7 +352,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }
@@ -383,7 +381,6 @@ const gridEvent: VxeGridListeners<RowVO> = {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }
@@ -413,7 +410,7 @@ const gridEvent: VxeGridListeners<RowVO> = {
           });
           break;
         }
-        // 物理删除
+        // 删除
         case 'physicalDeletion': {
           const checkboxRecords = $grid.getCheckboxRecords();
           if (checkboxRecords.length <= 0) {
@@ -433,13 +430,12 @@ const gridEvent: VxeGridListeners<RowVO> = {
             Message.warning('你没有选择任何数据');
             return;
           }
-          batchSelectPhysicalDeletion(
+          batchSelectDelete(
             ids,
             () => {
               reloadTable();
               $grid.setAllCheckboxRow(false);
             },
-            dialog,
           );
           break;
         }

@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { Page, useVbenDrawer, VbenButton } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
@@ -8,9 +7,9 @@ import { message } from '#/adapter';
 import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 
 import {
+  batchSelectDelete,
   batchSelectDisable,
   batchSelectEnable,
-  batchSelectPhysicalDeletion,
   batchSelectRecovery,
   deleteIds,
   queryAll,
@@ -71,7 +70,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
  */
 async function gridQuery(params: Record<string, any> = {}) {
   try {
-    gridApi.query(params);
+    await gridApi.query(params);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
   }
@@ -82,14 +81,15 @@ async function gridQuery(params: Record<string, any> = {}) {
  */
 async function onRefresh() {
   try {
-    const formValues = await gridApi.formApi.getValues();
-    gridApi.formApi.setLatestSubmissionValues(formValues);
-    gridQuery(formValues);
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
     setTimeout(() => {
-      const $grid = gridApi.grid;
-      if ($grid) {
-        $grid.setAllTreeExpand(true);
-      }
+      gridApi.grid.setAllTreeExpand(true);
     }, 900);
   } catch (error) {
     console.error('Error occurred while reloading:', error);
@@ -214,9 +214,9 @@ function onRecovery() {
 }
 
 /**
- * 物理删除
+ * 删除
  */
-function onPhysicalDeletion() {
+function onBatchDelete() {
   const $grid = gridApi.grid;
   if (!$grid) return;
   const checkboxRecords = $grid.getCheckboxRecords();
@@ -226,49 +226,23 @@ function onPhysicalDeletion() {
   }
   const ids: any[] = [];
   checkboxRecords.forEach((item: any) => {
-    if (item.state > 10) {
-      ids.push(item.id);
-    } else {
-      $grid.setCheckboxRow(item, false);
-    }
+    ids.push(item.id);
   });
   if (ids.length <= 0) {
     message.warning('你没有选择任何数据');
     return;
   }
-  batchSelectPhysicalDeletion(ids, () => {
+  batchSelectDelete(ids, () => {
     onRefresh();
     $grid.setAllCheckboxRow(false);
   });
-}
-
-/**
- * 右键菜单事件
- */
-function onMenuClick({ menu, row, column }) {
-  const $grid = gridApi.grid;
-  if (!$grid) return;
-  switch (menu.code) {
-    case 'expand': {
-      $grid.setTreeExpand(row, true);
-      break;
-    }
-    case 'contract': {
-      $grid.setTreeExpand(row, false);
-      break;
-    }
-    case 'create': {
-      onCreateChild(row);
-      break;
-    }
-  }
 }
 </script>
 
 <template>
   <Page auto-content-height content-class="p-2">
     <Drawer @ok="onRefresh" />
-    <Grid @menu-click="onMenuClick">
+    <Grid>
       <template #toolbar-actions>
         <VbenButton
           type="primary"
@@ -294,20 +268,20 @@ function onMenuClick({ menu, row, column }) {
         >
           批量停用
         </VbenButton>
-        <VbenButton
+        <!-- <VbenButton
           class="ml-2 pg-button-size-small"
           size="sm"
           @click="onRecovery"
         >
           删除恢复
-        </VbenButton>
+        </VbenButton> -->
         <VbenButton
           class="ml-2 pg-button-size-small"
           size="sm"
           danger
-          @click="onPhysicalDeletion"
+          @click="onBatchDelete"
         >
-          物理删除
+          删除
         </VbenButton>
       </template>
       <template #operate="{ row }">
