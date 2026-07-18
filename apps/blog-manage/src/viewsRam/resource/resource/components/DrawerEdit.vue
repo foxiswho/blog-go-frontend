@@ -8,6 +8,7 @@ import { HttpMethod, RamResourceType, RamResourceTypeAttr } from '@pg/types';
 import { usePgForm } from '#/adapter';
 
 import { existName, saveOrUpdate, selectNodeAllPublic } from '../api';
+
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -25,7 +26,7 @@ const [Form, formApi] = usePgForm({
       component: 'PgTreeSelect',
       componentProps: {
         api: selectNodeAllPublic,
-        params: {typeAttr:'categoryLast'},
+        params: { typeAttr: 'categoryLast' },
         props: {
           placeholder: '如果为空,则是一级',
           filterable: true,
@@ -77,6 +78,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -160,18 +162,21 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
       const { values, isUpdate, parent } =
         drawerApi.getData<Record<string, any>>();
       if (values) {
@@ -181,7 +186,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         formApi.setValues(values);
       }
 
-      drawerApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}`, loading: false });
     }
   },
   title: '角色：',
@@ -190,7 +195,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>, 'id'>>();
+  drawerApi.lock();
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
@@ -206,8 +217,10 @@ function onSubmit(values: Record<string, any>) {
         drawerApi.setState({ loading: false, confirmLoading: false });
       });
   } catch (error) {
-    drawerApi.setState({ loading: false, confirmLoading: false });
     console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

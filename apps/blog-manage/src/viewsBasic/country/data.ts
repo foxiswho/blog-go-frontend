@@ -1,10 +1,41 @@
+import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeGridPropTypes } from 'vxe-table';
 
 import _XEUtils_ from 'xe-utils';
 
 import { existName, setStateEnableDisable } from './api';
-import {h} from "vue";
-import {YesNoOptionsFormatter} from "@pg/types/src/basic/yes-no";
+import { YesNoOptionsFormatter } from "@pg/types/src/basic/yes-no";
+
+/**
+ * 搜索表单 Schema
+ */
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'wd',
+      label: '关键词',
+      componentProps: {
+        placeholder: '请输入',
+        clearable: true,
+      },
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          { label: '停用', value: '2' },
+          { label: '有效', value: '1' },
+          { label: '弃置', value: '12' },
+          { label: '取消', value: '11' },
+        ],
+      },
+      fieldName: 'state',
+      label: '状态',
+    },
+  ];
+}
 
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', title: 'ID', width: 120 },
@@ -17,7 +48,7 @@ export const columns: VxeGridPropTypes.Columns = [
   { field: 'phoneUse', title: '区号使用', width: 160,
     formatter: YesNoOptionsFormatter,
   },
-  { field: 'domainSuffix', title: '域名后缀', width: 80, visible:false },
+  { field: 'domainSuffix', title: '域名后缀', width: 80, visible: false },
   {
     field: 'state',
     title: '状态',
@@ -57,7 +88,4 @@ export const columns: VxeGridPropTypes.Columns = [
     },
   },
   { title: '操作', width: 160, field: 'right', slots: { default: 'operate' } },
-];
-
-export const formSchema = [
 ];

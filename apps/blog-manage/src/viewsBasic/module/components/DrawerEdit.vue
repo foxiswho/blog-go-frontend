@@ -59,6 +59,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -96,6 +97,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existCode(values.code, values.id);
@@ -133,16 +135,13 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
       drawerApi.setState({
@@ -174,18 +173,23 @@ const [Drawer, drawerApi] = useVbenDrawer({
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>, 'id'>>();
+  drawerApi.lock();
   try {
     drawerApi.setState({
       loading: true,
       confirmLoading: true,
     });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    // console.log('values',values)
     saveOrUpdate(values, isUpdate)
       .then((d) => {
         setTimeout(() => {
-          emit('ok', values);
+          emit('ok', { ...values });
           drawerApi.setState({
             loading: false,
             confirmLoading: false,
@@ -196,6 +200,7 @@ function onSubmit(values: Record<string, any>) {
   } catch (error) {
     console.error(error);
   } finally {
+    drawerApi.unlock();
     drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }

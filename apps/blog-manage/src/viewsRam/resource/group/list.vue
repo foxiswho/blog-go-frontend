@@ -21,7 +21,7 @@ import {
   deleteIds,
   List,
 } from './api';
-import Edit from './components/edit.vue';
+import Edit from './components/DrawerEdit.vue';
 import { columns } from './data';
 
 const xGrid = ref<VxeGridInstance<RowVO>>();

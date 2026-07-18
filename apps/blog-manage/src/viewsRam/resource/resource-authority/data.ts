@@ -52,5 +52,49 @@ export const columns: VxeGridPropTypes.Columns = [
   { title: '操作', width: 160, field: 'right', slots: { default: 'operate' } },
 ];
 
-export const formSchema = [
-];
+export function useGridFormSchema(): any[] {
+  return [
+    {
+      fieldName: 'typeValue',
+      label: '隐藏',
+      defaultValue: '',
+      component: 'Input',
+      componentProps: {},
+      dependencies: {
+        show: false,
+        triggerFields: ['wd'],
+      },
+    },
+    {
+      fieldName: 'typeCategory',
+      label: '隐藏',
+      defaultValue: 'group',
+      component: 'Input',
+      componentProps: {},
+      dependencies: {
+        show: false,
+        triggerFields: ['wd'],
+      },
+    },
+    {
+      fieldName: 'wd',
+      label: '关键词',
+      component: 'Input',
+      componentProps: { placeholder: '请输入', clearable: true },
+    },
+    {
+      fieldName: 'state',
+      label: '状态',
+      component: 'Select',
+      componentProps: {
+        clearable: true,
+        options: [
+          { label: '停用', value: '2' },
+          { label: '有效', value: '1' },
+          { label: '弃置', value: '12' },
+          { label: '取消', value: '11' },
+        ],
+      },
+    },
+  ];
+}

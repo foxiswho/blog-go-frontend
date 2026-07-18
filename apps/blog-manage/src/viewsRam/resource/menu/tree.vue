@@ -511,7 +511,7 @@ function reloadTable() {
 }
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
-  connectedComponent: Edit,
+  connectedComponent: DrawerEdit,
 });
 </script>
 

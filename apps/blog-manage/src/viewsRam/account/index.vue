@@ -1,29 +1,24 @@
 <script setup lang="ts">
-import type { RowVO } from '@pg/types';
-import type {
-  VxeGridInstance,
-  VxeGridListeners,
-  VxeGridProps,
-} from 'vxe-table';
+import type { Recordable } from '@vben/types';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
+import { computed, ref } from 'vue';
+
+import { Page, useVbenDrawer, useVbenModal, VbenButton } from '@vben/common-ui';
+import { Plus } from '@vben/icons';
 
 import { PgTree } from '@pg/components-n';
 import {
   basicTypeDomainFormatter,
   IdentityTypeFormatter,
   SexOptionsFormatter,
-  state,
+  state as stateOptions,
 } from '@pg/types';
-import { VXETable } from 'vxe-table';
 
-import { message, usePgForm } from '#/adapter';
-import {
-  selectNodeAllPublic as departmentNode,
-  selectNodeAllPublic,
-} from '#/viewsRam/department/api';
+import { message } from '#/adapter';
+import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
+import { selectNodeAllPublic } from '#/viewsRam/department/api';
 import { selectNodeAllPublic as groupNode } from '#/viewsRam/group/api';
 import { selectNodeAllPublic as levelNode } from '#/viewsRam/level/api';
 import { selectNodeAllPublic as positionNode } from '#/viewsRam/position/api';
@@ -34,7 +29,7 @@ import { selectNodeAllPublic as teamNode } from '#/viewsRam/team/api';
 import {
   batchSelectDisable,
   batchSelectEnable,
-  batchSelectPhysicalDeletion,
+  batchSelectDelete,
   batchSelectRecovery,
   deleteIds,
   List,
@@ -46,825 +41,560 @@ import { columns } from './data';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
+const reloadTreeState = ref(0);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
-let formParam = { departments: [] };
 
-const treeChang = (record) => {
+const treeChang = (record: any) => {
   currenRecord.value = true;
   currenData.value = record;
-  // onsole.log('record', record);
-  formParam.departments = [record.key];
-  reloadTable();
+  gridApi.formApi.setFieldValue('departments', [record.key]);
+  onRefresh();
 };
 /**
  * 重新加载
  */
 function reloadTree() {
-  reloadTreeState.value = true;
+  reloadTreeState.value++;
 }
 /**
  * 树重载
  * @param e
  */
-const treeOverload = (e) => {
-  formParam.departments = [];
-  reloadTable();
+const treeOverload = (_e: any) => {
+  gridApi.formApi.setFieldValue('departments', []);
+  onRefresh();
 };
-const [Drawer, drawerApi] = useVbenDrawer({
+const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: DrawerEditTpl,
+  destroyOnClose: true,
 });
-const [ModalAccount, modalApiAccount] = useVbenModal({
-  // 连接抽离的组件
+const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: ModalAccountTpl,
+  destroyOnClose: true,
 });
-const [ModalPassword, modalApiPassword] = useVbenModal({
-  // 连接抽离的组件
+const [FormModalPassword, formModalApiPassword] = useVbenModal({
   connectedComponent: ModalPasswordTpl,
+  destroyOnClose: true,
 });
 /**
  * 树 搜索尾部菜单
  */
-const menuDropdownOptions = [];
+const menuDropdownOptions: any[] = [];
 
-const [Form, formApi] = usePgForm({
-  tabs: {
-    hide: true,
-    active: 'home',
-    group: [{ value: 'home', label: '基础信息' }],
+const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: [
+      {
+        fieldName: 'departments',
+        label: '隐藏',
+        defaultValue: [],
+        component: 'Input',
+        componentProps: {},
+        dependencies: {
+          show: false,
+          triggerFields: ['wd'],
+        },
+      },
+      {
+        component: 'Input',
+        fieldName: 'wd',
+        label: '关键词',
+        componentProps: {
+          placeholder: '请输入',
+        },
+      },
+      {
+        component: 'Input',
+        fieldName: 'account',
+        label: '账号',
+        componentProps: {
+          placeholder: '请输入',
+        },
+      },
+      {
+        component: 'Input',
+        fieldName: 'mail',
+        label: '邮箱',
+        componentProps: {
+          placeholder: '请输入',
+        },
+      },
+      {
+        component: 'Input',
+        fieldName: 'phone',
+        label: '手机号',
+        componentProps: {
+          placeholder: '请输入',
+        },
+      },
+      {
+        component: 'Input',
+        fieldName: 'code',
+        label: '编号',
+        componentProps: {
+          placeholder: '请输入',
+        },
+      },
+      {
+        fieldName: 'departments',
+        label: '部门',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: selectNodeAllPublic,
+          params: {},
+          props: {
+            multiple: true,
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'roleId',
+        label: '角色',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: roleNode,
+          params: {},
+          props: {
+            multiple: true,
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'levelId',
+        label: '级别',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: levelNode,
+          convertNode: true,
+          params: {},
+          props: {
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'groupId',
+        label: '分组',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: groupNode,
+          params: {},
+          props: {
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'team',
+        label: '团队',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: teamNode,
+          params: {},
+          props: {
+            multiple: true,
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'position',
+        label: '职务',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: positionNode,
+          convertNode: true,
+          params: {},
+          props: {
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'job',
+        label: '职位',
+        component: 'PgTreeSelect',
+        componentProps: {
+          api: postNode,
+          convertNode: true,
+          params: {},
+          props: {
+            placeholder: '请选择',
+          },
+        },
+      },
+      {
+        fieldName: 'state',
+        label: '状态',
+        component: 'Select',
+        componentProps: {
+          placeholder: '请选择',
+          options: stateOptions,
+          clearable: true,
+        },
+      },
+      {
+        fieldName: 'jobTitle',
+        label: '职衔',
+        component: 'Input',
+      },
+      {
+        fieldName: 'jobRank',
+        label: '职级',
+        component: 'Input',
+      },
+      {
+        fieldName: 'registerTimeRange',
+        label: '注册时间',
+        component: 'PgDatePicker',
+        special: 'DatePicker',
+        componentProps: {
+          clearable: true,
+          isTimestamp: false,
+          type: 'datetimerange',
+          format: 'yyyy-MM-dd HH:mm:ss',
+          valueFormat: 'yyyy-MM-dd HH:mm:ss',
+          shortcuts: {
+            昨天: () => Date.now() - 24 * 60 * 60 * 1000,
+          },
+        },
+      },
+      {
+        fieldName: 'loginTimeRange',
+        label: '登陆时间',
+        component: 'PgDatePicker',
+        special: 'DatePicker',
+        componentProps: {
+          clearable: true,
+          isTimestamp: false,
+          type: 'datetimerange',
+          format: 'yyyy-MM-dd HH:mm:ss',
+          valueFormat: 'yyyy-MM-dd HH:mm:ss',
+          shortcuts: {
+            昨天: () => Date.now() - 24 * 60 * 60 * 1000,
+          },
+        },
+      },
+      {
+        fieldName: 'birthdayRange',
+        label: '生日',
+        component: 'PgDatePicker',
+        special: 'DatePicker',
+        componentProps: {
+          clearable: true,
+          isTimestamp: false,
+          type: 'daterange',
+          format: 'yyyy-MM-dd',
+          valueFormat: 'yyyy-MM-dd',
+          shortcuts: {
+            昨天: () => Date.now() - 24 * 60 * 60 * 1000,
+          },
+        },
+      },
+    ],
+    submitOnChange: false,
   },
-  // 大屏一行显示3个，中屏一行显示2个，小屏一行显示1个
-  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-  actionWrapperClass: 'text-center',
-  schema: [
-    {
-      tabGroup: 'home',
-      fieldName: 'wd',
-      label: '关键词',
-      component: 'Input',
-      defaultValue: '',
-      componentProps: {
-        placeholder: '请输入',
-      },
+  gridOptions: {
+    columns,
+    height: 'auto',
+    keepSource: true,
+    cellConfig: {
+      height: 120,
     },
-    {
-      tabGroup: 'home',
-      fieldName: 'account',
-      label: '账号',
-      component: 'Input',
-      defaultValue: '',
-      componentProps: {
-        placeholder: '请输入',
-      },
+    pagerConfig: {
+      pageSize: 20,
+      pageSizes: [10, 20, 50, 100, 500, 1000],
     },
-    {
-      tabGroup: 'home',
-      fieldName: 'mail',
-      label: '邮箱',
-      component: 'Input',
-      defaultValue: '',
-      componentProps: {
-        placeholder: '请输入',
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'phone',
-      label: '手机号',
-      component: 'Input',
-      defaultValue: '',
-      componentProps: {
-        placeholder: '请输入',
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'code',
-      label: '编号',
-      component: 'Input',
-      defaultValue: '',
-      componentProps: {
-        placeholder: '请输入',
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'departments',
-      label: '部门',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: departmentNode,
-        params: {},
-        props: {
-          multiple: true,
-          placeholder: '请选择',
+    proxyConfig: {
+      ajax: {
+        query: async ({ page }, formValues) => {
+          return await List({
+            pageSize: page.pageSize,
+            pageNum: page.currentPage,
+            ...formValues,
+          });
         },
       },
     },
-    {
-      tabGroup: 'home',
-      fieldName: 'roleId',
-      label: '角色',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: roleNode,
-        params: {},
-        props: {
-          multiple: true,
-          placeholder: '请选择',
-        },
-      },
+    rowConfig: {
+      keyField: 'id',
+      isHover: true,
     },
-    {
-      tabGroup: 'home',
-      fieldName: 'levelId',
-      label: '级别',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: levelNode,
-        convertNode: true,
-        params: {},
-        props: {
-          placeholder: '请选择',
-        },
-      },
+    toolbarConfig: {
+      custom: true,
+      refresh: true,
+      zoom: true,
     },
-    {
-      tabGroup: 'home',
-      fieldName: 'groupId',
-      label: '分组',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: groupNode,
-        params: {},
-        props: {
-          placeholder: '请选择',
-        },
-      },
-    },
-
-    {
-      tabGroup: 'home',
-      fieldName: 'team',
-      label: '团队',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: teamNode,
-        params: {},
-        props: {
-          multiple: true,
-          placeholder: '请选择',
-        },
-      },
-    },
-    {
-      tabGroup: 'position',
-      fieldName: 'position',
-      label: '职务',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: positionNode,
-        convertNode: true,
-        params: {},
-        props: {
-          placeholder: '请选择',
-        },
-      },
-    },
-    {
-      tabGroup: 'position',
-      fieldName: 'job',
-      label: '职位',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: postNode,
-        convertNode: true,
-        params: {},
-        props: {
-          placeholder: '请选择',
-        },
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'state',
-      label: '状态',
-      component: 'Select',
-      componentProps: {
-        placeholder: '请选择',
-        options: state,
-        clearable: true,
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'position',
-      label: '职务',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: positionNode,
-        convertNode: true,
-        params: {},
-        props: {
-          placeholder: '请选择',
-        },
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'job',
-      label: '职位',
-      component: 'PgTreeSelect',
-      componentProps: {
-        api: postNode,
-        convertNode: true,
-        params: {},
-        props: {
-          placeholder: '请选择',
-        },
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'jobTitle',
-      label: '职衔',
-      component: 'Input',
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'jobRank',
-      label: '职级',
-      component: 'Input',
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'registerTimeRange',
-      label: '注册时间',
-      component: 'PgDatePicker',
-      special: 'DatePicker',
-      componentProps: {
-        clearable: true,
-        isTimestamp: false,
-        type: 'datetimerange',
-        format: 'yyyy-MM-dd HH:mm:ss',
-        valueFormat: 'yyyy-MM-dd HH:mm:ss',
-        // formattedValue:'2022-11-10 11:11:11',
-        // defaultValue:'2022-11-10 11:11:11',
-        shortcuts: {
-          昨天: () => Date.now() - 24 * 60 * 60 * 1000,
-        },
-        // onUpdateValue: ( value, formattedValue ) => {
-        //   console.log('OnUpdateValue', value, formattedValue)
-        //   formApi.setFieldValue('registerTime', dayjs(formattedValue));
-        // },
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'loginTimeRange',
-      label: '登陆时间',
-      component: 'PgDatePicker',
-      special: 'DatePicker',
-      componentProps: {
-        clearable: true,
-        isTimestamp: false,
-        type: 'datetimerange',
-        format: 'yyyy-MM-dd HH:mm:ss',
-        valueFormat: 'yyyy-MM-dd HH:mm:ss',
-        // formattedValue:'2022-11-10 11:11:11',
-        // defaultValue:'2022-11-10 11:11:11',
-        shortcuts: {
-          昨天: () => Date.now() - 24 * 60 * 60 * 1000,
-        },
-        // onUpdateValue: ( value, formattedValue ) => {
-        //   console.log('OnUpdateValue', value, formattedValue)
-        //   formApi.setFieldValue('registerTime', dayjs(formattedValue));
-        // },
-      },
-    },
-    {
-      tabGroup: 'home',
-      fieldName: 'birthdayRange',
-      label: '生日',
-      component: 'PgDatePicker',
-      special: 'DatePicker',
-      componentProps: {
-        clearable: true,
-        isTimestamp: false,
-        type: 'daterange',
-        format: 'yyyy-MM-dd',
-        valueFormat: 'yyyy-MM-dd',
-        // formattedValue:'2022-11-10 11:11:11',
-        // defaultValue:'2022-11-10 11:11:11',
-        shortcuts: {
-          昨天: () => Date.now() - 24 * 60 * 60 * 1000,
-        },
-        // onUpdateValue: ( value, formattedValue ) => {
-        //   console.log('OnUpdateValue', value, formattedValue)
-        //   formApi.setFieldValue('registerTime', dayjs(formattedValue));
-        // },
-      },
-    },
-  ],
-  handleSubmit: onSubmit,
+  } as any,
 });
 /**
- * 提交
+ * 重新查询
  */
-async function onSubmit(values: Record<string, any>) {
-  console.log('values', values);
-  formParam = {
-    ...values,
-  };
-  reloadTable();
+async function gridQuery(params: Record<string, any> = {}) {
+  try {
+    await gridApi.query(params);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
+}
+/**
+ * 刷新表格
+ */
+async function onRefresh() {
+  try {
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
 }
 
-const xGrid = ref<VxeGridInstance<RowVO>>();
-const gridOptions = reactive<VxeGridProps<RowVO>>({
-  stripe: true, // 斑马纹
-  border: true,
-  showHeaderOverflow: true,
-  showOverflow: true,
-  keepSource: true,
-  id: 'full_role',
-  // height: '99%',
-  minHeight: 800,
-  rowConfig: {
-    keyField: 'id',
-    isHover: true,
-    height: 120,
-  },
-  columnConfig: {
-    resizable: true,
-  },
-  printConfig: {
-    columns: [
-      { field: 'name' },
-      { field: 'nameFl' },
-      { field: 'code' },
-      { field: 'state' },
-      { field: 'createAt' },
-    ],
-  },
-  sortConfig: {
-    trigger: 'cell',
-    remote: true,
-  },
-  filterConfig: {
-    remote: true,
-  },
-  pagerConfig: {
-    enabled: true,
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100, 500, 1000],
-  },
-  toolbarConfig: {
-    buttons: [
-      { code: 'create', name: '新增' },
-      { code: 'createAccount', name: '新增账号' },
-      { code: 'batchEnable', name: '批量有效' },
-      { code: 'batchDisable', name: '批量停用' },
-      {
-        status: 'primary',
-        icon: 'vxe-icon-ellipsis-v',
-        size: 'mini',
-        circle: true,
-        dropdowns: [
-          { code: 'delete', name: '删除' },
-          { code: 'recovery', name: '删除恢复' },
-          { code: 'mark_cancel', name: '标记[删除/取消]' },
-          // {code: 'save', name: '保存', status: 'success'}
-        ],
-      },
-    ],
-    slots: {
-      // buttons: 'toolbar_buttons',
-      // tools: 'toolbar_tools'
-    },
-    tools: [
-      {
-        name: '更多',
-        status: 'primary',
-        size: 'small',
-        toolRender: {
-          props: { className: 'mr-2', class: 'mr-2', popupClassName: 'mr-2' },
-          attrs: { className: 'mr-2', class: 'mr-2' },
-          name: '$buttons',
-        },
-        dropdowns: [
-          // {code: 'delete', name: '直接删除'},
-          // {code: 'mark_cancel', name: '标记[删除/取消]'},
-          // {code: 'myInsert', name: '插入'},
-          // {code: 'mySave', name: '保存'},
-          { code: 'myPrint', name: '打印' },
-          { code: 'physicalDeletion', name: '物理删除' },
-        ],
-      },
-    ],
-    refresh: true, // 显示刷新按钮
-    import: true, // 显示导入按钮
-    export: true, // 显示导出按钮
-    print: true, // 显示打印按钮
-    zoom: true, // 显示全屏按钮
-    custom: true, // 显示自定义列按钮
-  },
-  proxyConfig: {
-    seq: true, // 启用动态序号代理，每一页的序号会根据当前页数变化
-    sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
-    filter: true, // 启用筛选代理，当点击筛选时会自动触发 query 行为
-    form: true, // 启用表单代理，当点击表单提交按钮时会自动触发 reload 行为
-    response: {
-      // 对应响应结果 Promise<{ result: [], page: { total: 100 } }>
-      result: 'data', // 配置响应结果列表字段
-      total: 'total', // 配置响应结果总页数字段
-    },
-    // 只接收Promise，具体实现自由发挥
-    ajax: {
-      // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
-      query: ({ page, sorts, filters, form }) => {
-        const queryParams: any = Object.assign({}, form);
-        // 处理排序条件
-        const firstSort = sorts[0];
-        if (firstSort) {
-          queryParams.sort = firstSort.field;
-          queryParams.order = firstSort.order;
-        }
-        // 处理筛选条件
-        filters.forEach(({ field, values }) => {
-          queryParams[field] = values.join(',');
-        });
-        queryParams.pageSize = page.pageSize;
-        queryParams.pageNum = page.currentPage;
-        if (formParam) {
-          for (const key in formParam) {
-            if (formParam[key]) {
-              queryParams[key] = formParam[key];
-            }
-          }
-        }
-        return List(queryParams);
-      },
-      // 当点击工具栏删除按钮或者手动提交指令 delete 时会被触发
-      delete: ({ body }) => {
-        const { removeRecords } = body;
-        const ids: [] = [];
-        removeRecords.forEach((item) => {
-          // 判断状态是否可删除
-          if (item.state < 10) {
-            ids.push(item.id);
-          }
-        });
-        if (ids.length <= 0) {
-          message.warning('你没有选择任何数据');
-          return Promise.resolve();
-        }
-        return deleteIds(ids).then(() => {
-          reloadTable();
-        });
-      },
-    },
-  },
-  columns,
-  importConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['insert'],
-    // 自定义服务端导入
-    importMethod({ file }) {
-      const $grid = xGrid.value;
-      const formBody = new FormData();
-      formBody.append('file', file);
-      return fetch(`/api/pub/import`, { method: 'POST', body: formBody })
-        .then((response) => response.json())
-        .then((data) => {
-          VXETable.modal.message({
-            content: `成功导入 ${data.result.insertRows} 条记录！`,
-            status: 'success',
-          });
-          // 导入完成，刷新表格
-          if ($grid) {
-            $grid.commitProxy('query');
-          }
-        })
-        .catch(() => {
-          VXETable.modal.message({
-            content: '导入失败，请检查数据是否正确！',
-            status: 'error',
-          });
-        });
-    },
-  },
-  exportConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['current', 'selected', 'all'],
-    // 自定义服务端导出
-    exportMethod({ options }) {
-      return Promise.resolve();
-    },
-  },
-  checkboxConfig: {
-    labelField: 'id',
-    reserve: true,
-    highlight: true,
-    range: true,
-  },
-});
+/**
+ * 新增全量
+ */
+function onCreate() {
+  formDrawerApi.setData({ values: {}, isUpdate: false }).open();
+}
 
-const gridEvent: VxeGridListeners<RowVO> = {
-  proxyQuery() {
-    console.log('数据代理查询事件');
-  },
-  proxyDelete() {
-    console.log('数据代理删除事件');
-  },
-  proxySave() {
-    console.log('数据代理保存事件');
-  },
-  toolbarButtonClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        // 批量 停用
-        case 'batchDisable': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state == 1) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectDisable(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-        // 批量 有效
-        case 'batchEnable': {
-          console.log('$grid.getCheckboxRecords()', $grid.getCheckboxRecords());
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state === 2) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectEnable(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-        case 'create': {
-          drawerApi.setData({
-            // 表单值
-            values: {},
-            isUpdate: false,
-          });
-          drawerApi.open();
-          break;
-        }
-        case 'createAccount': {
-          modalApiAccount.setData({
-            // 表单值
-            values: {},
-            isUpdate: false,
-          });
-          modalApiAccount.open();
-          break;
-        }
-        case 'myExport': {
-          $grid.exportData({
-            type: 'csv',
-          });
-          break;
-        }
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增2 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
-        // 删除恢复
-        case 'recovery': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state > 10) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectRecovery(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-      }
-    }
-  },
-  toolbarToolClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'myPrint': {
-          $grid.print();
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
-        // 物理删除
-        case 'physicalDeletion': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state > 10) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectPhysicalDeletion(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-      }
-    }
-  },
-};
+/**
+ * 新增
+ */
+function onCreateAccount() {
+  formModalApi.setData({ values: {}, isUpdate: false }).open();
+}
 
-const hasActiveEditRow = (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    return $grid.isEditByRow(row);
-  }
-  return false;
-};
-const editRowEvent = (row: RowVO) => {
-  drawerApi.setData({
-    // 表单值
-    values: row,
-    isUpdate: true,
+/**
+ * 编辑
+ * @param row 行数据
+ */
+function onEdit(row: any) {
+  formDrawerApi.setData({ values: row, isUpdate: true }).open();
+}
+
+/**
+ * 删除
+ * @param row 行数据
+ */
+function onDelete(row: any) {
+  deleteIds([row.id]).then(() => {
+    onRefresh();
   });
-  drawerApi.open();
-};
-
-const clearRowEvent = () => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.clearEdit();
-  }
-};
-const saveRowEvent = async (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    await $grid.clearEdit();
-    gridOptions.loading = true;
-    // 模拟异步保存
-    setTimeout(() => {
-      gridOptions.loading = false;
-      VXETable.modal.message({
-        content: `${JSON.stringify(row)}`,
-        status: 'success',
-      });
-    }, 300);
-  }
-};
-/**
- * 删除 指定行数据
- * @param row
- */
-const removeRowEvent = async (row: RowVO) => {
-  const type = await VXETable.modal.confirm('您确定要删除该数据?');
-  const $grid = xGrid.value;
-  if ($grid && type === 'confirm') {
-    deleteIds([row.id]);
-    await $grid.remove(row);
-  }
-};
-
-onMounted(() => {});
+}
 
 /**
- * 重新加载
+ * 批量有效
  */
-function reloadTable() {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.commitProxy('query');
+function onBatchEnable() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
   }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    if (item.state === 2) {
+      ids.push(item.id);
+    } else {
+      $grid.setCheckboxRow(item, false);
+    }
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectEnable(ids, () => {
+    onRefresh();
+    $grid.setAllCheckboxRow(false);
+  });
+}
+
+/**
+ * 批量停用
+ */
+function onBatchDisable() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    if (item.state === 1) {
+      ids.push(item.id);
+    } else {
+      $grid.setCheckboxRow(item, false);
+    }
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectDisable(ids, () => {
+    onRefresh();
+    $grid.setAllCheckboxRow(false);
+  });
+}
+
+/**
+ * 删除恢复
+ */
+function onRecovery() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    if (item.state > 10) {
+      ids.push(item.id);
+    } else {
+      $grid.setCheckboxRow(item, false);
+    }
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectRecovery(
+    ids,
+    () => {
+      onRefresh();
+      $grid.setAllCheckboxRow(false);
+    },
+  );
+}
+
+/**
+ * 删除
+ */
+function onBatchDelete() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    ids.push(item.id);
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectDelete(
+    ids,
+    () => {
+      onRefresh();
+      $grid.setAllCheckboxRow(false);
+    },
+  );
 }
 
 /**
  * 修改密码
  * @param row
  */
-function handlePassword(row) {
-  modalApiPassword.setData({
-    // 表单值
+function handlePassword(row: any) {
+  formModalApiPassword.setData({
     values: row,
     isUpdate: true,
   });
-  modalApiPassword.open();
+  formModalApiPassword.open();
 }
 
 /**
  * 修改账号
  * @param row
  */
-function handleAccount(row) {
-  modalApiAccount.setData({
-    // 表单值
+function handleAccount(row: any) {
+  formModalApi.setData({
     values: row,
     isUpdate: true,
   });
-  modalApiAccount.open();
+  formModalApi.open();
 }
 </script>
 
 <template>
-  <NLayout class="h-full p-2" has-sider>
-    <NLayoutSider class="min-w-[160px]" width="160">
-      <PgTree
-        :api="selectNodeAllPublic"
-        :menu-dropdown-options="menuDropdownOptions"
-        :reload="reloadTreeComputed"
-        :right-click-menu="false"
-        @ok="treeChang"
-        @overload="treeOverload"
-      />
-    </NLayoutSider>
-    <NLayout class="w-[calc(100%-160px)]">
-      <NLayoutContent>
-        <Form />
-        <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
+  <Page auto-content-height content-class="p-2">
+    <div class="flex size-full">
+      <NCard
+        class="min-w-[160px]"
+        style="width: unset"
+        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+      >
+        <PgTree
+          :api="selectNodeAllPublic"
+          :is-node-all="true"
+          :menu-dropdown-options="menuDropdownOptions"
+          :reload="reloadTreeComputed"
+          :right-click-menu="false"
+          @ok="treeChang"
+          @overload="treeOverload"
+        />
+      </NCard>
+      <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
+        <Grid>
+          <template #toolbar-actions>
+            <VbenButton
+              type="primary"
+              class="pg-button-size-small"
+              @click="onCreateAccount"
+            >
+              <Plus class="size-5" />
+              新增
+            </VbenButton>
+            <VbenButton class="ml-2 pg-button-size-small" @click="onCreate">
+              新增全量
+            </VbenButton>
+          </template>
+          <template #toolbar-tools>
+            <VbenButton
+              class="ml-2 pg-button-size-small"
+              size="sm"
+              @click="onBatchEnable"
+            >
+              批量有效
+            </VbenButton>
+            <VbenButton
+              class="ml-2 pg-button-size-small"
+              size="sm"
+              @click="onBatchDisable"
+            >
+              批量停用
+            </VbenButton>
+            <!-- <VbenButton
+              class="ml-2 pg-button-size-small"
+              size="sm"
+              @click="onRecovery"
+            >
+              删除恢复
+            </VbenButton>-->
+            <VbenButton
+              class="ml-2 pg-button-size-small"
+              size="sm"
+              danger
+              @click="onBatchDelete"
+            >
+              删除
+            </VbenButton>
+          </template>
           <template #accountAll="{ row }">
             <div>账号:{{ row.account }}</div>
             <div>邮箱:{{ row.mail }}</div>
@@ -916,50 +646,43 @@ function handleAccount(row) {
             </div>
           </template>
           <template #operate="{ row }">
-            <template v-if="hasActiveEditRow(row)">
-              <vxe-button content="取消" @click="clearRowEvent" />
-              <vxe-button
-                content="保存"
-                status="primary"
-                @click="saveRowEvent(row)"
-              />
-            </template>
-            <template v-else>
-              <vxe-button
-                icon="vxe-icon-edit"
-                mode="text"
-                title="编辑"
-                @click="editRowEvent(row)"
-              />
-            </template>
-            <vxe-button
-              icon="vxe-icon-delete"
-              mode="text"
-              status="danger"
-              title="删除"
-              @click="removeRowEvent(row)"
+            <VbenTableAction
+              :actions="[
+                {
+                  tooltip: {
+                    content: '编辑',
+                  },
+                  icon: 'lucide:edit',
+                  onClick: () => onEdit(row),
+                },
+              ]"
+              :dropdown-actions="[
+                {
+                  text: '删除',
+                  icon: 'lucide:trash-2',
+                  danger: true,
+                  popConfirm: {
+                    title: `确定删除 ${row.name} 吗？`,
+                    confirm: () => onDelete(row),
+                  },
+                },
+                {
+                  text: '修改密码',
+                  onClick: () => handlePassword(row),
+                },
+                {
+                  text: '修改账号',
+                  onClick: () => handleAccount(row),
+                },
+              ]"
+              align="center"
             />
-
-            <vxe-button
-              mode="text"
-              size="small"
-              status="primary"
-              icon="vxe-icon-ellipsis-v"
-              transfer
-            >
-              <template #dropdowns>
-                <vxe-button content="修改密码" @click="handlePassword(row)" />
-                <vxe-button content="修改账号" @click="handleAccount(row)" />
-              </template>
-            </vxe-button>
           </template>
-        </vxe-grid>
-      </NLayoutContent>
-    </NLayout>
-    <Drawer />
-    <ModalAccount @ok="reloadTable" />
-    <ModalPassword />
-  </NLayout>
+        </Grid>
+      </div>
+    </div>
+    <FormDrawer @ok="onRefresh" />
+    <FormModal @ok="onRefresh" />
+    <FormModalPassword />
+  </Page>
 </template>
-
-<style scoped></style>

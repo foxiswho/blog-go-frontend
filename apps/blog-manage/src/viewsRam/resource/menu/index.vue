@@ -6,7 +6,7 @@ import { useVbenDrawer } from '@vben-core/popup-ui';
 import { PgTree } from '@pg/components-n';
 
 import { selectPublic } from './api';
-import Edit from './components/edit.vue';
+import DrawerEdit from './components/DrawerEdit.vue';
 import TabForm from './components/TabForm.vue';
 import TabRule from './components/TabRule.vue';
 
@@ -35,7 +35,7 @@ function reloadTable() {
  */
 const treeOverload = (e) => {};
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
-  connectedComponent: Edit,
+  connectedComponent: DrawerEdit,
 });
 /**
  * 树右键菜单

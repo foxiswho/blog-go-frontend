@@ -7,10 +7,9 @@ import { usePgForm } from '#/adapter';
 
 import {
   existAccount,
-  saveOrUpdate,
+  saveOrUpdateAccount,
   existPhone,
   existMail,
-  saveOrUpdateAccount,
 } from '../api';
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
@@ -35,7 +34,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
-            size: 'medium',
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existAccount(values.account, values.id);
@@ -64,7 +63,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
-            size: 'medium',
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existPhone(values.phone, values.id);
@@ -83,7 +82,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
-            size: 'medium',
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existMail(values.mail, values.id);
@@ -109,19 +108,15 @@ const [Form, formApi] = usePgForm({
         type: 'datetime',
         format: 'yyyy-MM-dd HH:mm:ss',
         valueFormat: 'yyyy-MM-dd HH:mm:ss',
-        // formattedValue:'2022-11-10 11:11:11',
-        // defaultValue:'2022-11-10 11:11:11',
         shortcuts: {
           昨天: () => Date.now() - 24 * 60 * 60 * 1000,
         },
-        // onUpdateValue: (value, formattedValue) => {
-        //     console.log('OnUpdateValue', value, formattedValue)
-        // }
       },
     },
     {
       fieldName: 'id',
       label: 'id',
+      defaultValue: '0',
       component: 'Input',
       componentProps: {},
       dependencies: {
@@ -131,7 +126,6 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 
@@ -142,35 +136,49 @@ const [Modal, modalApi] = useVbenModal({
   onCancel() {
     modalApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-    // modalApi.close();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      modalApi.setState({
+        loading: true,
+        confirmLoading: false,
+        destroyOnClose: true,
+      });
       const { values, isUpdate } = modalApi.getData<Record<string, any>>();
       if (values) {
         formApi.setValues(values);
       }
 
-      modalApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}` });
+      modalApi.setState({ title: `账号：${isUpdate ? '编辑' : '新增'}`, loading: false });
     }
   },
 });
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  modalApi.lock();
   try {
+    modalApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = modalApi.getData<Record<string, any>>();
-    saveOrUpdateAccount(values, isUpdate).then((d) => {
-      setTimeout(() => {
-        emit('ok', values);
-        modalApi.close();
-      }, 1500);
-    });
+    saveOrUpdateAccount(values, isUpdate)
+      .then((d) => {
+        setTimeout(() => {
+          emit('ok', values);
+          modalApi.setState({ loading: false });
+          modalApi.close();
+        }, 500);
+      });
   } catch (error) {
     console.error(error);
+  } finally {
+    modalApi.unlock();
+    modalApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

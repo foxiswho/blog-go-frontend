@@ -7,15 +7,17 @@ import { $t } from '@vben/locales';
 import { usePgForm } from '#/adapter';
 
 import { updatePassword } from './api';
-import {useUserStore} from "@vben/stores";
+import { useUserStore } from '@vben/stores';
+import {useConfigPubStore} from '#/store';
+import { SmUtil } from '#/tools/smUtil';
 const userStore = useUserStore();
+const configPubStore = useConfigPubStore();
+const sm = new SmUtil();
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
     active: 'home',
-    group: [
-      { value: 'home', label: '修改密码' },
-    ],
+    group: [{ value: 'home', label: '修改密码' }],
   },
   schema: [
     {
@@ -95,7 +97,19 @@ const [Modal, modalApi] = useVbenModal({
 function onSubmit(values: Record<string, any>) {
   try {
     modalApi.setState({ loading: true, confirmLoading: true });
-    updatePassword(values)
+    const data = {
+      ...values,
+    };
+    if (
+      configPubStore.isLoginEncrypt() &&
+      configPubStore.getLoginPub() &&
+      data['passwordNew']
+    ) {
+      sm.setPublicKey(configPubStore.getLoginPub());
+      data.passwordNew = sm.encryptHex(data.passwordNew);
+      data['encrypt'] = 'encrypt';
+    }
+    updatePassword(data)
       .then((d) => {
         setTimeout(() => {
           modalApi.setState({ loading: false, confirmLoading: false });
@@ -105,7 +119,7 @@ function onSubmit(values: Record<string, any>) {
       })
       .catch(() => {
         modalApi.setState({ loading: false, confirmLoading: false });
-    });
+      });
   } catch (error) {
     modalApi.setState({ loading: false, confirmLoading: false });
     console.error(error);

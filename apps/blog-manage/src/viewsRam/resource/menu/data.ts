@@ -50,5 +50,6 @@ export const columns: VxeGridPropTypes.Columns = [
   { title: '操作', width: 160, field: 'right', slots: { default: 'operate' } },
 ];
 
-export const formSchema = [
-];
+export function useGridFormSchema(): any[] {
+  return [];
+}

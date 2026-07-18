@@ -1,21 +1,16 @@
 <script lang="ts" setup>
 import type { RowVO } from '@pg/types';
-import type {
-  VxeGridInstance,
-  VxeGridProps,
-  VxeGridPropTypes,
-  VxeToolbarInstance,
-} from 'vxe-table';
+import type { VxeGridPropTypes } from 'vxe-table';
 
-import { nextTick, onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { VbenButton } from '@vben/common-ui';
-
-import { useVbenModal } from '@vben-core/popup-ui';
+import { useVbenModal } from '@vben/common-ui';
 
 import _XEUtils_ from 'xe-utils';
 
 import { message } from '#/adapter';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { setStateEnableDisable } from '#/viewsBlog/article/api';
 import TopicTpl from '#/viewsBlog/topic/invoke/list.vue';
 
@@ -29,25 +24,13 @@ const modelData = defineModel('data', {
   type: Array,
 });
 const loading = ref(false);
-const xGrid = ref<VxeGridInstance<RowVO>>();
-const toolbarRef = ref<VxeToolbarInstance>();
-const tableData = ref<RowVO[]>([]);
-const formParam = { typeCategory: '' };
 const checkedData = ref<RowVO[]>([]);
 
 const [ModalTopic, modalApiTopic] = useVbenModal({
-  // 连接抽离的组件
   connectedComponent: TopicTpl,
+  destroyOnClose: true,
 });
-/**
- * 重新加载
- */
-function reloadTable() {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.commitProxy('query');
-  }
-}
+
 const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', title: 'ID', width: 40 },
   { field: 'tenantNo', title: '租户编号', width: 120, visible: false },
@@ -77,37 +60,32 @@ const columns: VxeGridPropTypes.Columns = [
     },
   },
 ];
-const vxOpt = reactive<VxeGridProps<RowVO>>({
-  border: true,
-  showOverflow: true,
-  minHeight: 700,
-  rowConfig: {
-    useKey: true,
-    keyField: 'id',
-    isCurrent: true,
-    isHover: true,
-  },
-  columnConfig: {
-    resizable: true,
-  },
-  // toolbarConfig: {
-  //   refresh: false, // 显示刷新按钮
-  //   import: false, // 显示导入按钮
-  //   export: false, // 显示导出按钮
-  //   print: false, // 显示打印按钮
-  //   zoom: false, // 显示全屏按钮
-  //   custom: false, // 显示自定义列按钮
-  // },
-  columns,
-});
 
-nextTick(() => {
-  // 将表格和工具栏进行关联
-  const $table = xGrid.value;
-  const $toolbar = toolbarRef.value;
-  if ($table && $toolbar) {
-    $table.connect($toolbar);
-  }
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {
+    radioChange: radioChange,
+  } as any,
+  gridOptions: {
+    border: true,
+    showOverflow: true,
+    minHeight: 700,
+    columns,
+    rowConfig: {
+      useKey: true,
+      keyField: 'id',
+      isCurrent: true,
+      isHover: true,
+    },
+    columnConfig: {
+      resizable: true,
+    },
+    toolbarConfig: {
+      custom: false,
+      export: false,
+      refresh: false,
+      zoom: false,
+    },
+  } as any,
 });
 
 /**
@@ -148,7 +126,7 @@ const cellRender = {
   },
 };
 function eventMakeNew() {
-  const $grid = xGrid.value;
+  const $grid = gridApi.grid;
   const obj = {
     no: '1111',
     name: '2222',
@@ -168,17 +146,18 @@ function eventMakeNew() {
 }
 function refreshTable() {}
 function eventSelect() {
-  modalApiTopic.setData({
-    // 表单值
-    values: {},
-    rows: [],
-    isUpdate: false,
-  });
-  modalApiTopic.open();
+  modalApiTopic
+    .setData({
+      // 表单值
+      values: {},
+      rows: [],
+      isUpdate: false,
+    })
+    .open();
 }
 function selectTopic(opt) {
   console.log('opt', opt);
-  const $grid = xGrid.value;
+  const $grid = gridApi.grid;
   if (opt) {
     for (const item of opt) {
       console.log('item', item);
@@ -196,7 +175,7 @@ function selectTopic(opt) {
   }
 }
 function eventDelete() {
-  const $grid = xGrid.value;
+  const $grid = gridApi.grid;
   if ($grid) {
     // 删除已选中的行
     const checkboxRecords = $grid.getCheckboxRecords();
@@ -214,7 +193,7 @@ function eventDelete() {
 }
 
 function setTableData() {
-  const $grid = xGrid.value;
+  const $grid = gridApi.grid;
   if ($grid) {
     setTimeout(() => {
       for (const item of modelData.value) {
@@ -224,12 +203,6 @@ function setTableData() {
       checkedData.value = $grid.getTableData().tableData;
       emit('ok', checkedData.value);
     }, 200);
-    // for (const item of modelData.value) {
-    //   console.log('item', item);
-    //   $grid.insert(item);
-    // }
-    //$grid.loadData(modelData.value);
-    //console.log('modelData', modelData.value);
   }
 }
 onMounted(() => {
@@ -239,20 +212,15 @@ onMounted(() => {
 
 <template>
   <div class="grid2 h-full">
-    <vxe-toolbar ref="toolbarRef">
-      <template #tools>
-        <VbenButton @click="eventSelect()">选择话题</VbenButton>
-        <VbenButton @click="eventDelete()" class="ml-2">删除</VbenButton>
+    <Grid>
+      <template #toolbar-tools>
+        <VbenButton class="pg-button-size-small" @click="eventSelect()">
+          选择话题
+        </VbenButton>
+        <VbenButton class="ml-2 pg-button-size-small" @click="eventDelete()">
+          删除
+        </VbenButton>
       </template>
-    </vxe-toolbar>
-    <vxe-grid
-      :print-config="{}"
-      :export-config="{}"
-      :loading="loading"
-      ref="xGrid"
-      v-bind="vxOpt"
-      @radio-change="radioChange"
-    >
       <template #nameAll="{ row }">
         <div>
           <h2 class="text-3xl font-medium">{{ row.name }}</h2>
@@ -261,7 +229,7 @@ onMounted(() => {
           {{ row.description }}
         </div>
       </template>
-    </vxe-grid>
+    </Grid>
     <ModalTopic @ok="selectTopic" />
   </div>
 </template>

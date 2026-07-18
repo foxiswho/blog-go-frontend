@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 import { h } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenDrawer, VbenButton } from '@vben/common-ui';
 
-import { VbenButton } from '@vben/common-ui';
-
-import { usePgForm, useVbenForm } from '#/adapter';
+import { usePgForm } from '#/adapter';
 
 import { existName, saveOrUpdate } from '../api';
+
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
   tabs: {
@@ -37,6 +36,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -98,24 +98,27 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      drawerApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false, // 点击遮罩关闭弹窗
+        destroyOnClose: true, // 关闭时销毁
+      });
       const { values, isUpdate } = drawerApi.getData<Record<string, any>>();
       if (values) {
         formApi.setValues(values);
       }
 
-      drawerApi.setState({ title: `角色：${isUpdate ? '编辑' : '新增'}` });
+      drawerApi.setState({ title: `角色：${isUpdate ? '编辑' : '新增'}`, loading: false });
     }
   },
   title: '角色：',
@@ -124,7 +127,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>, 'id'>>();
+  drawerApi.lock();
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
@@ -140,8 +149,10 @@ function onSubmit(values: Record<string, any>) {
         drawerApi.setState({ loading: false, confirmLoading: false });
       });
   } catch (error) {
-    drawerApi.setState({ loading: false, confirmLoading: false });
     console.error(error);
+  } finally {
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

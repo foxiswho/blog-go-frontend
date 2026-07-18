@@ -21,6 +21,8 @@ enum Api {
   selectPublic = '/xianfu/manage/basic/dataDictionary/selectPublic',
   state = '/xianfu/manage/basic/dataDictionary/state',
   update = '/xianfu/manage/basic/dataDictionary/update',
+  typeCodePublic = '/xianfu/manage/basic/data-dictionary/typeCodePublic',
+  typeCodeAllPublic = '/xianfu/manage/basic/data-dictionary/typeCodeAllPublic',
 }
 
 /**
@@ -61,6 +63,32 @@ export const selectNodeAllPublic = (data?: any) => {
  */
 export const codeValueAllPublic = (data?: any) => {
   return requestClient.post(Api.codeValueAllPublic, data);
+};
+/**
+ * 公共树展示
+ * @param data
+ */
+export const typeCodePublic = async (data) => {
+  let code = '';
+  if (data && data?.typeCode) {
+    code = data?.typeCode;
+  } else if (typeof data === 'string') {
+    code = data;
+  }
+  return requestClient.get(`${Api.typeCodePublic}/${code}`);
+};
+/**
+ * 获取列表
+ * @param data
+ */
+export const typeCodeAllPublic = async (codes:string[]) => {
+  let data = {
+    typeCodes: [],
+  };
+  if(codes) {
+    data.typeCodes = codes;
+  }
+  return requestClient.post(Api.typeCodeAllPublic,data);
 };
 /**
  * 详情
