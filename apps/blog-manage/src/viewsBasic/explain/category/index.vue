@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 
-import { useVbenDrawer } from '@vben-core/popup-ui';
+import { useVbenDrawer } from '@vben/common-ui';
 
 import { PgTree } from '@pg/components-n';
 
@@ -35,6 +35,7 @@ function reloadTable() {
 const treeOverload = (e) => {};
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Edit,
+  destroyOnClose: true,
 });
 /**
  * 树右键菜单

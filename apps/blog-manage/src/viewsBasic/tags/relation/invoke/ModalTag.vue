@@ -8,13 +8,13 @@ import type { VxeGridInstance, VxeGridProps } from 'vxe-table';
 
 import { reactive, ref, computed } from 'vue';
 
-import { useVbenModal } from '@vben-core/popup-ui';
+import { useVbenModal } from '@vben/common-ui';
 
 import { PgTree } from '@pg/components-n';
 import { useClipboard, usePermission } from '@vueuse/core';
 import { isFunction } from 'xe-utils';
 
-import { message } from '#/adapter/naive';
+import { message } from '#/adapter';
 import { selectPublic as categoryTag } from '#/viewsBasic/tags/category/api';
 
 import { All } from '../api';

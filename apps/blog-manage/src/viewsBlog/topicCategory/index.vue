@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 
-import { useVbenDrawer } from '@vben-core/popup-ui';
+import { useVbenDrawer } from '@vben/common-ui';
 
 import { PgTree } from '@pg/components-n';
 
 import { selectPublic } from './api';
-import DrawerEditTpl from './components/drawerEdit.vue';
+import DrawerEditTpl from './components/DrawerEdit.vue';
 import TabForm from './components/TabForm.vue';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
 const reloadTree = ref(false);
 const reloadTreeComputed = computed(() => reloadTree.value);
-onMounted(() => {});
 
 const treeChang = (record) => {
   currenRecord.value = true;
@@ -32,6 +31,7 @@ function reloadTable() {
 const treeOverload = (e) => {};
 const [DrawerEdit, drawerApi] = useVbenDrawer({
   connectedComponent: DrawerEditTpl,
+  destroyOnClose: true,
 });
 /**
  * 树右键菜单

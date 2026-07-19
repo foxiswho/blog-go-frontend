@@ -60,6 +60,7 @@ const [FormEdit, formInApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formInApi.getValues();
               existName(values.name, values.id);
@@ -97,6 +98,7 @@ const [FormEdit, formInApi] = usePgForm({
         h(
           VbenButton,
           {
+            class:'pg-button-size-small',
             onClick: async (e) => {
               const values = await formInApi.getValues();
               existCode(values.code, values.id);
@@ -180,16 +182,13 @@ const [FormEdit, formInApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formInApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     parentData.value = {};
     recordData.value = {};
@@ -233,28 +232,36 @@ const [Drawer, drawerApi] = useVbenDrawer({
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formInApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formInApi.getValues<Omit<Record<string, any>,'id'>>();
+  drawerApi.lock();
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
-    let data = {
+    const data = {
       ...values,
     };
     if (isUpdate) {
       data.id = recordData.value.id;
       data.typeCode = parentData.value.code;
     }
-    saveOrUpdate(values, isUpdate)
+    saveOrUpdate(data, isUpdate)
       .then((d) => {
         setTimeout(() => {
           emit('ok', values);
+          drawerApi.setState({ loading: false });
           drawerApi.close();
         }, 500);
       });
   } catch (error) {
     console.error(error);
   } finally {
-    drawerApi.setState({ loading: false,confirmLoading: false });
+    drawerApi.unlock();
+    drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

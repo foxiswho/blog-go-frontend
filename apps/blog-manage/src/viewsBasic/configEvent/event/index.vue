@@ -7,7 +7,7 @@ import { List as ListModel } from '#/viewsBasic/configModel/api';
 import {allByModel } from './api';
 import DrawerEditTpl from './components/DrawerEdit.vue';
 import FieldsList from './components/FieldsList.vue';
-import { useVbenDrawer } from '@vben-core/popup-ui';
+import { useVbenDrawer } from '@vben/common-ui';
 
 // 状态管理
 const loading = ref(false);

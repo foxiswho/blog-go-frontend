@@ -1,13 +1,44 @@
+import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeGridPropTypes } from 'vxe-table';
 
 import _XEUtils_ from 'xe-utils';
 
-import { existName, setStateEnableDisable } from './api';
-import {h} from "vue";
+import { setStateEnableDisable } from './api';
+
+/**
+ * 搜索表单 Schema
+ */
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'wd',
+      label: '关键词',
+      componentProps: {
+        placeholder: '请输入',
+        clearable: true,
+      },
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          { label: '停用', value: '2' },
+          { label: '有效', value: '1' },
+          { label: '弃置', value: '12' },
+          { label: '取消', value: '11' },
+        ],
+      },
+      fieldName: 'state',
+      label: '状态',
+    },
+  ];
+}
 
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', title: 'ID', width: 120 },
-  { field: 'name', title: '名称', sortable: true },
+  { field: 'name', title: '名称', minWidth: 200, sortable: true },
   { field: 'code', title: '代号', width: 160 },
   { field: 'description', title: '描述', width: 160 },
   {

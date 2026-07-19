@@ -1,21 +1,18 @@
-<script setup lang="ts">
-import type { RowVO } from '@pg/types';
+<script lang="ts" setup>
 import type { Recordable } from '@vben/types';
 
-import { computed, h, onMounted, reactive, ref } from 'vue';
+import { computed, h, reactive, ref } from 'vue';
 
-import { useVbenDrawer, useVbenModal } from '@vben-core/popup-ui';
+import { Page, useVbenDrawer, useVbenModal, VbenButton } from '@vben/common-ui';
+import { Plus } from '@vben/icons';
 
 import { PgTree } from '@pg/components-n';
+import { FluentWindowNew20Filled } from '@pg/icons';
 
-import {
-  type VxeGridInstance,
-  type VxeGridListeners,
-  type VxeGridProps,
-  VXETable,
-} from 'vxe-table';
+import { NTag, type SelectRenderTag } from 'naive-ui';
 
 import { dialog, message } from '#/adapter';
+import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 
 import CategoryTpl from '#/viewsBlog/collectCategory/invoke/category.vue';
 import ModalTagTpl from '#/viewsBasic/tags/relation/invoke/ModalTag.vue';
@@ -29,15 +26,12 @@ import {
   deleteIds as categoryDeleteIds,
   List,
 } from './api';
-import Edit from './components/drawerEdit.vue';
-import { columns } from './data';
-import { NTag, type SelectRenderTag } from 'naive-ui';
-import { FluentWindowNew20Filled } from '@pg/icons';
+import DrawerEdit from './components/DrawerEdit.vue';
+import { columns, useGridFormSchema } from './data';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
 const reloadTreeState = ref(false);
-const tabSelectActive = ref('system');
 const reloadTreeComputed = computed(() => reloadTreeState.value);
 const formParam = reactive({ categoryNo: '', tagsQuery: [] });
 
@@ -47,7 +41,7 @@ const treeChang = (record) => {
   console.log('record', record);
   formParam.categoryNo = record.data.no;
   reloadTree();
-  reloadTable();
+  onRefresh();
 
   setTimeout(() => {
     reloadTree();
@@ -66,15 +60,17 @@ function reloadTree() {
 const treeOverload = (e) => {
   formParam.categoryNo = '';
   formParam.tagsQuery = [];
-  reloadTable();
+  onRefresh();
 };
-const [FormDrawer, formDrawerApi] = useVbenDrawer({
-  connectedComponent: Edit,
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  connectedComponent: DrawerEdit,
+  destroyOnClose: true,
 });
 
 const [Modal, modalApi] = useVbenModal({
-  // 连接抽离的组件
   connectedComponent: CategoryTpl,
+  destroyOnClose: true,
 });
 /**
  * 树 搜索尾部菜单
@@ -85,481 +81,258 @@ const menuDropdownOptions = [
     key: '添加',
     props: {
       onClick: () => {
-        modalApi.setData({
-          // 表单值
-          values: {},
-          isUpdate: false,
-        });
-        modalApi.open();
+        modalApi
+          .setData({
+            // 表单值
+            values: {},
+            isUpdate: false,
+          })
+          .open();
       },
     },
   },
 ];
 
-const xGrid = ref<VxeGridInstance<RowVO>>();
-const gridOptions = reactive<VxeGridProps<RowVO>>({
-  stripe: true, // 斑马纹
-  border: true,
-  showHeaderOverflow: true,
-  showOverflow: true,
-  keepSource: true,
-  id: 'full_role',
-  // height: '99%',
-  minHeight: 800,
-  rowConfig: {
-    keyField: 'id',
-    isHover: true,
+const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: useGridFormSchema(),
+    submitOnChange: false,
   },
-  expandConfig: {
-    expandAll: true,
-  },
-  cellConfig: {
-    height: 80,
-  },
-  columnConfig: {
-    resizable: true,
-  },
-  printConfig: {
-    columns: [
-      { field: 'name' },
-      { field: 'nameFl' },
-      { field: 'code' },
-      { field: 'state' },
-      { field: 'createAt' },
-    ],
-  },
-  sortConfig: {
-    trigger: 'cell',
-    remote: true,
-  },
-  filterConfig: {
-    remote: true,
-  },
-  pagerConfig: {
-    enabled: true,
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100, 500, 1000],
-  },
-  formConfig: {
-    titleWidth: 100,
-    titleAlign: 'right',
-    items: [
-      {
-        field: 'wd',
-        title: '关键词',
-        span: 6,
-        itemRender: {
-          name: '$input',
-          props: { placeholder: '请输入', clearable: true },
-        },
-      },
-      {
-        field: 'no',
-        title: '文章编号',
-        span: 6,
-        itemRender: {
-          name: '$input',
-          props: { placeholder: '请输入', clearable: true },
-        },
-      },
-      {
-        field: 'tagsQuery',
-        title: '标签',
-        span: 5,
-        slots: { default: 'tagsQuery' },
-      },
-      {
-        field: 'state',
-        title: '状态',
-        span: 6,
-        folding: false,
-        itemRender: {
-          name: '$select',
-          options: [
-            { label: '停用', value: '2' },
-            { label: '有效', value: '1' },
-            { label: '弃置', value: '12' },
-            { label: '取消', value: '11' },
-          ],
-          props: { clearable: true },
-        },
-      },
-      {
-        span: 24,
-        align: 'center',
-        collapseNode: true,
-        itemRender: {
-          name: '$buttons',
-          children: [
-            { props: { type: 'submit', content: '搜索', status: 'primary' } },
-            { props: { type: 'reset', content: '重置' } },
-          ],
-        },
-      },
-    ],
-  },
-  toolbarConfig: {
-    buttons: [
-      { code: 'create', name: '新增' },
-      { code: 'batchEnable', name: '批量有效' },
-      { code: 'batchDisable', name: '批量停用' },
-      { code: 'physicalDeletion', name: '物理删除' },
-      {
-        status: 'primary',
-        icon: 'vxe-icon-ellipsis-v',
-        size: 'mini',
-        circle: true,
-        dropdowns: [{ code: 'cacheOverride', name: '缓存更新' }],
-      },
-    ],
-    slots: {
-      // buttons: 'toolbar_buttons',
-      // tools: 'toolbar_tools'
+  gridOptions: {
+    columns,
+    height: 'auto',
+    keepSource: true,
+    rowConfig: {
+      keyField: 'id',
+      isHover: true,
     },
-    refresh: true, // 显示刷新按钮
-    import: false, // 显示导入按钮
-    export: false, // 显示导出按钮
-    print: false, // 显示打印按钮
-    zoom: true, // 显示全屏按钮
-    custom: true, // 显示自定义列按钮
-  },
-  proxyConfig: {
-    seq: true, // 启用动态序号代理，每一页的序号会根据当前页数变化
-    sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
-    filter: true, // 启用筛选代理，当点击筛选时会自动触发 query 行为
-    form: true, // 启用表单代理，当点击表单提交按钮时会自动触发 reload 行为
-    response: {
-      // 对应响应结果 Promise<{ result: [], page: { total: 100 } }>
-      result: 'data', // 配置响应结果列表字段
-      total: 'total', // 配置响应结果总页数字段
+    expandConfig: {
+      expandAll: true,
     },
-    // 只接收Promise，具体实现自由发挥
-    ajax: {
-      // 当点击工具栏查询按钮或者手动提交指令 query或reload 时会被触发
-      query: ({ page, sorts, filters, form }) => {
-        const queryParams: any = Object.assign({}, form);
-        // 处理排序条件
-        const firstSort = sorts[0];
-        if (firstSort) {
-          queryParams.sort = firstSort.field;
-          queryParams.order = firstSort.order;
-        }
-        // 处理筛选条件
-        filters.forEach(({ field, values }) => {
-          queryParams[field] = values.join(',');
-        });
-        queryParams.pageSize = page.pageSize;
-        queryParams.pageNum = page.currentPage;
-        if (formParam) {
-          for (const key in formParam) {
-            queryParams[key] = formParam[key];
+    cellConfig: {
+      height: 80,
+    },
+    columnConfig: {
+      resizable: true,
+    },
+    sortConfig: {
+      trigger: 'cell',
+      remote: true,
+    },
+    filterConfig: {
+      remote: true,
+    },
+    pagerConfig: {
+      pageSize: 20,
+      pageSizes: [10, 20, 50, 100, 500, 1000],
+    },
+    proxyConfig: {
+      sort: true,
+      filter: true,
+      response: {
+        result: 'data',
+        total: 'total',
+      },
+      ajax: {
+        query: async ({ page, sorts, filters }, formValues) => {
+          const queryParams: any = { ...formValues };
+          const firstSort = sorts?.[0];
+          if (firstSort) {
+            queryParams.sort = firstSort.field;
+            queryParams.order = firstSort.order;
           }
-        }
-        return List(queryParams);
-      },
-      // 当点击工具栏删除按钮或者手动提交指令 delete 时会被触发
-      delete: ({ body }) => {
-        const { removeRecords } = body;
-        const ids: [] = [];
-        removeRecords.forEach((item) => {
-          // 判断状态是否可删除
-          if (item.state < 10) {
-            ids.push(item.id);
+          if (filters) {
+            filters.forEach(({ field, values }: any) => {
+              queryParams[field] = values.join(',');
+            });
           }
-        });
-        if (ids.length <= 0) {
-          message.warning('你没有选择任何数据');
-          return Promise.resolve();
-        }
-        return deleteIds(ids).then(() => {
-          reloadTable();
-        });
+          queryParams.pageSize = page.pageSize;
+          queryParams.pageNum = page.currentPage;
+          return await List({ ...queryParams, ...formParam });
+        },
       },
     },
-  },
-  columns,
-  importConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['insert'],
-    // 自定义服务端导入
-    importMethod({ file }) {
-      const $grid = xGrid.value;
-      const formBody = new FormData();
-      formBody.append('file', file);
-      return fetch(`/api/pub/import`, { method: 'POST', body: formBody })
-        .then((response) => response.json())
-        .then((data) => {
-          VXETable.modal.message({
-            content: `成功导入 ${data.result.insertRows} 条记录！`,
-            status: 'success',
-          });
-          // 导入完成，刷新表格
-          if ($grid) {
-            $grid.commitProxy('query');
-          }
-        })
-        .catch(() => {
-          VXETable.modal.message({
-            content: '导入失败，请检查数据是否正确！',
-            status: 'error',
-          });
-        });
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      zoom: true,
     },
-  },
-  exportConfig: {
-    remote: true,
-    types: ['xlsx'],
-    modes: ['current', 'selected', 'all'],
-    // 自定义服务端导出
-    exportMethod({ options }) {
-      return Promise.resolve();
+    checkboxConfig: {
+      labelField: 'id',
+      reserve: true,
+      highlight: true,
+      range: true,
     },
-  },
-  checkboxConfig: {
-    labelField: 'id',
-    reserve: true,
-    highlight: true,
-    range: true,
-  },
+  } as any,
 });
 
-const gridEvent: VxeGridListeners<RowVO> = {
-  proxyQuery() {
-    console.log('数据代理查询事件');
-  },
-  proxyDelete() {
-    console.log('数据代理删除事件');
-  },
-  proxySave() {
-    console.log('数据代理保存事件');
-  },
-  toolbarButtonClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        // 批量 停用
-        case 'batchDisable': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state == 1) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectDisable(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-        // 批量 有效
-        case 'batchEnable': {
-          console.log('$grid.getCheckboxRecords()', $grid.getCheckboxRecords());
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state === 2) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectEnable(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-        // 缓存更新
-        case 'cacheOverride': {
-          cacheOverride();
-          break;
-        }
-        case 'create': {
-          formDrawerApi.setData({
-            // 表单值
-            values: {},
-            parent: currenData.value?.data,
-            isUpdate: false,
-          });
-          formDrawerApi.open();
-          break;
-        }
-        case 'myExport': {
-          $grid.exportData({
-            type: 'csv',
-          });
-          break;
-        }
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增2 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
-        // 物理删除
-        case 'physicalDeletion': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            ids.push(item.id);
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectPhysicalDeletion(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-        // 删除恢复
-        case 'recovery': {
-          const checkboxRecords = $grid.getCheckboxRecords();
-          if (checkboxRecords.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          const ids = [];
-          checkboxRecords.forEach((item) => {
-            console.log('$grid.item', item);
-            if (item.state > 10) {
-              ids.push(item.id);
-            } else {
-              $grid.setCheckboxRow(item, false);
-            }
-          });
-          if (ids.length <= 0) {
-            message.warning('你没有选择任何数据');
-            return;
-          }
-          batchSelectRecovery(ids, () => {
-            reloadTable();
-            $grid.setAllCheckboxRow(false);
-          });
-          break;
-        }
-      }
-    }
-  },
-  toolbarToolClick({ code }) {
-    const $grid = xGrid.value;
-    if ($grid) {
-      switch (code) {
-        case 'myInsert': {
-          $grid.insert({
-            name: 'xxx',
-          });
-          break;
-        }
-        case 'myPrint': {
-          $grid.print();
-          break;
-        }
-        case 'mySave': {
-          const { insertRecords, removeRecords, updateRecords } =
-            $grid.getRecordset();
-          VXETable.modal.message({
-            content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`,
-            status: 'success',
-          });
-          break;
-        }
-      }
-    }
-  },
-};
-
-const hasActiveEditRow = (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    return $grid.isEditByRow(row);
-  }
-  return false;
-};
-const editRowEvent = (row: RowVO) => {
-  formDrawerApi.setData({
-    // 表单值
-    values: row,
-    isUpdate: true,
-  });
-  formDrawerApi.open();
-};
-
-const clearRowEvent = () => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.clearEdit();
-  }
-};
-const saveRowEvent = async (row: RowVO) => {
-  const $grid = xGrid.value;
-  if ($grid) {
-    await $grid.clearEdit();
-    gridOptions.loading = true;
-    // 模拟异步保存
-    setTimeout(() => {
-      gridOptions.loading = false;
-      VXETable.modal.message({
-        content: `${JSON.stringify(row)}`,
-        status: 'success',
-      });
-    }, 300);
-  }
-};
 /**
- * 删除 指定行数据
- * @param row
+ * 重新查询
  */
-const removeRowEvent = async (row: RowVO) => {
-  const type = await VXETable.modal.confirm('您确定要删除该数据?');
-  const $grid = xGrid.value;
-  if ($grid && type === 'confirm') {
-    deleteIds([row.id]);
-    await $grid.remove(row);
+async function gridQuery(params: Record<string, any> = {}) {
+  try {
+    await gridApi.query(params);
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
   }
-};
+}
+
+/**
+ * 刷新表格
+ */
+async function onRefresh() {
+  try {
+    if (gridApi.state?.formOptions) {
+      const formValues = await gridApi.formApi.getValues();
+      gridApi.formApi.setLatestSubmissionValues(formValues);
+      await gridQuery(formValues);
+    } else {
+      await gridQuery();
+    }
+  } catch (error) {
+    console.error('Error occurred while reloading:', error);
+  }
+}
+
+/**
+ * 新增
+ */
+function onCreate() {
+  drawerApi
+    .setData({
+      values: {},
+      parent: currenData.value?.data,
+      isUpdate: false,
+    })
+    .open();
+}
+
+/**
+ * 编辑
+ * @param row 行数据
+ */
+function onEdit(row: any) {
+  drawerApi.setData({ values: row, isUpdate: true }).open();
+}
+
+/**
+ * 批量有效
+ */
+function onBatchEnable() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    if (item.state === 2) {
+      ids.push(item.id);
+    } else {
+      $grid.setCheckboxRow(item, false);
+    }
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectEnable(ids, () => {
+    onRefresh();
+    $grid.setAllCheckboxRow(false);
+  });
+}
+
+/**
+ * 批量停用
+ */
+function onBatchDisable() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    if (item.state == 1) {
+      ids.push(item.id);
+    } else {
+      $grid.setCheckboxRow(item, false);
+    }
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectDisable(ids, () => {
+    onRefresh();
+    $grid.setAllCheckboxRow(false);
+  });
+}
+
+/**
+ * 物理删除
+ */
+function onBatchPhysicalDeletion() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    ids.push(item.id);
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectPhysicalDeletion(ids, () => {
+    onRefresh();
+    $grid.setAllCheckboxRow(false);
+  });
+}
+
+/**
+ * 删除恢复
+ */
+function onRecovery() {
+  const $grid = gridApi.grid;
+  if (!$grid) return;
+  const checkboxRecords = $grid.getCheckboxRecords();
+  if (checkboxRecords.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  const ids: any[] = [];
+  checkboxRecords.forEach((item: any) => {
+    if (item.state > 10) {
+      ids.push(item.id);
+    } else {
+      $grid.setCheckboxRow(item, false);
+    }
+  });
+  if (ids.length <= 0) {
+    message.warning('你没有选择任何数据');
+    return;
+  }
+  batchSelectRecovery(ids, () => {
+    onRefresh();
+    $grid.setAllCheckboxRow(false);
+  });
+}
+
 /**
  * 删除 指定数据
  * @param row
  */
-const removeTreeEvent = (row: RowVO) => {
+const removeTreeEvent = (row: any) => {
   dialog.warning({
     title: '确认删除',
     content: `是否[删除]选中数据[ ${row.name} ]，操作后数据不可恢复`,
@@ -575,23 +348,6 @@ const removeTreeEvent = (row: RowVO) => {
   });
 };
 
-onMounted(() => {});
-
-/**
- * 重新加载
- */
-function reloadTable() {
-  const $grid = xGrid.value;
-  if ($grid) {
-    $grid.commitProxy('query');
-  }
-}
-
-function treeChangOverload() {
-  reloadTable();
-  treeOverload();
-}
-
 /**
  * 树右键菜单
  * @param option
@@ -603,13 +359,13 @@ const rightClickMenuOptions = ({ option }) => {
       key: '添加下级',
       props: {
         onClick: () => {
-          modalApi.setData({
-            // 表单值
-            values: {},
-            parent: option.data,
-            isUpdate: false,
-          });
-          modalApi.open();
+          modalApi
+            .setData({
+              values: {},
+              parent: option.data,
+              isUpdate: false,
+            })
+            .open();
         },
       },
     },
@@ -618,12 +374,12 @@ const rightClickMenuOptions = ({ option }) => {
       key: '修改',
       props: {
         onClick: () => {
-          modalApi.setData({
-            // 表单值
-            values: option.data,
-            isUpdate: true,
-          });
-          modalApi.open();
+          modalApi
+            .setData({
+              values: option.data,
+              isUpdate: true,
+            })
+            .open();
         },
       },
     },
@@ -638,13 +394,13 @@ const rightClickMenuOptions = ({ option }) => {
     },
   ];
 };
+
 const optionsTags = ref([]);
 const [ModalTag, modalTagApi] = useVbenModal({
-  // 连接抽离的组件
   connectedComponent: ModalTagTpl,
+  destroyOnClose: true,
 });
 const renderTag: SelectRenderTag = ({ option, handleClose }) => {
-  // console.log('renderTag', option)
   return h(
     NTag,
     {
@@ -672,22 +428,8 @@ const renderTag: SelectRenderTag = ({ option, handleClose }) => {
   );
 };
 async function modalOkTags(e) {
-  console.log('modalOkTags', e);
-  const $grid = xGrid.value;
-  if (e && $grid) {
-    //const values = await formApi.getValues();
-    const values = $grid.getFormData();
-    console.log('search', values);
-    let tagsQuery = [];
-    if (values.hasOwnProperty('tagsQuery')) {
-      if (!values.tagsQuery) {
-        values.tagsQuery = [];
-      }
-      tagsQuery = [];
-      for (const i in values.tagsQuery) {
-        tagsQuery.push(values.tagsQuery[i]);
-      }
-    }
+  if (e) {
+    let tagsQuery = [...(formParam.tagsQuery || [])];
     for (const i in e) {
       const obj = e[i];
       const tag = {
@@ -698,37 +440,31 @@ async function modalOkTags(e) {
       const index = optionsTags.value.indexOf(tag);
       if (index === -1) {
         optionsTags.value.push(tag);
-        // optionsTags.value.splice(index,1)
       }
 
       const index2 = tagsQuery.indexOf(obj.code);
       if (index2 === -1) {
         tagsQuery.push(obj.code);
       }
-      // console.log('index2',index2, tagsQuery,obj);
     }
-    //
-    //console.log('optionsTags', optionsTags.value);
-    console.log('tagsQuery', tagsQuery);
-    //formApi.setFieldValue('tagsQuery', tagsQuery);
     formParam.tagsQuery = tagsQuery;
   } else {
     formParam.tagsQuery = [];
   }
 }
 function iconclick(e) {
-  // console.log('xxxxx', e);
-  modalTagApi.setData({
-    values: {},
-    isUpdate: false,
-  });
-  modalTagApi.open();
+  modalTagApi
+    .setData({
+      values: {},
+      isUpdate: false,
+    })
+    .open();
 }
 </script>
 
 <template>
-  <div>
-    <NLayout class="h-full p-2" has-sider>
+  <Page auto-content-height content-class="p-2">
+    <NLayout class="h-full" has-sider>
       <NLayoutSider class="min-w-[160px]" width="160">
         <PgTree
           :api="selectNodeAllPublic"
@@ -744,8 +480,43 @@ function iconclick(e) {
       </NLayoutSider>
       <NLayout class="w-[calc(100%-160px)]">
         <NLayoutContent>
-          <vxe-grid ref="xGrid" v-bind="gridOptions" v-on="gridEvent">
-            <template #tagsQuery>
+          <Drawer @ok="onRefresh" />
+          <Modal @ok="reloadTree" />
+          <Grid>
+            <template #toolbar-actions>
+              <VbenButton
+                type="primary"
+                class="pg-button-size-small"
+                @click="onCreate"
+              >
+                <Plus class="size-5" />
+                新增
+              </VbenButton>
+            </template>
+            <template #toolbar-tools>
+              <VbenButton
+                class="ml-2 pg-button-size-small"
+                size="sm"
+                @click="onBatchEnable"
+              >
+                批量有效
+              </VbenButton>
+              <VbenButton
+                class="ml-2 pg-button-size-small"
+                size="sm"
+                @click="onBatchDisable"
+              >
+                批量停用
+              </VbenButton>
+              <VbenButton
+                class="ml-2 pg-button-size-small"
+                danger
+                @click="onBatchPhysicalDeletion"
+              >
+                物理删除
+              </VbenButton>
+            </template>
+            <template #form-tagsQuery>
               <n-select
                 placeholder="选择"
                 :show="false"
@@ -775,19 +546,16 @@ function iconclick(e) {
               </n-select>
             </template>
             <template #operate="{ row }">
-              <vxe-button
-                icon="vxe-icon-edit"
-                mode="text"
-                title="编辑"
-                @click="editRowEvent(row)"
+              <VbenTableAction
+                :actions="[
+                  {
+                    tooltip: { content: '编辑' },
+                    icon: 'lucide:edit',
+                    onClick: () => onEdit(row),
+                  },
+                ]"
+                align="center"
               />
-              <!--              <vxe-button-->
-              <!--                icon="vxe-icon-delete"-->
-              <!--                mode="text"-->
-              <!--                status="danger"-->
-              <!--                title="删除"-->
-              <!--                @click="removeRowEvent(row)"-->
-              <!--              />-->
             </template>
             <template #nameAll="{ row }">
               <div>
@@ -877,14 +645,12 @@ function iconclick(e) {
                 </dd>
               </dl>
             </template>
-          </vxe-grid>
+          </Grid>
         </NLayoutContent>
       </NLayout>
-      <FormDrawer @ok="reloadTable" />
-      <Modal @ok="reloadTree" />
     </NLayout>
     <ModalTag @ok="modalOkTags" />
-  </div>
+  </Page>
 </template>
 
 <style scoped>

@@ -1,7 +1,18 @@
+import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeGridPropTypes } from 'vxe-table';
 
 import _XEUtils_ from 'xe-utils';
 
+/**
+ * 搜索表单 Schema
+ */
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [];
+}
+
+/**
+ * 表格列配置
+ */
 export const columns: VxeGridPropTypes.Columns = [
   {
     field: 'createAt',
@@ -21,5 +32,3 @@ export const columns: VxeGridPropTypes.Columns = [
   },
   { title: '操作', width: 160, field: 'right', slots: { default: 'operate' } },
 ];
-
-export const formSchema = [];

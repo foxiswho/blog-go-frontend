@@ -3,7 +3,7 @@ import type { RowVO } from '@pg/types';
 
 import { onMounted, reactive, ref } from 'vue';
 
-import { useVbenDrawer } from '@vben-core/popup-ui';
+import { useVbenDrawer } from '@vben/common-ui';
 
 import { message  as Message } from '#/adapter';
 import {

@@ -77,6 +77,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -144,18 +145,21 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Modal, modalApi] = useVbenModal({
   onCancel() {
     modalApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      modalApi.setState({
+        loading: true,
+        confirmLoading: false,
+        closeOnClickModal: false,
+        destroyOnClose: true,
+      });
       const { values, isUpdate, parent } =
         modalApi.getData<Record<string, any>>();
       if (values) {
@@ -168,7 +172,7 @@ const [Modal, modalApi] = useVbenModal({
       }
       console.log('values', values);
       console.log('parent', parent);
-      modalApi.setState({ title: `分类：${isUpdate ? '编辑' : '新增'}` });
+      modalApi.setState({ title: `分类：${isUpdate ? '编辑' : '新增'}`, loading: false });
     }
   },
   title: '：',
@@ -177,9 +181,15 @@ const [Modal, modalApi] = useVbenModal({
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>, 'id'>>();
+  modalApi.lock();
   try {
-    modalApi.setState({ loading: true });
+    modalApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = modalApi.getData<Record<string, any>>();
     values['typeSys'] = 'general';
     // values['typeAttr'] = 'categoryLast';
@@ -190,13 +200,12 @@ function onSubmit(values: Record<string, any>) {
           modalApi.setState({ loading: false });
           modalApi.close();
         }, 900);
-      })
-      .catch((error) => {
-        modalApi.setState({ loading: false });
       });
   } catch (error) {
-    modalApi.setState({ loading: false });
     console.error(error);
+  } finally {
+    modalApi.unlock();
+    modalApi.setState({ loading: false, confirmLoading: false });
   }
 }
 </script>

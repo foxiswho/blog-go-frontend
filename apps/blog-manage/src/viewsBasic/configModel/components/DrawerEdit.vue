@@ -3,10 +3,7 @@ import {ref, reactive, h, onMounted} from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { usePgForm } from '#/adapter';
 import {
-  type VxeGridInstance,
-  type VxeGridListeners,
-  type VxeGridProps,
-  VXETable, type VxeTableInstance,
+  type VxeTableInstance,
 } from 'vxe-table';
 import { saveOrUpdate, detail as getDetail } from '../api';
 import { formSchema, fieldColumns } from '../data';
@@ -58,7 +55,6 @@ function formatLabel(row: any, col: any) {
 
 const [Form, formApi] = usePgForm({
   schema: formSchema,
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 
@@ -66,9 +62,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
       drawerApi.setState({
@@ -135,7 +129,13 @@ async function removeEvent(row: any) {
 /**
  * 提交
  */
-async function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Omit<Record<string, any>,'id'>>();
+  drawerApi.lock();
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const $table = xTable.value;
@@ -162,11 +162,13 @@ async function onSubmit(values: Record<string, any>) {
       .then(() => {
         message.success('保存成功');
         emit('ok');
+        drawerApi.setState({ loading: false });
         drawerApi.close();
       });
   } catch (error) {
     console.error(error);
   } finally {
+    drawerApi.unlock();
     drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }

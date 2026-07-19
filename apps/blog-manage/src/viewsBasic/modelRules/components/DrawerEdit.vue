@@ -59,6 +59,7 @@ const [Form, formApi] = usePgForm({
         h(
           VbenButton,
           {
+            class: 'pg-button-size-small',
             onClick: async (e) => {
               const values = await formApi.getValues();
               existName(values.name, values.id);
@@ -121,16 +122,13 @@ const [Form, formApi] = usePgForm({
       },
     },
   ],
-  handleSubmit: onSubmit,
   showDefaultActions: false,
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   onCancel() {
     drawerApi.close();
   },
-  onConfirm: async () => {
-    await formApi.submitForm();
-  },
+  onConfirm: onSubmit,
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
       drawerApi.setState({
@@ -139,10 +137,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
         closeOnClickModal: false, // 点击遮罩关闭弹窗
         destroyOnClose: true, // 关闭时销毁
       });
-      const { values, isUpdate,field } = drawerApi.getData<Record<string, any>>();
+      const { values, isUpdate, field } = drawerApi.getData<Record<string, any>>();
       if (field) {
         fieldData.value = field;
-        console.log('field',field)
+        console.log('field', field);
       }
       if (values) {
         formApi.setValues(values);
@@ -157,33 +155,39 @@ const [Drawer, drawerApi] = useVbenDrawer({
       });
     }
   },
-  title: '：',
+  title: '',
 });
 
 /**
  * 提交
  */
-function onSubmit(values: Record<string, any>) {
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return false;
+  }
+  const values = await formApi.getValues<Record<string, any>>();
+  drawerApi.lock();
   try {
     drawerApi.setState({ loading: true, confirmLoading: true });
     const { isUpdate } = drawerApi.getData<Record<string, any>>();
     let data = {
       ...values,
     };
-    if(fieldData.value) {
+    if (fieldData.value) {
       data['fieldNo'] = fieldData.value.no;
     }
-    saveOrUpdate(data, isUpdate)
-      .then((d) => {
-        setTimeout(() => {
-          emit('ok', values);
-          drawerApi.setState({ loading: false });
-          drawerApi.close();
-        }, 500);
-      });
+    saveOrUpdate(data, isUpdate).then((d) => {
+      setTimeout(() => {
+        emit('ok', values);
+        drawerApi.setState({ loading: false });
+        drawerApi.close();
+      }, 500);
+    });
   } catch (error) {
     console.error(error);
   } finally {
+    drawerApi.unlock();
     drawerApi.setState({ loading: false, confirmLoading: false });
   }
 }

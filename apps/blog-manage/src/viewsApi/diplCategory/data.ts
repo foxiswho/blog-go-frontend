@@ -1,9 +1,17 @@
+import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeGridPropTypes } from 'vxe-table';
 
 import _XEUtils_ from 'xe-utils';
 
 import { existName, setStateEnableDisable } from './api';
 import { h } from 'vue';
+
+/**
+ * 搜索表单 Schema
+ */
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [];
+}
 
 export const columns: VxeGridPropTypes.Columns = [
   { type: 'checkbox', title: 'ID', width: 120 },
@@ -49,5 +57,3 @@ export const columns: VxeGridPropTypes.Columns = [
   },
   { title: '操作', width: 160, field: 'right', slots: { default: 'operate' } },
 ];
-
-export const formSchema = [];
