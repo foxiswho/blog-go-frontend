@@ -67,7 +67,7 @@ export const columns: VxeGridPropTypes.Columns = [
     },
     width: 40,
   },
-  { type: 'checkbox', title: 'ID', width: 40 },
+  { type: 'checkbox', width: 34 },
   { field: 'tenantNo', title: '租户编号', width: 120, visible: false },
   { field: 'tenantNoName', title: '租户', width: 120, visible: false },
   { field: 'name', title: '名称', visible: false },

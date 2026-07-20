@@ -31,7 +31,7 @@ import { columns, useGridFormSchema } from './data';
 
 const currenRecord = ref(false);
 const currenData = ref<Recordable<any>>({});
-const reloadTreeState = ref(false);
+const reloadTreeState = ref(0);
 const reloadTreeComputed = computed(() => reloadTreeState.value);
 const formParam = reactive({ categoryNo: '', tagsQuery: [] });
 
@@ -50,7 +50,7 @@ const treeChang = (record) => {
  * 重新加载
  */
 function reloadTree() {
-  reloadTreeState.value = true;
+  reloadTreeState.value++;
 }
 /**
  * 树重载
@@ -71,26 +71,6 @@ const [Modal, modalApi] = useVbenModal({
   connectedComponent: CategoryTpl,
   destroyOnClose: true,
 });
-/**
- * 树 搜索尾部菜单
- */
-const menuDropdownOptions = [
-  {
-    label: '添加',
-    key: '添加',
-    props: {
-      onClick: () => {
-        modalApi
-          .setData({
-            // 表单值
-            values: {},
-            isUpdate: false,
-          })
-          .open();
-      },
-    },
-  },
-];
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
@@ -347,52 +327,7 @@ const removeTreeEvent = (row: any) => {
   });
 };
 
-/**
- * 树右键菜单
- * @param option
- */
-const rightClickMenuOptions = ({ option }) => {
-  return [
-    {
-      label: '添加下级',
-      key: '添加下级',
-      props: {
-        onClick: () => {
-          modalApi
-            .setData({
-              values: {},
-              parent: option.data,
-              isUpdate: false,
-            })
-            .open();
-        },
-      },
-    },
-    {
-      label: '修改',
-      key: '修改',
-      props: {
-        onClick: () => {
-          modalApi
-            .setData({
-              values: option.data,
-              isUpdate: true,
-            })
-            .open();
-        },
-      },
-    },
-    {
-      label: '删除',
-      key: '删除',
-      props: {
-        onClick: () => {
-          removeTreeEvent(option.data);
-        },
-      },
-    },
-  ];
-};
+
 
 const optionsTags = ref([]);
 const [ModalTag, modalTagApi] = useVbenModal({
@@ -463,191 +398,189 @@ function iconclick(e) {
 
 <template>
   <Page auto-content-height content-class="p-2">
-    <NLayout class="h-full" has-sider>
-      <NLayoutSider class="min-w-[160px]" width="160">
+    <div class="flex size-full">
+      <n-card
+        class="min-w-[160px]"
+        style="width: unset"
+        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+      >
         <PgTree
           :api="selectNodeAllPublic"
           :is-node-all="true"
-          :params="{ by: 'no' }"
-          :menu-dropdown-options="menuDropdownOptions"
           :reload="reloadTreeComputed"
-          :right-click-menu="true"
-          :right-click-menu-options="rightClickMenuOptions"
           @ok="treeChang"
           @overload="treeOverload"
         />
-      </NLayoutSider>
-      <NLayout class="w-[calc(100%-160px)]">
-        <NLayoutContent>
-          <Drawer @ok="onRefresh" />
-          <Modal @ok="reloadTree" />
-          <Grid>
-            <template #toolbar-actions>
-              <VbenButton
-                type="primary"
-                class="pg-button-size-small"
-                @click="onCreate"
-              >
-                <Plus class="size-5" />
-                新增
-              </VbenButton>
-            </template>
-            <template #toolbar-tools>
-              <VbenButton
-                class="ml-2 pg-button-size-small"
-                size="sm"
-                @click="onBatchEnable"
-              >
-                批量有效
-              </VbenButton>
-              <VbenButton
-                class="ml-2 pg-button-size-small"
-                size="sm"
-                @click="onBatchDisable"
-              >
-                批量停用
-              </VbenButton>
-              <VbenButton
-                class="ml-2 pg-button-size-small"
-                danger
-                @click="onBatchPhysicalDeletion"
-              >
-                物理删除
-              </VbenButton>
-            </template>
-            <template #form-tagsQuery>
-              <n-select
-                placeholder="选择"
-                :show="false"
-                v-model:value="formParam.tagsQuery"
-                multiple
-                :render-tag="renderTag"
-                :options="optionsTags"
-                @update:value="
+      </n-card>
+      <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
+        <Grid>
+          <template #toolbar-actions>
+            <VbenButton
+              type="primary"
+              class="pg-button-size-small"
+              @click="onCreate"
+            >
+              <Plus class="size-5" />
+              新增
+            </VbenButton>
+          </template>
+          <template #toolbar-tools>
+            <VbenButton
+              class="ml-2 pg-button-size-small"
+              size="sm"
+              @click="onBatchEnable"
+            >
+              批量有效
+            </VbenButton>
+            <VbenButton
+              class="ml-2 pg-button-size-small"
+              size="sm"
+              @click="onBatchDisable"
+            >
+              批量停用
+            </VbenButton>
+            <VbenButton
+              class="ml-2 pg-button-size-small"
+              danger
+              @click="onBatchPhysicalDeletion"
+            >
+              物理删除
+            </VbenButton>
+          </template>
+          <template #form-tagsQuery>
+            <n-select
+              placeholder="选择"
+              :show="false"
+              v-model:value="formParam.tagsQuery"
+              multiple
+              :render-tag="renderTag"
+              :options="optionsTags"
+              @update:value="
                   (opt) => {
                     //formApi.setFieldValue('tagsQuery', opt);
                   }
                 "
-              >
-                <template #arrow>
-                  <FluentWindowNew20Filled
-                    @click="iconclick"
-                    style="
+            >
+              <template #arrow>
+                <FluentWindowNew20Filled
+                  @click="iconclick"
+                  style="
                       width: 30px;
                       height: 30px;
                       margin-top: -5px;
                       margin-left: -5px;
                       color: #020617;
                     "
-                    class="size-10 transition-none hover:text-black"
-                  />
-                </template>
-              </n-select>
-            </template>
-            <template #operate="{ row }">
-              <VbenTableAction
-                :actions="[
+                  class="size-10 transition-none hover:text-black"
+                />
+              </template>
+            </n-select>
+          </template>
+          <template #operate="{ row }">
+            <VbenTableAction
+              :actions="[
                   {
                     tooltip: { content: '编辑' },
                     icon: 'lucide:edit',
                     onClick: () => onEdit(row),
                   },
                 ]"
-                align="center"
-              />
-            </template>
-            <template #nameAll="{ row }">
-              <div>
-                <h2 class="text-2xl font-medium">{{ row.name }}</h2>
-              </div>
-              <div>
-                {{ row.description }}
-              </div>
-            </template>
-            <template #expandContent="{ row }">
-              <dl class="expandContent m-2">
-                <dd class="title">
-                  <n-tag
-                    v-if="row.typeContent === 'original'"
-                    type="success"
-                    size="small"
-                  >
-                    原
-                  </n-tag>
-                  <n-tag
-                    v-if="row.typeContent === 'repost'"
-                    type="error"
-                    size="small"
-                  >
-                    转
-                  </n-tag>
-                  <n-tag
-                    v-if="row.typeContent === 'translation'"
-                    type="error"
-                    size="small"
-                  >
-                    译
-                  </n-tag>
+              align="center"
+            />
+          </template>
+          <template #nameAll="{ row }">
+            <div>
+              <h2 class="text-2xl font-medium">{{ row.name }}</h2>
+            </div>
+            <div>
+              {{ row.description }}
+            </div>
+          </template>
+          <template #expandContent="{ row }">
+            <dl class="expandContent m-2">
+              <dd class="title">
+                <n-tag
+                  v-if="row.typeContent === 'original'"
+                  type="success"
+                  size="small"
+                >
+                  原
+                </n-tag>
+                <n-tag
+                  v-if="row.typeContent === 'repost'"
+                  type="error"
+                  size="small"
+                >
+                  转
+                </n-tag>
+                <n-tag
+                  v-if="row.typeContent === 'translation'"
+                  type="error"
+                  size="small"
+                >
+                  译
+                </n-tag>
 
-                  <n-tag
-                    v-if="row.typeReading === 'unread'"
-                    size="small"
-                    class="mt-2"
-                  >
-                    未读
-                  </n-tag>
-                  <n-tag
-                    v-if="row.typeReading === 'warning'"
-                    type="info"
-                    size="small"
-                    class="mt-2"
-                  >
-                    读中
-                  </n-tag>
-                  <n-tag
-                    v-if="row.typeReading === 'completed'"
-                    type="info"
-                    size="small"
-                    class="mt-2"
-                  >
-                    已读
-                  </n-tag>
-                </dd>
-                <dd class="content">
-                  <n-grid x-gap="12" :cols="1" class="ml-2">
-                    <n-gi>
-                      <div
-                        v-if="row.tagsStyle"
-                        class="flex flex-row flex-wrap leading-6"
-                      >
-                        标签：
-                        <div v-for="item in row.tagsStyle" class="mr-2">
-                          <NTag
-                            size="small"
-                            :bordered="item.attributeMap.bordered"
-                            :type="item.attributeMap.type"
-                            :color="item.attributeMap.color"
-                            :size="item.attributeMap.size"
-                            :strong="item.attributeMap.strong"
-                            :round="item.attributeMap.round"
-                            class="cursor-pointer"
-                          >
-                            {{ item.name }}
-                          </NTag>
-                        </div>
+                <n-tag
+                  v-if="row.typeReading === 'unread'"
+                  size="small"
+                  class="mt-2"
+                >
+                  未读
+                </n-tag>
+                <n-tag
+                  v-if="row.typeReading === 'warning'"
+                  type="info"
+                  size="small"
+                  class="mt-2"
+                >
+                  读中
+                </n-tag>
+                <n-tag
+                  v-if="row.typeReading === 'completed'"
+                  type="info"
+                  size="small"
+                  class="mt-2"
+                >
+                  已读
+                </n-tag>
+              </dd>
+              <dd class="content">
+                <n-grid x-gap="12" :cols="1" class="ml-2">
+                  <n-gi>
+                    <div
+                      v-if="row.tagsStyle"
+                      class="flex flex-row flex-wrap leading-6"
+                    >
+                      标签：
+                      <div v-for="item in row.tagsStyle" class="mr-2">
+                        <NTag
+                          size="small"
+                          :bordered="item.attributeMap.bordered"
+                          :type="item.attributeMap.type"
+                          :color="item.attributeMap.color"
+                          :size="item.attributeMap.size"
+                          :strong="item.attributeMap.strong"
+                          :round="item.attributeMap.round"
+                          class="cursor-pointer"
+                        >
+                          {{ item.name }}
+                        </NTag>
                       </div>
-                      <div v-else>标签：{{ row.tags }}</div>
-                    </n-gi>
-                    <n-gi> 操作时间：{{ row.operationTime }} </n-gi>
-                    <n-gi> 编号：{{ row.no }} </n-gi>
-                  </n-grid>
-                </dd>
-              </dl>
-            </template>
-          </Grid>
-        </NLayoutContent>
-      </NLayout>
-    </NLayout>
+                    </div>
+                    <div v-else>标签：{{ row.tags }}</div>
+                  </n-gi>
+                  <n-gi> 操作时间：{{ row.operationTime }} </n-gi>
+                  <n-gi> 编号：{{ row.no }} </n-gi>
+                </n-grid>
+              </dd>
+            </dl>
+          </template>
+        </Grid>
+      </div>
+    </div>
+    <Drawer @ok="onRefresh" />
+    <Modal @ok="reloadTree" />
     <ModalTag @ok="modalOkTags" />
   </Page>
 </template>

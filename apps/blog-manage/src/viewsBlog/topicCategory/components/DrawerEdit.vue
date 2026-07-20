@@ -5,7 +5,7 @@ import { useVbenDrawer, VbenButton } from '@vben/common-ui';
 
 import { usePgForm } from '#/adapter';
 
-import { existName, saveOrUpdate, selectNodeAllPublic } from '../api';
+import { existName, saveOrUpdate, selectNodeAll } from '../api';
 
 const emit = defineEmits(['ok']);
 const [Form, formApi] = usePgForm({
@@ -23,7 +23,7 @@ const [Form, formApi] = usePgForm({
       label: '上级',
       component: 'PgTreeSelect',
       componentProps: {
-        api: selectNodeAllPublic,
+        api: selectNodeAll,
         params: { by: 'no' },
         filterQueryAsync: true,
         props: {
@@ -31,7 +31,7 @@ const [Form, formApi] = usePgForm({
           placeholder: '请选择',
         },
       },
-      rules: 'required',
+      // rules: 'required',
     },
     {
       tabGroup: 'home',

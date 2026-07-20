@@ -10,10 +10,11 @@ enum Api {
   existName = '/xianfu/manage/blog/collect-category/existName',
   exportExcel = '/xianfu/manage/blog/collect-category/exportExcel',
   list = '/xianfu/manage/blog/collect-category/query',
+  queryAll = '/xianfu/manage/blog/collect-category/queryAll',
   physicalDeletion = '/xianfu/manage/blog/collect-category/physicalDeletion',
   recovery = '/xianfu/manage/blog/collect-category/recovery',
   selectNodeAllPublic = '/xianfu/manage/blog/collect-category/selectNodeAllPublic',
-  selectNodePublic = '/xianfu/manage/blog/collect-category/selectNodePublic',
+  selectNodeAll = '/xianfu/manage/blog/collect-category/selectNodeAll',
   selectPublic = '/xianfu/manage/blog/collect-category/selectPublic',
   state = '/xianfu/manage/blog/collect-category/state',
   update = '/xianfu/manage/blog/collect-category/update',
@@ -26,6 +27,14 @@ enum Api {
  */
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
+}
+/**
+ * 列表
+ * @constructor
+ * @param data
+ */
+export async function queryAll(data?: any) {
+  return requestClient.post(Api.queryAll, data);
 }
 
 /**
@@ -40,8 +49,8 @@ export const selectPublic = (data?: any) => {
  * 公共树展示
  * @param data
  */
-export const selectNodePublic = (data?: any) => {
-  return requestClient.post(Api.selectNodePublic, data);
+export const selectNodeAll = (data?: any) => {
+  return requestClient.post(Api.selectNodeAll, data);
 };
 
 /**

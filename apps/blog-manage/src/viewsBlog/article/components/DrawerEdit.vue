@@ -1,24 +1,14 @@
 <script lang="ts" setup>
-import { h, ref, watch, onMounted } from 'vue';
+import { h, ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal, VbenButton } from '@vben/common-ui';
+
 import { usePgForm } from '#/adapter';
-import {
-  PgUploadGroup,
-  PgUploadGroupOwner,
-  PgSku,
-  PgMarkdown,
-  PgTreeSelect,
-  PgPageHeader,
-} from '@pg/components-n';
-const { uploadUrl } = useAppConfig(import.meta.env, import.meta.env.PROD);
+const emit = defineEmits(['ok']);
+const uploadUrl = '';
 const accessStore = useAccessStore();
-import { existCode, existName, saveOrUpdate, detail } from '../api';
-import { selectNodeAllPublic as selectNodeAllPublicCategory } from '#/viewsBlog/articleCategory/api';
-import TopicTable from '#/viewsBlog/article/components/TopicTable.vue';
-import ModalTagTpl from '#/viewsBasic/tags/relation/invoke/ModalTag.vue';
-import { useAppConfig } from '@vben/hooks';
 import { useAccessStore } from '@vben/stores';
+
 import { stateYesNoOption } from '@pg/types';
 import {
   TypeContentOptions,
@@ -26,13 +16,19 @@ import {
   TypeReadingOptions,
   TypeSourceOptions,
 } from '@pg/types/src/blog/type';
-import { NTag, NButton } from 'naive-ui';
+import dayjs from "dayjs";
+import { NTag } from 'naive-ui';
+
 import {
   makeFileOwnerAllPublic,
   uploadUpByFileOwner,
 } from '#/viewsBasic/attachment/api';
+import ModalTagTpl from '#/viewsBasic/tags/relation/invoke/ModalTag.vue';
+import TopicTable from '#/viewsBlog/article/components/TopicTable.vue';
+import { selectNodeAllPublic as selectNodeAllPublicCategory } from '#/viewsBlog/articleCategory/api';
 
-const emit = defineEmits(['ok']);
+import { detail, existCode, existName, saveOrUpdate } from '../api';
+
 const currentData = ref({});
 const optionsTags = ref({});
 const showTopic = ref(false);
@@ -99,7 +95,7 @@ const renderTag = (tag: string, index: number) => {
   );
 };
 const [Form, formApi] = usePgForm({
-  //按下回车健时提交表单
+  // 按下回车健时提交表单
   submitOnEnter: false,
   tabs: {
     active: 'home',
@@ -335,7 +331,32 @@ const [Form, formApi] = usePgForm({
       fieldName: 'attachment',
       label: '图集',
       defaultValue: {},
-      component: '',
+      component: 'PgUploadGroupOwner',
+      componentProps: {
+        isStandalone: false,
+        group: [
+          {
+            // name: '主图',
+            key: 'main',
+            // description: '其他说明 图片大小：宽 500px ,高 400px,图片大小：宽 500px ,高 400px',
+            headerExtra: ',图片大小：宽 500px ,高 400px',
+            width: '500px',
+            height: '400px',
+            maxNumber: 1,
+            maxSize: 30,
+          },
+          {
+            name: '列表图',
+            key: 'list',
+            description: '其他说明 图片大小：宽 500px ,高 400px',
+            headerExtra: ',图片大小：宽 500px ,高 400px',
+            width: '500px',
+            height: '400px',
+            maxNumber: 1,
+            maxSize: 30,
+          },
+        ],
+      }
     },
     {
       tabGroup: 'home',
@@ -351,7 +372,7 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'content',
       label: '内容',
-      component: 'Input',
+      component: 'PgMarkdown',
     },
     {
       tabGroup: 'source',
@@ -525,6 +546,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         });
       } else {
         makeFileOwnerAllPublicMap(attachmentGroup.value, 'article', {});
+        formApi.setFieldValue('operationTime',dayjs().format('YYYY-MM-DD HH:mm:ss'))
       }
 
       drawerApi.setState({ title: `币制：${isUpdate ? '编辑' : '新增'}`, loading: false });
@@ -532,7 +554,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
   title: '：',
 });
-//页面首次渲染完成后执行
+// 页面首次渲染完成后执行
 // onMounted(() => {
 
 // });
@@ -753,8 +775,8 @@ async function modalOkTags(e) {
 }
 async function handleEnter(sub, e) {
   let val = e.target.value;
-  //sub(val);
-  //console.log('handleEnter', val);
+  // sub(val);
+  // console.log('handleEnter', val);
   e.stopPropagation();
   let tagsQuery = [];
   const values = await formApi.getValues();
@@ -792,7 +814,7 @@ function makeFileOwnerAllPublicMap(group, module, modelValueData) {
         }
         //
         console.log('modelValueData===', modelValueData);
-        formApi.setFieldValue('attachment', modelValueData);
+        //formApi.setFieldValue('attachment', modelValueData);
       }
     });
   }
@@ -813,24 +835,24 @@ function makeFileOwnerAllPublicMap(group, module, modelValueData) {
           </template>
         </n-dynamic-tags>
       </template>
-      <template #attachment="tpl">
-        <PgUploadGroupOwner
-          key="main"
-          v-model="tpl.modelValue"
-          :fetch-setting="uploadSettingFetch"
-          :group="attachmentGroup"
-          @ok="PgUploadOk"
-        />
-      </template>
-      <template #content="tpl">
-        <PgMarkdown
-          v-model="tpl.modelValue"
-          :upload="upload"
-          style="width: 100%"
-          width="100%"
-          @change="updateMarkdownChange"
-        />
-      </template>
+<!--      <template #attachment="tpl">-->
+<!--        <PgUploadGroupOwner-->
+<!--          key="main"-->
+<!--          v-model="tpl.modelValue"-->
+<!--          :fetch-setting="uploadSettingFetch"-->
+<!--          :group="attachmentGroup"-->
+<!--          @ok="PgUploadOk"-->
+<!--        />-->
+<!--      </template>-->
+<!--      <template #content="tpl">-->
+<!--        <PgMarkdown-->
+<!--          v-model="tpl.modelValue"-->
+<!--          :upload="upload"-->
+<!--          style="width: 100%"-->
+<!--          width="100%"-->
+<!--          @change="updateMarkdownChange"-->
+<!--        />-->
+<!--      </template>-->
     </Form>
     <TopicTable v-if="showTopic" @ok="okSelectData" :data="selectData" />
     <ModalTag @ok="modalOkTags" />
