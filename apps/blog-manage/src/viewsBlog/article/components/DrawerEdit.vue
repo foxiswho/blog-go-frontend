@@ -16,6 +16,7 @@ import {
   TypeReadingOptions,
   TypeSourceOptions,
 } from '@pg/types/src/blog/type';
+import {PgMarkdown} from '@pg/components-n';
 import dayjs from "dayjs";
 import { NTag } from 'naive-ui';
 
@@ -372,7 +373,7 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'content',
       label: '内容',
-      component: 'PgMarkdown',
+      component: '',
     },
     {
       tabGroup: 'source',
@@ -835,24 +836,15 @@ function makeFileOwnerAllPublicMap(group, module, modelValueData) {
           </template>
         </n-dynamic-tags>
       </template>
-<!--      <template #attachment="tpl">-->
-<!--        <PgUploadGroupOwner-->
-<!--          key="main"-->
-<!--          v-model="tpl.modelValue"-->
-<!--          :fetch-setting="uploadSettingFetch"-->
-<!--          :group="attachmentGroup"-->
-<!--          @ok="PgUploadOk"-->
-<!--        />-->
-<!--      </template>-->
-<!--      <template #content="tpl">-->
-<!--        <PgMarkdown-->
-<!--          v-model="tpl.modelValue"-->
-<!--          :upload="upload"-->
-<!--          style="width: 100%"-->
-<!--          width="100%"-->
-<!--          @change="updateMarkdownChange"-->
-<!--        />-->
-<!--      </template>-->
+      <template #content="tpl">
+        <PgMarkdown
+          v-model="tpl.modelValue"
+          :upload="upload"
+          style="width: 100%"
+          width="100%"
+          @change="updateMarkdownChange"
+        />
+      </template>
     </Form>
     <TopicTable v-if="showTopic" @ok="okSelectData" :data="selectData" />
     <ModalTag @ok="modalOkTags" />

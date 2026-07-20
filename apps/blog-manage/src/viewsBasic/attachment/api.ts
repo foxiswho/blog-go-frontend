@@ -370,6 +370,12 @@ export const uploadFnByMarkdown = (data:any, setting?: {
  *   mark : '标记'
  * }
  */
-export const updateDetail = (key:string) => {
-  return requestClient.post(Api.updateDetail, { fileOwner:key });
+export const updateDetail = (key:any) => {
+  let data = { fileOwner:[] };
+  if(typeof key === 'string') {
+    data.fileOwner.push(key);
+  } else {
+    data.fileOwner.push(...key);
+  }
+  return requestClient.post(Api.updateDetail, data);
 };

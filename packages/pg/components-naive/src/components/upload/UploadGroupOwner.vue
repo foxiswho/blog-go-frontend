@@ -15,6 +15,7 @@ import { isImage } from './setting';
 import ModalUploadList from './UploadGroup/ModalUploadList.vue';
 import { UploadGroupProps } from './UploadGroup/props';
 import { emptyUploadFn } from './UploadGroup/type';
+import { getNanoidNo } from '@pg/utils';
 
 const props = defineProps({
   ...UploadGroupProps,
@@ -41,14 +42,25 @@ if (isFunction(props.fetchSetting?.uploadFn)) {
 watch(
   () => props.modelValue,
   (newValue, oldValue) => {
-    modelValueData.value = newValue;
-
-    // console.log('modelValueData.oldValue=>', oldValue);
-    console.log('modelValueData.newValue=>', newValue);
-    // console.log('modelValueData.value=>', modelValueData.value);
-    if(newValue) {
-      getFileList();
+    if (props.isStandalone) {
+      if (typeof newValue === 'string' && newValue) {
+        modelValueData.value = newValue;
+      } else {
+        modelValueData.value = 'context-auto-' + getNanoidNo(32);
+      }
+    } else {
+      if (typeof newValue === 'object' && newValue && Object.keys(newValue).length > 0) {
+        modelValueData.value = { ...newValue };
+      } else {
+        modelValueData.value = {};
+        props.group.forEach((g) => {
+          modelValueData.value[g.key] = 'context-auto-' + getNanoidNo(32);
+        });
+      }
     }
+
+    console.log('modelValueData.newValue=>', modelValueData.value);
+    getFileList();
   },
   { deep: true, immediate: true },
 );
@@ -94,7 +106,7 @@ function modalUploadOk(val) {
       };
       fetchSetting.value
         ?.uploadFn(param, {
-          type: 'addByFileOwner',
+          type: 'updateByFileOwner',
           config: {
             successMessageMode: 'none',
             errorMessageMode: 'message',
@@ -129,15 +141,17 @@ const handleUpload = (group) => {
         fetchSetting.value.uploadFn = props.fetchSetting?.uploadFn;
       }
     }
-    // console.log('uploadSetting',uploadFetch);
-    // console.log('uploadFetch',uploadFetch)
     let fileOwner = '';
-    if(typeof modelValueData.value === 'object') {
-      fileOwner = modelValueData.value[group.key];
-    } else {
+    if (props.isStandalone) {
       fileOwner = modelValueData.value;
+    } else {
+      fileOwner = modelValueData.value[group.key];
+      if (!fileOwner) {
+        fileOwner = 'context-auto-' + getNanoidNo(32);
+        modelValueData.value[group.key] = fileOwner;
+      }
     }
-    console.log('fileOwner',fileOwner);
+    console.log('fileOwner', fileOwner);
     ModalUploadApi.setData({
       callback: ({ data }) => {},
       isUpdate: false,
@@ -149,7 +163,7 @@ const handleUpload = (group) => {
         params: {
           fileOwner: fileOwner,
           fileOwnerSub: group.key,
-        }
+        },
       },
       values: {},
     });
@@ -163,12 +177,12 @@ const handleUpload = (group) => {
  */
 const delUploadItem = (item, index, key) => {
   if (listData.value[key] && listData.value[key].length > 0) {
-    let fileOwner = props.modelValue;
-    // for (const itemKey in props.group) {
-    //   if (key === props.group[itemKey].key && props.group[itemKey]?.fileOwner) {
-    //     fileOwner = props.group[itemKey].fileOwner;
-    //   }
-    // }
+    let fileOwner = '';
+    if (typeof modelValueData.value === 'object') {
+      fileOwner = modelValueData.value[key];
+    } else {
+      fileOwner = modelValueData.value;
+    }
     if (fileOwner) {
       if (isFunction(fetchSetting.value?.uploadFn)) {
         const param = {
@@ -253,17 +267,25 @@ function textEllipsisCenter(str, length = 13, fisrtIndex = 6) {
 
 function getFileList() {
   const parData = [];
-  let fileOwner = '';
-  if (modelValueData.value) {
-    if(typeof modelValueData.value === 'object') {
+  let fileOwner = [];
+  if (props.isStandalone) {
+    fileOwner = [modelValueData.value];
+    const firstGroup = props.group[0];
+    if (firstGroup) {
+      parData.push({
+        group: firstGroup.key,
+        fileOwner: modelValueData.value,
+      });
+    }
+  } else {
+    if (modelValueData.value && typeof modelValueData.value === 'object') {
       for (const key in modelValueData.value) {
         parData.push({
           group: key,
           fileOwner: modelValueData.value[key],
         });
+        fileOwner.push(modelValueData.value[key]);
       }
-    } else {
-        fileOwner = modelValueData.value;
     }
   }
   if (isFunction(fetchSetting.value?.uploadFn)) {
@@ -272,27 +294,30 @@ function getFileList() {
       groupData: parData,
       fileOwner: fileOwner,
     };
-    console.log('param',param);
+    console.log('param', param);
     fetchSetting.value
       ?.uploadFn(param, {
         type: 'detail',
-      }).then((d) =>{
-        let keyX = '';
-      d.forEach(item => {
-        keyX = item.fileOwnerSub??'main';
-        if(!listData.value[keyX]) {
-          listData.value[keyX] = [];
-        }
-        listData.value[keyX].push(item);
-      })
-      //
-    });
+      }).then((d) => {
+        listData.value = {};
+        d.forEach(item => {
+          const keyX = item.fileOwnerSub ?? (props.isStandalone ? (props.group[0]?.key ?? 'main') : 'main');
+          if (!listData.value[keyX]) {
+            listData.value[keyX] = [];
+          }
+          listData.value[keyX].push(item);
+        });
+      });
   }
 }
 </script>
 <template>
   <n-list class="pgUploadList ml-2">
-    <n-list-item v-for="group in props.group" :key="group.key">
+    <n-list-item
+      v-for="(group, index) in (props.isStandalone ? [props.group[0]] : props.group)"
+      :key="group?.key || index"
+      v-show="group"
+    >
       <n-thing content-style="margin-top: 10px;">
         <template v-if="group?.name" #header>
           {{ group.name }}
