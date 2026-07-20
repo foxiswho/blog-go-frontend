@@ -682,9 +682,9 @@ importers:
 
   apps/blog-manage:
     dependencies:
-      '@form-create/naive-ui':
-        specifier: ^3
-        version: 3.3.1(vue@3.5.39(typescript@6.0.3))
+      '@iconify/vue':
+        specifier: 'catalog:'
+        version: 5.0.1(vue@3.5.39(typescript@6.0.3))
       '@pg/components-n':
         specifier: workspace:*
         version: link:../../packages/pg/components-naive
@@ -709,6 +709,9 @@ importers:
       '@pg/utils':
         specifier: workspace:*
         version: link:../../packages/pg/utils
+      '@vben-core/menu-ui':
+        specifier: workspace:*
+        version: link:../../packages/@core/ui-kit/menu-ui
       '@vben-core/popup-ui':
         specifier: workspace:*
         version: link:../../packages/@core/ui-kit/popup-ui
@@ -775,6 +778,9 @@ importers:
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      sm-crypto:
+        specifier: ^0.4.0
+        version: 0.4.0
       vue:
         specifier: ^3.5.38
         version: 3.5.39(typescript@6.0.3)

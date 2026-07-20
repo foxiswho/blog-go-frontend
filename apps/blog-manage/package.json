@@ -26,7 +26,6 @@
     "#/*": "./src/*"
   },
   "dependencies": {
-    "@form-create/naive-ui": "^3",
     "@vben/access": "workspace:*",
     "@vben/common-ui": "workspace:*",
     "@vben-core/shadcn-ui": "workspace:*",
@@ -54,6 +53,7 @@
     "@pg/request": "workspace:*",
     "@pg/utils": "workspace:*",
     "@vueuse/core": "catalog:",
+    "@iconify/vue": "catalog:",
     "dayjs": "catalog:",
     "naive-ui": "catalog:",
     "pinia": "catalog:",
