@@ -43,6 +43,21 @@ const formSchema = computed((): VbenFormSchema[] => {
     },
     {
       component: 'VbenInput',
+      defaultValue: '1000',
+      componentProps: {
+        placeholder: '请输入编号',
+      },
+      fieldName: 'orgCode',
+      label: '商户编号',
+      rules: z.string().min(1, { message: '商户编号必填' }),
+      dependencies: {
+        show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['password'],
+      },
+    },
+    {
+      component: 'VbenInput',
       componentProps: {
         placeholder: $t('authentication.usernameTip'),
       },
