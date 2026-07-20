@@ -336,7 +336,7 @@ const [Form, formApi] = usePgForm({
         isStandalone: false,
         group: [
           {
-            // name: '主图',
+            name: '主图',
             key: 'main',
             // description: '其他说明 图片大小：宽 500px ,高 400px,图片大小：宽 500px ,高 400px',
             headerExtra: ',图片大小：宽 500px ,高 400px',
