@@ -13,7 +13,6 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteIds, List } from '../api';
 import {
   selectNodeAllPublic,
-  selectPublic,
 } from '#/viewsBlog/articleCategory/api';
 import { columns, useGridFormSchema } from './data';
 
@@ -190,7 +189,7 @@ const [Modal, modalApi] = useVbenModal({
       <NLayout class="h-full p-2" has-sider>
         <NLayoutSider class="min-w-[160px]" width="160">
           <PgTree
-            :api="selectPublic"
+            :api="selectNodeAllPublic"
             :menu-dropdown-options="menuDropdownOptions"
             :reload="reloadTreeComputed"
             :right-click-menu="true"

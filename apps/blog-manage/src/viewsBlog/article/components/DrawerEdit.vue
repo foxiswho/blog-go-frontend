@@ -4,9 +4,7 @@ import { h, ref } from 'vue';
 import { useVbenDrawer, useVbenModal, VbenButton } from '@vben/common-ui';
 
 import { usePgForm } from '#/adapter';
-const emit = defineEmits(['ok']);
-const uploadUrl = '';
-const accessStore = useAccessStore();
+
 import { useAccessStore } from '@vben/stores';
 
 import { stateYesNoOption } from '@pg/types';
@@ -20,16 +18,13 @@ import {PgMarkdown} from '@pg/components-n';
 import dayjs from "dayjs";
 import { NTag } from 'naive-ui';
 
-import {
-  makeFileOwnerAllPublic,
-  uploadUpByFileOwner,
-} from '#/viewsBasic/attachment/api';
 import ModalTagTpl from '#/viewsBasic/tags/relation/invoke/ModalTag.vue';
 import TopicTable from '#/viewsBlog/article/components/TopicTable.vue';
 import { selectNodeAllPublic as selectNodeAllPublicCategory } from '#/viewsBlog/articleCategory/api';
 
 import { detail, existCode, existName, saveOrUpdate } from '../api';
 
+const emit = defineEmits(['ok']);
 const currentData = ref({});
 const optionsTags = ref({});
 const showTopic = ref(false);
@@ -356,6 +351,17 @@ const [Form, formApi] = usePgForm({
             maxNumber: 1,
             maxSize: 30,
           },
+          {
+            name: '轮播图',
+            key: 'carousel',
+            description: '其他说明 图片大小：宽 500px ,高 400px',
+            descriptionIsHtml: false,
+            headerExtra: ',图片大小：宽 500px ,高 400px',
+            width: '500px',
+            height: '400px',
+            maxNumber: 21,
+            maxSize: 30,
+          },
         ],
       }
     },
@@ -373,7 +379,7 @@ const [Form, formApi] = usePgForm({
       tabGroup: 'home',
       fieldName: 'content',
       label: '内容',
-      component: '',
+      component: 'PgMarkdown',
     },
     {
       tabGroup: 'source',
@@ -539,18 +545,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
           }
           formApi.setValues(data);
           //
-          makeFileOwnerAllPublicMap(
-            attachmentGroup.value,
-            'article',
-            data.attachment,
-          );
         });
       } else {
-        makeFileOwnerAllPublicMap(attachmentGroup.value, 'article', {});
         formApi.setFieldValue('operationTime',dayjs().format('YYYY-MM-DD HH:mm:ss'))
       }
 
-      drawerApi.setState({ title: `币制：${isUpdate ? '编辑' : '新增'}`, loading: false });
+      drawerApi.setState({ title: `文章：${isUpdate ? '编辑' : '新增'}`, loading: false });
     }
   },
   title: '：',
@@ -575,7 +575,6 @@ async function onSubmit() {
     let data = {
       ...values,
     };
-    data.content = contentData.value.valueMarkdown;
     data.statistics = {
       // comment: values.comment,
       // read: values.read,
@@ -601,146 +600,14 @@ async function onSubmit() {
       });
   } catch (error) {
     console.error(error);
+    drawerApi.setState({confirmLoading: false});
   } finally {
     drawerApi.unlock();
-    drawerApi.setState({ loading: false, confirmLoading: false });
+    drawerApi.setState({loading: false});
   }
 }
 
-const attachmentGroup = ref([
-  {
-    name: '主图',
-    key: 'main',
-    description: '其他说明 图片大小：宽 500px ,高 400px',
-    headerExtra: ',图片大小：宽 500px ,高 400px',
-    width: '500px',
-    height: '400px',
-    maxNumber: 1,
-    maxSize: 30,
-  },
-  {
-    name: '列表图',
-    key: 'list',
-    description: '其他说明 图片大小：宽 500px ,高 400px',
-    headerExtra: ',图片大小：宽 500px ,高 400px',
-    width: '500px',
-    height: '400px',
-    maxNumber: 1,
-    maxSize: 30,
-  },
-  {
-    name: '轮播图',
-    key: 'carousel',
-    description: '其他说明 图片大小：宽 500px ,高 400px',
-    descriptionIsHtml: false,
-    headerExtra: ',图片大小：宽 500px ,高 400px',
-    width: '500px',
-    height: '400px',
-    maxNumber: 21,
-    maxSize: 30,
-  },
-]);
-const uploadSettingFetch = ref({
-  params: {},
-  header: {
-    Authorization: `Bearer ${accessStore.accessToken}`,
-  },
-  // url
-  url: uploadUrl,
-  // 链接
-  urlLink: `${uploadUrl}-link`,
-  // 列表
-  urlList: `${uploadUrl}-list`,
-  // 二维码url
-  urlQr: `${uploadUrl}-qr`,
-  // 根据所有者获取
-  urlByOwner: `${uploadUrl}-listByOwnerPublic`,
-  // 根据所有者删除
-  urlByOwnerDel: `${uploadUrl}-delByOwnerPublic`,
-  module: 'article',
-});
-const upload = ref({
-  accept:
-    'image/*,.zip,.rar,.7z,.tar,.gzip,.bz2,.jar,.jpg,.jpeg,.png,.gif,.webp,.webm,.bmp,.mp3,.mp4,.wav,.mov,.weba,.mkv',
-  headers: {
-    Authorization: `${accessStore.accessToken}`,
-  },
-  url: `${uploadUrl}-more`,
-  fieldName: 'file',
-  filename(e) {
-    return e
-      .replaceAll(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, '')
-      .replaceAll(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, '')
-      .replace('/\\s/g', '');
-  },
-  format(files, responseText) {
-    // console.log('files',files)
-    // console.log('files',files[0])
-    console.log('responseText', responseText);
-    const succMap = {};
-    try {
-      // var json = (new Function("return " + responseText))();//第三种
-      const json = JSON.parse(responseText);
-      // console.log('responseText',json.data)
-      for (const jsonKey in json.data) {
-        const item = json.data[jsonKey];
-        succMap[item.sourceName ? item.sourceName : jsonKey] = item.url;
-      }
-    } catch (error) {
-      console.log('eeee', error);
-    }
-    console.log('succMap', succMap);
-    return JSON.stringify({
-      msg: '',
-      code: 0,
-      data: {
-        succMap,
-      },
-    });
-  },
-  // success(editor: HTMLPreElement, msg: string){
-  //   console.log('editor',editor)
-  //   console.log('msg',msg)
-  // }
-  // filename (name) {
-  //   console.log('xxxxxx',name)
-  //   return name.replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, '').
-  //   replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, '').
-  //   replace('/\\s/g', '')
-  // },
-});
-/**
- * markdown 保存
- * @param opt
- */
-function updateMarkdownChange(opt) {
-  console.log('updateMarkdownChange', opt);
-  contentData.value = opt;
-}
-function PgUploadOk(data) {
-  console.log('PgUploadOk', data);
-  if (data.data && data.owner) {
-    let map = {};
-    for (const dataKey in data.owner) {
-      const owner = data.owner[dataKey];
-      const objs = data.data[dataKey];
-      if (objs) {
-        map[owner] = [];
-        for (const objsKey in objs) {
-          const item = objs[objsKey];
-          if (item && item.id) {
-            map[owner].push(item.id.toString());
-          }
-        }
-      }
-    }
-    if (map) {
-      uploadUpByFileOwner(map).then((d) => {
-        console.log('d', d);
-      });
-    }
-  }
-}
+
 function okSelectData(opt) {
   console.log('opt', opt);
   selectData.value = opt;
@@ -793,34 +660,6 @@ async function handleEnter(sub, e) {
   }
 }
 
-function makeFileOwnerAllPublicMap(group, module, modelValueData) {
-  let makeFileOwnerNum = 0;
-  modelValueData = modelValueData || {};
-  let data = { mark: module, num: 0 };
-  let keyArr = [];
-  for (const itemKey in group) {
-    keyArr.push(group[itemKey].key);
-    if (
-      !Object.prototype.hasOwnProperty.call(modelValueData, group[itemKey].key)
-    ) {
-      makeFileOwnerNum++;
-    }
-  }
-  data.num = makeFileOwnerNum;
-  if (makeFileOwnerNum > 0) {
-    makeFileOwnerAllPublic(data).then((d) => {
-      if (d) {
-        for (const dKey in d) {
-          modelValueData[keyArr[dKey]] = d[dKey].fileOwner;
-        }
-        //
-        console.log('modelValueData===', modelValueData);
-        //formApi.setFieldValue('attachment', modelValueData);
-      }
-    });
-  }
-  return modelValueData;
-}
 </script>
 <template>
   <Drawer class="w-[1200px]">
@@ -835,15 +674,6 @@ function makeFileOwnerAllPublicMap(group, module, modelValueData) {
             />
           </template>
         </n-dynamic-tags>
-      </template>
-      <template #content="tpl">
-        <PgMarkdown
-          v-model="tpl.modelValue"
-          :upload="upload"
-          style="width: 100%"
-          width="100%"
-          @change="updateMarkdownChange"
-        />
       </template>
     </Form>
     <TopicTable v-if="showTopic" @ok="okSelectData" :data="selectData" />

@@ -18,8 +18,8 @@ export function useGridFormSchema(): VbenFormSchema[] {
  * 表格列配置
  */
 export const columns: VxeGridPropTypes.Columns = [
-  { type: 'checkbox',width: 34 },
-  { field: 'name', title: '名称', sortable: true },
+  // { type: 'checkbox',width: 34 },
+  { field: 'name', title: '名称', minWidth: 200, treeNode:true, align: 'left' },
   { field: 'code', title: '码值', width: 160 },
   { field: 'no', title: '编号', width: 160 },
   {

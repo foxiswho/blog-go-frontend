@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Fetch, AnyUploadFn } from './UploadGroup/type';
+import type { Fetch } from './UploadGroup/type';
 
 import { computed, ref, watch } from 'vue';
 
@@ -7,7 +7,8 @@ import { useVbenModal, VbenButton } from '@vben/common-ui';
 
 import { isFunction } from '@vben-core/shared/utils';
 
-import { MdiFileOutline, AntDesignCloseOutlined } from '@pg/icons';
+import { AntDesignCloseOutlined, MdiFileOutline } from '@pg/icons';
+import { getNanoidNo } from '@pg/utils';
 import { useMessage } from 'naive-ui';
 import draggable from 'vuedraggable';
 
@@ -15,23 +16,20 @@ import { isImage } from './setting';
 import ModalUploadList from './UploadGroup/ModalUploadList.vue';
 import { UploadGroupProps } from './UploadGroup/props';
 import { emptyUploadFn } from './UploadGroup/type';
-import { getNanoidNo } from '@pg/utils';
 
 const props = defineProps({
   ...UploadGroupProps,
 });
 
 // const modelValue = defineModel<object>('modelValue');
-const emit = defineEmits(['ok']);
+const emit = defineEmits(['ok', 'update:modelValue']);
 const message = useMessage();
 const dragging = ref(false);
 const activatedUpload = ref('');
 const uploadSetting = ref({});
 const listData = ref({});
-const modelValueData = ref('');
-const draggingInfo = computed(() => (dragging.value ? 'under drag' : ''));
+const modelValueData = ref<any>('');
 const listDataComputed = computed(() => listData.value);
-const makeFileOwnerNum = ref(0);
 const fetchSetting = ref<Fetch>({
   url: '',
   uploadFn: emptyUploadFn,
@@ -47,15 +45,27 @@ watch(
         modelValueData.value = newValue;
       } else {
         modelValueData.value = 'context-auto-' + getNanoidNo(32);
+        emit('update:modelValue', modelValueData.value);
       }
     } else {
       if (typeof newValue === 'object' && newValue && Object.keys(newValue).length > 0) {
         modelValueData.value = { ...newValue };
+        let needUpdate = false;
+        props.group.forEach((g) => {
+          if (!modelValueData.value[g.key]) {
+            modelValueData.value[g.key] = 'context-auto-' + getNanoidNo(32);
+            needUpdate = true;
+          }
+        });
+        if (needUpdate) {
+          emit('update:modelValue', { ...modelValueData.value });
+        }
       } else {
         modelValueData.value = {};
         props.group.forEach((g) => {
           modelValueData.value[g.key] = 'context-auto-' + getNanoidNo(32);
         });
+        emit('update:modelValue', { ...modelValueData.value });
       }
     }
 
@@ -106,7 +116,7 @@ function modalUploadOk(val) {
       };
       fetchSetting.value
         ?.uploadFn(param, {
-          type: 'updateByFileOwner',
+          type: 'addByFileOwner',
           config: {
             successMessageMode: 'none',
             errorMessageMode: 'message',
@@ -149,6 +159,7 @@ const handleUpload = (group) => {
       if (!fileOwner) {
         fileOwner = 'context-auto-' + getNanoidNo(32);
         modelValueData.value[group.key] = fileOwner;
+        emit('update:modelValue', { ...modelValueData.value });
       }
     }
     console.log('fileOwner', fileOwner);
@@ -156,12 +167,12 @@ const handleUpload = (group) => {
       callback: ({ data }) => {},
       isUpdate: false,
       sourceData: fileOwner,
-      fileOwner: fileOwner,
+      fileOwner,
       fetchSetting: fetchSetting.value,
       uploadSetting: {
         ...group,
         params: {
-          fileOwner: fileOwner,
+          fileOwner,
           fileOwnerSub: group.key,
         },
       },
@@ -187,7 +198,7 @@ const delUploadItem = (item, index, key) => {
       if (isFunction(fetchSetting.value?.uploadFn)) {
         const param = {
           ...fetchSetting.value.params,
-          fileOwner: fileOwner,
+          fileOwner,
           nos: [item.id],
         };
         fetchSetting.value
@@ -292,7 +303,7 @@ function getFileList() {
     const param = {
       ...fetchSetting.value.params,
       groupData: parData,
-      fileOwner: fileOwner,
+      fileOwner,
     };
     console.log('param', param);
     fetchSetting.value
@@ -376,7 +387,7 @@ function getFileList() {
                     @click="delUploadItem(item, index, group.key)"
                   />
 
-                  <div v-if="isImage(item.url)||'ajs'===item.bucket">
+                  <div v-if="isImage(item.url) || 'ajs' === item.bucket">
                     <n-image :src="item.url" width="100" />
                   </div>
                   <div v-else>

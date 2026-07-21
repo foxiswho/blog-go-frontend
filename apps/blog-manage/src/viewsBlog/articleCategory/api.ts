@@ -38,14 +38,6 @@ export async function queryAll(data?: any) {
 }
 
 /**
- * 公共列表展示
- * @param data
- */
-export const selectPublic = (data?: any) => {
-  return requestClient.post(Api.selectPublic, data);
-};
-
-/**
  * 公共树展示
  * @param data
  */

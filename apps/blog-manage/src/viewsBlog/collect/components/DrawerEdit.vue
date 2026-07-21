@@ -546,7 +546,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         formApi.setFieldValue('operationTime', dayjs().format('YYYY-MM-DD HH:mm:ss'))
       }
 
-      drawerApi.setState({title: `币制：${isUpdate ? '编辑' : '新增'}`, loading: false});
+      drawerApi.setState({title: `收集：${isUpdate ? '编辑' : '新增'}`, loading: false});
     }
   },
   title: '：',

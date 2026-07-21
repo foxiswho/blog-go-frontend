@@ -10,11 +10,11 @@ enum Api {
   existName = '/xianfu/manage/api/dipl-category/existName',
   exportExcel = '/xianfu/manage/api/dipl-category/exportExcel',
   list = '/xianfu/manage/api/dipl-category/query',
+  queryAll = '/xianfu/manage/api/dipl-category/queryAll',
   physicalDeletion = '/xianfu/manage/api/dipl-category/physicalDeletion',
   recovery = '/xianfu/manage/api/dipl-category/recovery',
   selectNodeAllPublic = '/xianfu/manage/api/dipl-category/selectNodeAllPublic',
   selectNodePublic = '/xianfu/manage/api/dipl-category/selectNodePublic',
-  selectPublic = '/xianfu/manage/api/dipl-category/selectPublic',
   state = '/xianfu/manage/api/dipl-category/state',
   update = '/xianfu/manage/api/dipl-category/update',
 }
@@ -27,14 +27,14 @@ enum Api {
 export async function List(data?: any) {
   return requestClient.post(Api.list, data);
 }
-
 /**
- * 公共列表展示
+ * 列表
+ * @constructor
  * @param data
  */
-export const selectPublic = (data?: any) => {
-  return requestClient.post(Api.selectPublic, data);
-};
+export async function queryAll(data?: any) {
+  return requestClient.post(Api.queryAll, data);
+}
 
 /**
  * 公共树展示
