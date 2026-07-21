@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { type Ref, useAttrs } from 'vue';
 import type { Nullable } from '@vben/types';
+
+import { type Ref, useAttrs } from 'vue';
 import {
   computed,
   nextTick,
@@ -13,13 +14,13 @@ import {
 
 import { preferences } from '@vben/preferences';
 
+import {useMessage} from "naive-ui";
 import Vditor from 'vditor';
 
 import { getTheme } from './getTheme';
 import { onMountedOrActivated } from './onMountedOrActivated';
 
 import 'vditor/dist/index.css';
-import {useMessage} from "naive-ui";
 
 type Lang = 'en_US' | 'ja_JP' | 'ko_KR' | 'zh_CN' | undefined;
 const message = useMessage();
@@ -29,6 +30,8 @@ defineOptions({
 const props = defineProps({
   height: { default: 360, type: Number },
   modelValue: { default: '', type: String },
+  // 支持 v-model:value（表单系统 baseModelPropName: 'value'）
+  value: { default: '', type: String },
   upload: { default: () => {}, type: Function },
   uploadSetting: { default: {
       accept:
@@ -39,7 +42,7 @@ const props = defineProps({
   uploadByMarkdown: { default: () => {}, type: Function },
   params: { default: {}, type: Object },
 });
-const emit = defineEmits(['change', 'get', 'update:modelValue']);
+const emit = defineEmits(['change', 'get', 'update:modelValue', 'update:value']);
 const wrapRef = ref(null);
 const vditorRef = ref(null) as Ref<Nullable<Vditor>>;
 const initedRef = ref(false);
@@ -50,7 +53,9 @@ const uploadSetting = ref({
   max: 20 * 1024 * 1024, // 可选，前端大小限制（Vditor 自带校验）
   handler: (files:File)=>{},
 });
-const valueRef = ref(props.modelValue || '');
+// 优先 value（表单系统 v-model:value），其次 modelValue（标准 v-model）
+const currentValue = computed(() => props.value || props.modelValue || '');
+const valueRef = ref(currentValue.value);
 const instance = {
   getVditor: (): Vditor => vditorRef.value!,
 };
@@ -88,8 +93,8 @@ watch(
   },
 );
 watch(
-  () => props.modelValue,
-  (v,old) => {
+  currentValue,
+  (v, old) => {
     if (v !== valueRef.value && v !== old) {
       instance.getVditor()?.setValue(v);
     }

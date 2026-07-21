@@ -300,13 +300,15 @@ function getFileList() {
         type: 'detail',
       }).then((d) => {
         listData.value = {};
-        d.forEach(item => {
-          const keyX = item.fileOwnerSub ?? (props.isStandalone ? (props.group[0]?.key ?? 'main') : 'main');
-          if (!listData.value[keyX]) {
-            listData.value[keyX] = [];
-          }
-          listData.value[keyX].push(item);
-        });
+        if(d) {
+          d.forEach(item => {
+            const keyX = item.fileOwnerSub ?? (props.isStandalone ? (props.group[0]?.key ?? 'main') : 'main');
+            if (!listData.value[keyX]) {
+              listData.value[keyX] = [];
+            }
+            listData.value[keyX].push(item);
+          });
+        }
       });
   }
 }

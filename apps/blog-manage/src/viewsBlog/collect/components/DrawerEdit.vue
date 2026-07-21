@@ -29,11 +29,6 @@ const currentData = ref({});
 const optionsTags = ref({});
 const showTopic = ref(false);
 const selectData = ref([]);
-const contentData = ref({
-  value: '',
-  valueHtml: '',
-  valueMarkdown: '',
-});
 const [ModalTag, modalTagApi] = useVbenModal({
   // 连接抽离的组件
   connectedComponent: ModalTagTpl,
@@ -573,7 +568,6 @@ async function onSubmit() {
     let data = {
       ...values,
     };
-    data.content = contentData.value.valueMarkdown;
     data.statistics = {
       // comment: values.comment,
       // read: values.read,
@@ -587,7 +581,6 @@ async function onSubmit() {
         data.topics.push(item.no);
       }
     }
-    console.log('contentData.value', contentData.value);
     //
     saveOrUpdate(data, isUpdate)
       .then((d) => {
@@ -599,19 +592,11 @@ async function onSubmit() {
       });
   } catch (error) {
     console.error(error);
+    drawerApi.setState({confirmLoading: false});
   } finally {
     drawerApi.unlock();
-    drawerApi.setState({loading: false, confirmLoading: false});
+    drawerApi.setState({loading: false});
   }
-}
-
-/**
- * markdown 保存
- * @param opt
- */
-function updateMarkdownChange(opt) {
-  console.log('updateMarkdownChange', opt);
-  contentData.value = opt;
 }
 
 function okSelectData(opt) {
