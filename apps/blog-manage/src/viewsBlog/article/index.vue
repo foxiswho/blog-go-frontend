@@ -22,7 +22,6 @@ import {
   batchSelectEnable,
   batchSelectPhysicalDeletion,
   batchSelectRecovery,
-  deleteIds,
   deleteIds as categoryDeleteIds,
   List,
 } from './api';
@@ -37,7 +36,7 @@ const formParam = reactive({ categoryNo: '', tagsQuery: [] });
 
 const treeChang = (record) => {
   currenRecord.value = true;
-  currenData.value = record;
+  currenData.value = record?.data;
   formParam.categoryNo = record.data.no;
   reloadTree();
   onRefresh();
@@ -181,7 +180,7 @@ function onCreate() {
   drawerApi
     .setData({
       values: {},
-      parent: currenData.value?.data,
+      parent: currenData.value,
       isUpdate: false,
     })
     .open();

@@ -12,6 +12,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      fieldName: 'categoryNo',
+      label: '分类编号',
+      componentProps: {
+        placeholder: '请输入',
+        clearable: true,
+      },
+      dependencies: {
+        show: false,
+        // 随意一个字段改变时，都会触发
+        triggerFields: ['wd'],
+      },
+    },
+    {
+      component: 'Input',
       fieldName: 'wd',
       label: '关键词',
       componentProps: {
@@ -32,6 +46,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
       fieldName: 'tagsQuery',
       label: '标签',
       component: '',
+      defaultValue: [],
       componentProps: {
         filterable: true,
         multiple: true,
@@ -67,7 +82,7 @@ export const columns: VxeGridPropTypes.Columns = [
     },
     width: 40,
   },
-  { type: 'checkbox', title: 'ID', width: 40 },
+  { type: 'checkbox', width: 34 },
   { field: 'tenantNo', title: '租户编号', width: 120, visible: false },
   { field: 'tenantNoName', title: '租户', width: 120, visible: false },
   { field: 'name', title: '名称', visible: false },
