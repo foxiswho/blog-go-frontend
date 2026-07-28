@@ -60,3 +60,23 @@ vite.config.ts.*
 skills-lock.json
 .atomcode
 datalog
+.qoder
+skill
+.trae/skills
+.trae-cn
+# Added by code-review-graph
+.code-review-graph/
+.codebuddy
+.gemini
+.github
+.kiro
+.mcp.json
+.windsurfrules
+.cursorrules
+CLAUDE.md
+CODEBUDDY.md
+GEMINI.md
+QODER.md
+opencode.jsonc
+graphify-out
+.graphify*

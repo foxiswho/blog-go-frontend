@@ -29,15 +29,16 @@ export const columns: VxeGridPropTypes.Columns = [
     width: 90,
     cellRender: {
       name: 'CellSwitchPg',
-      attrs: { beforeChange: async(newStatus: number|string, record: any,$table)=>{
+      attrs: {
+        beforeChange: async (newStatus: number | string, record: any, $table: any) => {
           try {
-            await confirmSwitch(record.name,newStatus);
+            await confirmSwitch(record.name, newStatus);
             await setStateEnableDisable(record.id, newStatus);
             return true;
           } catch {
             return false;
           }
-        }
+        },
       },
     },
   },

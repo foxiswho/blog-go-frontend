@@ -9,11 +9,11 @@ import { PgTree } from '@pg/components-n';
 
 import { message } from '#/adapter';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-
-import { deleteIds, List } from '../api';
 import {
   selectNodeAllPublic,
 } from '#/viewsBlog/articleCategory/api';
+
+import { List } from '../api';
 import { columns, useGridFormSchema } from './data';
 
 const emit = defineEmits(['ok']);
@@ -185,91 +185,91 @@ const [Modal, modalApi] = useVbenModal({
 
 <template>
   <Modal class="w-[1200px]">
-    <div>
-      <NLayout class="h-full p-2" has-sider>
-        <NLayoutSider class="min-w-[160px]" width="160">
-          <PgTree
-            :api="selectNodeAllPublic"
-            :menu-dropdown-options="menuDropdownOptions"
-            :reload="reloadTreeComputed"
-            :right-click-menu="true"
-            :right-click-menu-options="rightClickMenuOptions"
-            @ok="treeChang"
-            @overload="treeOverload"
-          />
-        </NLayoutSider>
-        <NLayout class="w-[calc(100%-160px)]">
-          <NLayoutContent>
-            <Grid>
-              <template #nameAll="{ row }">
-                <div>
-                  {{ row.name }}
-                </div>
-                <div>
-                  {{ row.path }}
-                </div>
-              </template>
-              <template #expandContent="{ row }">
-                <dl class="expandContent m-2">
-                  <dd class="title">
-                    <n-tag
-                      v-if="row.typeContent === 'original'"
-                      type="success"
-                      size="small"
-                    >
-                      原
-                    </n-tag>
-                    <n-tag
-                      v-if="row.typeContent === 'repost'"
-                      type="error"
-                      size="small"
-                    >
-                      转
-                    </n-tag>
-                    <n-tag
-                      v-if="row.typeContent === 'translation'"
-                      type="error"
-                      size="small"
-                    >
-                      译
-                    </n-tag>
+    <div class="flex size-full">
+      <n-card
+        class="min-w-[160px]"
+        style="width: unset"
+        content-style="padding-left:10px;padding-right:10px;padding-top:10px;"
+      >
+        <PgTree
+          :api="selectNodeAllPublic"
+          :menu-dropdown-options="menuDropdownOptions"
+          :reload="reloadTreeComputed"
+          :right-click-menu="true"
+          :right-click-menu-options="rightClickMenuOptions"
+          @ok="treeChang"
+          @overload="treeOverload"
+        />
+      </n-card>
+      <div class="w-[calc(100%-160px)] ml-2 pl-2 bg-card rounded-md">
+        <Grid>
+          <template #nameAll="{ row }">
+            <div>
+              {{ row.name }}
+            </div>
+            <div>
+              {{ row.path }}
+            </div>
+          </template>
+          <template #expandContent="{ row }">
+            <dl class="expandContent m-2">
+              <dd class="title">
+                <n-tag
+                  v-if="row.typeContent === 'original'"
+                  type="success"
+                  size="small"
+                >
+                  原
+                </n-tag>
+                <n-tag
+                  v-if="row.typeContent === 'repost'"
+                  type="error"
+                  size="small"
+                >
+                  转
+                </n-tag>
+                <n-tag
+                  v-if="row.typeContent === 'translation'"
+                  type="error"
+                  size="small"
+                >
+                  译
+                </n-tag>
 
-                    <n-tag
-                      v-if="row.typeReading === 'unread'"
-                      size="small"
-                      class="mt-2"
-                    >
-                      未读
-                    </n-tag>
-                    <n-tag
-                      v-if="row.typeReading === 'warning'"
-                      type="info"
-                      size="small"
-                      class="mt-2"
-                    >
-                      读中
-                    </n-tag>
-                    <n-tag
-                      v-if="row.typeReading === 'completed'"
-                      type="info"
-                      size="small"
-                      class="mt-2"
-                    >
-                      已读
-                    </n-tag>
-                  </dd>
-                  <dd class="content">
-                    <n-grid x-gap="12" :cols="1" class="ml-2">
-                      <n-gi> 标签：{{ row.tags }} </n-gi>
-                      <n-gi> 操作时间：{{ row.operationTime }} </n-gi>
-                    </n-grid>
-                  </dd>
-                </dl>
-              </template>
-            </Grid>
-          </NLayoutContent>
-        </NLayout>
-      </NLayout>
+                <n-tag
+                  v-if="row.typeReading === 'unread'"
+                  size="small"
+                  class="mt-2"
+                >
+                  未读
+                </n-tag>
+                <n-tag
+                  v-if="row.typeReading === 'warning'"
+                  type="info"
+                  size="small"
+                  class="mt-2"
+                >
+                  读中
+                </n-tag>
+                <n-tag
+                  v-if="row.typeReading === 'completed'"
+                  type="info"
+                  size="small"
+                  class="mt-2"
+                >
+                  已读
+                </n-tag>
+              </dd>
+              <dd class="content">
+                <n-grid x-gap="12" :cols="1" class="ml-2">
+                  <n-gi> 标签：{{ row.tags }} </n-gi>
+                  <n-gi> 操作时间：{{ row.operationTime }} </n-gi>
+                </n-grid>
+              </dd>
+            </dl>
+          </template>
+        </Grid>
+      </div>
     </div>
   </Modal>
 </template>

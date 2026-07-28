@@ -3,6 +3,7 @@ import type { VxeGridPropTypes } from 'vxe-table';
 
 import _XEUtils_ from 'xe-utils';
 
+import { confirmSwitch } from '#/adapter/vxe-table';
 import { setStateEnableDisable } from './api';
 
 /**
@@ -48,8 +49,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
         options: [
           { label: '停用', value: '2' },
           { label: '有效', value: '1' },
-          { label: '弃置', value: '12' },
-          { label: '取消', value: '11' },
         ],
       },
     },
@@ -73,6 +72,7 @@ export const columns: VxeGridPropTypes.Columns = [
   { field: 'name', title: '名称', visible: false },
   { field: 'nameAll', title: '名称', slots: { default: 'nameAll' } },
   { field: 'no', title: '编码', width: 160, visible: false },
+  { field: 'code', title: '码值', width: 160, visible: false },
   {
     field: 'description',
     title: '描述',
@@ -86,25 +86,16 @@ export const columns: VxeGridPropTypes.Columns = [
     // slots: { default: 'state' },
     width: 90,
     cellRender: {
-      name: 'PgState',
-      events: {
-        // 状态更新
-        click: ($table, record, e) => {
-          const sourceValue = record.state;
-          const newStatus = e.value === 1 ? 1 : 2;
-          setStateEnableDisable(record.id, newStatus)
-            .then(() => {
-              record.state = newStatus;
-              if ($table) {
-                $table.isUpdateByRow(record);
-              }
-            })
-            .catch(() => {
-              record.state = sourceValue;
-              if ($table) {
-                $table.isUpdateByRow(record);
-              }
-            });
+      name: 'CellSwitchPg',
+      attrs: {
+        beforeChange: async (newStatus: number | string, record: any, $table: any) => {
+          try {
+            await confirmSwitch(record.name, newStatus);
+            await setStateEnableDisable(record.id, newStatus);
+            return true;
+          } catch {
+            return false;
+          }
         },
       },
     },
